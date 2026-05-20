@@ -530,6 +530,10 @@ textarea {
   grid-template-columns: 1.1fr 0.9fr;
 }
 
+.dashboard-card-wide {
+  grid-column: 1 / -1;
+}
+
 .dashboard-card h3 {
   margin-top: 0;
   font-size: 1.55rem;
@@ -549,6 +553,11 @@ textarea {
 .data-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+#admin-requests-table,
+#admin-employees-table {
+  overflow-x: auto;
 }
 
 .data-table th,

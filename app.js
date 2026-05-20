@@ -7,6 +7,7 @@
     config.anonKey !== "YOUR_SUPABASE_ANON_KEY";
 
   let supabase = null;
+  let adminEmployeeProfiles = [];
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
@@ -162,6 +163,7 @@
       adminMeta.textContent = `${profile.department} | ${profile.position_title}`;
     }
 
+    bindAdminEmployeeForm();
     await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
   }
 
@@ -351,7 +353,7 @@
   async function loadAdminProfiles() {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, employee_no, first_name, last_name, department, position_title, role")
+      .select("id, employee_no, email, first_name, middle_name, last_name, suffix, department, position_title, contact_no, employment_status, hire_date, leave_credits, role")
       .eq("role", "employee")
       .order("last_name", { ascending: true });
 
@@ -360,7 +362,9 @@
       return;
     }
 
+    adminEmployeeProfiles = data;
     setText("stat-employees", String(data.length));
+    renderAdminEmployeeTable(data);
 
     const list = document.getElementById("admin-summary-list");
     if (!list) {
@@ -379,6 +383,240 @@
         <div>${escapeHtml(profile.department)} | ${escapeHtml(profile.position_title)}</div>
       </li>
     `).join("");
+  }
+
+  function renderAdminEmployeeTable(profiles) {
+    const container = document.getElementById("admin-employees-table");
+    if (!container) {
+      return;
+    }
+
+    if (!profiles.length) {
+      container.innerHTML = '<p class="empty-state">No employee account data loaded yet.</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Credits</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${profiles.map((profile) => `
+            <tr>
+              <td>
+                <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
+                ${escapeHtml(profile.employee_no || "No employee number")}<br>
+                ${escapeHtml(profile.email || "No email")}
+              </td>
+              <td>${escapeHtml(profile.department)}<br>${escapeHtml(profile.position_title)}</td>
+              <td><span class="badge ${profile.employment_status === "active" ? "approved" : profile.employment_status === "inactive" ? "pending" : "rejected"}">${escapeHtml(capitalize(profile.employment_status || "active"))}</span></td>
+              <td>${escapeHtml(Number(profile.leave_credits || 0).toFixed(2))}</td>
+              <td>
+                <div class="table-actions">
+                  <button type="button" class="button button-muted" data-edit-employee="${profile.id}">Edit</button>
+                  <button type="button" class="button button-danger" data-delete-employee="${profile.id}">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+
+    Array.from(container.querySelectorAll("[data-edit-employee]")).forEach((button) => {
+      button.addEventListener("click", () => {
+        const employeeId = button.getAttribute("data-edit-employee");
+        const profile = adminEmployeeProfiles.find((item) => item.id === employeeId);
+        if (profile) {
+          populateEmployeeForm(profile);
+        }
+      });
+    });
+
+    Array.from(container.querySelectorAll("[data-delete-employee]")).forEach((button) => {
+      button.addEventListener("click", async () => {
+        const employeeId = button.getAttribute("data-delete-employee");
+        const profile = adminEmployeeProfiles.find((item) => item.id === employeeId);
+        if (!profile) {
+          return;
+        }
+
+        const confirmed = window.confirm(`Delete ${profile.first_name} ${profile.last_name}? This also removes the employee login and leave records.`);
+        if (!confirmed) {
+          return;
+        }
+
+        await deleteEmployeeAccount(employeeId);
+      });
+    });
+  }
+
+  function bindAdminEmployeeForm() {
+    const form = document.getElementById("employee-management-form");
+    const cancelButton = document.getElementById("employee-cancel-button");
+
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const employeeId = String(formData.get("employeeRecordId") || "").trim();
+      const payload = {
+        employee_no: String(formData.get("employeeNo") || "").trim(),
+        email: String(formData.get("email") || "").trim(),
+        first_name: String(formData.get("firstName") || "").trim(),
+        middle_name: normalizeOptionalText(formData.get("middleName")),
+        last_name: String(formData.get("lastName") || "").trim(),
+        suffix: normalizeOptionalText(formData.get("suffix")),
+        department: String(formData.get("department") || "").trim(),
+        position_title: String(formData.get("positionTitle") || "").trim(),
+        contact_no: normalizeOptionalText(formData.get("contactNo")),
+        hire_date: normalizeOptionalText(formData.get("hireDate")),
+        employment_status: String(formData.get("employmentStatus") || "active").trim(),
+        leave_credits: Number(formData.get("leaveCredits") || 0),
+        password: String(formData.get("password") || "")
+      };
+
+      if (!employeeId && !payload.password) {
+        window.alert("Password is required when creating an employee.");
+        return;
+      }
+
+      if (employeeId) {
+        await updateEmployeeAccount(employeeId, payload);
+        return;
+      }
+
+      await createEmployeeAccount(payload);
+    });
+
+    if (cancelButton) {
+      cancelButton.addEventListener("click", () => {
+        resetEmployeeForm();
+      });
+    }
+  }
+
+  function populateEmployeeForm(profile) {
+    const form = document.getElementById("employee-management-form");
+    if (!form) {
+      return;
+    }
+
+    form.elements.employeeRecordId.value = profile.id || "";
+    form.elements.employeeNo.value = profile.employee_no || "";
+    form.elements.email.value = profile.email || "";
+    form.elements.firstName.value = profile.first_name || "";
+    form.elements.middleName.value = profile.middle_name || "";
+    form.elements.lastName.value = profile.last_name || "";
+    form.elements.suffix.value = profile.suffix || "";
+    form.elements.department.value = profile.department || "";
+    form.elements.positionTitle.value = profile.position_title || "";
+    form.elements.contactNo.value = profile.contact_no || "";
+    form.elements.hireDate.value = profile.hire_date || "";
+    form.elements.employmentStatus.value = profile.employment_status || "active";
+    form.elements.leaveCredits.value = Number(profile.leave_credits || 0);
+    form.elements.password.value = "";
+
+    setText("employee-submit-button", "Update Employee");
+    document.getElementById("employee-cancel-button")?.classList.remove("hidden");
+    document.getElementById("employee-email")?.focus();
+  }
+
+  function resetEmployeeForm() {
+    const form = document.getElementById("employee-management-form");
+    if (!form) {
+      return;
+    }
+
+    form.reset();
+    form.elements.employeeRecordId.value = "";
+    form.elements.employmentStatus.value = "active";
+    form.elements.leaveCredits.value = 0;
+    setText("employee-submit-button", "Create Employee");
+    document.getElementById("employee-cancel-button")?.classList.add("hidden");
+  }
+
+  async function createEmployeeAccount(payload) {
+    const { error } = await supabase.rpc("admin_create_employee", {
+      p_employee_no: payload.employee_no,
+      p_email: payload.email,
+      p_password: payload.password,
+      p_first_name: payload.first_name,
+      p_middle_name: payload.middle_name,
+      p_last_name: payload.last_name,
+      p_suffix: payload.suffix,
+      p_department: payload.department,
+      p_position_title: payload.position_title,
+      p_contact_no: payload.contact_no,
+      p_hire_date: payload.hire_date,
+      p_employment_status: payload.employment_status,
+      p_leave_credits: payload.leave_credits
+    });
+
+    if (error) {
+      window.alert(error.message);
+      return;
+    }
+
+    resetEmployeeForm();
+    await loadAdminProfiles();
+    window.alert("Employee account created.");
+  }
+
+  async function updateEmployeeAccount(employeeId, payload) {
+    const { error } = await supabase.rpc("admin_update_employee", {
+      p_employee_id: employeeId,
+      p_employee_no: payload.employee_no,
+      p_email: payload.email,
+      p_password: payload.password || null,
+      p_first_name: payload.first_name,
+      p_middle_name: payload.middle_name,
+      p_last_name: payload.last_name,
+      p_suffix: payload.suffix,
+      p_department: payload.department,
+      p_position_title: payload.position_title,
+      p_contact_no: payload.contact_no,
+      p_hire_date: payload.hire_date,
+      p_employment_status: payload.employment_status,
+      p_leave_credits: payload.leave_credits
+    });
+
+    if (error) {
+      window.alert(error.message);
+      return;
+    }
+
+    resetEmployeeForm();
+    await loadAdminProfiles();
+    window.alert("Employee account updated.");
+  }
+
+  async function deleteEmployeeAccount(employeeId) {
+    const { error } = await supabase.rpc("admin_delete_employee", {
+      p_employee_id: employeeId
+    });
+
+    if (error) {
+      window.alert(error.message);
+      return;
+    }
+
+    if (document.getElementById("employee-record-id")?.value === employeeId) {
+      resetEmployeeForm();
+    }
+
+    await loadAdminProfiles();
+    window.alert("Employee account deleted.");
   }
 
   async function loadAdminRequests() {
@@ -544,6 +782,32 @@
       `;
     }
 
+    const employeesTable = document.getElementById("admin-employees-table");
+    if (employeesTable) {
+      employeesTable.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Department</th>
+              <th>Status</th>
+              <th>Credits</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Juan Dela Cruz</strong><br>EMP-001<br>juan.delacruz@agdangan.gov.ph</td>
+              <td>Treasury<br>Administrative Aide</td>
+              <td><span class="badge approved">Active</span></td>
+              <td>12.50</td>
+              <td><div class="table-actions"><button type="button" class="button button-muted">Edit</button><button type="button" class="button button-danger">Delete</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
     const table = document.getElementById("admin-requests-table");
     if (table) {
       table.innerHTML = `
@@ -580,8 +844,15 @@
     }
   }
 
+  function normalizeOptionalText(value) {
+    const text = String(value || "").trim();
+    return text || null;
+  }
+
   function capitalize(value) {
-    return String(value || "").replace(/^\w/, (match) => match.toUpperCase());
+    return String(value || "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (match) => match.toUpperCase());
   }
 
   function escapeHtml(value) {

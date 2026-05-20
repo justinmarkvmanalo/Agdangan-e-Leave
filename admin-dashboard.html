@@ -60,11 +60,90 @@
     </section>
 
     <section class="dashboard-grid">
+      <article class="dashboard-card dashboard-card-wide">
+        <p class="card-label">Employee Management</p>
+        <h3>Create, Update, and Delete Employees</h3>
+        <form class="auth-form" id="employee-management-form">
+          <input type="hidden" id="employee-record-id" name="employeeRecordId">
+          <div class="field-grid">
+            <div class="field">
+              <label for="employee-no">Employee Number</label>
+              <input id="employee-no" name="employeeNo" type="text" placeholder="EMP-001" required>
+            </div>
+            <div class="field">
+              <label for="employee-email">Email</label>
+              <input id="employee-email" name="email" type="email" placeholder="employee@agdangan.gov.ph" required>
+            </div>
+            <div class="field">
+              <label for="employee-first-name">First Name</label>
+              <input id="employee-first-name" name="firstName" type="text" required>
+            </div>
+            <div class="field">
+              <label for="employee-last-name">Last Name</label>
+              <input id="employee-last-name" name="lastName" type="text" required>
+            </div>
+            <div class="field">
+              <label for="employee-middle-name">Middle Name</label>
+              <input id="employee-middle-name" name="middleName" type="text">
+            </div>
+            <div class="field">
+              <label for="employee-suffix">Suffix</label>
+              <input id="employee-suffix" name="suffix" type="text" placeholder="Jr., III">
+            </div>
+            <div class="field">
+              <label for="employee-department">Department</label>
+              <input id="employee-department" name="department" type="text" required>
+            </div>
+            <div class="field">
+              <label for="employee-position-title">Position Title</label>
+              <input id="employee-position-title" name="positionTitle" type="text" required>
+            </div>
+            <div class="field">
+              <label for="employee-contact-no">Contact Number</label>
+              <input id="employee-contact-no" name="contactNo" type="text">
+            </div>
+            <div class="field">
+              <label for="employee-hire-date">Hire Date</label>
+              <input id="employee-hire-date" name="hireDate" type="date">
+            </div>
+            <div class="field">
+              <label for="employee-status">Employment Status</label>
+              <select id="employee-status" name="employmentStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="resigned">Resigned</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="employee-leave-credits">Leave Credits</label>
+              <input id="employee-leave-credits" name="leaveCredits" type="number" min="0" step="0.25" value="0">
+            </div>
+            <div class="field field-full">
+              <label for="employee-password">Password</label>
+              <input id="employee-password" name="password" type="password" placeholder="Required when creating. Leave blank to keep current password on update.">
+              <p class="helper-text">Create mode requires a password. Update mode only changes the password when you enter a new one.</p>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="button button-primary" id="employee-submit-button">Create Employee</button>
+            <button type="button" class="button button-muted hidden" id="employee-cancel-button">Cancel Edit</button>
+          </div>
+        </form>
+      </article>
+
       <article class="dashboard-card">
         <p class="card-label">Approval Queue</p>
         <h3>Leave Requests</h3>
         <div id="admin-requests-table">
           <p class="empty-state">No leave requests loaded yet.</p>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <p class="card-label">Employee Records</p>
+        <h3>Manage Accounts</h3>
+        <div id="admin-employees-table">
+          <p class="empty-state">No employee account data loaded yet.</p>
         </div>
       </article>
 

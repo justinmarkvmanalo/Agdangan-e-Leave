@@ -233,6 +233,233 @@ with check (
   )
 );
 
+create or replace function public.is_admin_user(p_user_id uuid default auth.uid())
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = p_user_id and role = 'admin'
+  );
+$$;
+
+create or replace function public.admin_create_employee(
+  p_employee_no text,
+  p_email text,
+  p_password text,
+  p_first_name text,
+  p_middle_name text default null,
+  p_last_name text default null,
+  p_suffix text default null,
+  p_department text default null,
+  p_position_title text default null,
+  p_contact_no text default null,
+  p_hire_date date default null,
+  p_employment_status public.employment_status default 'active',
+  p_leave_credits numeric default 0
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_employee_id uuid := gen_random_uuid();
+  v_email text := lower(trim(p_email));
+begin
+  if not public.is_admin_user() then
+    raise exception 'Only admins can create employee accounts.';
+  end if;
+
+  if coalesce(trim(p_employee_no), '') = '' then
+    raise exception 'Employee number is required.';
+  end if;
+
+  if coalesce(v_email, '') = '' then
+    raise exception 'Email is required.';
+  end if;
+
+  if coalesce(trim(p_password), '') = '' then
+    raise exception 'Password is required.';
+  end if;
+
+  insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    confirmation_token,
+    email_change,
+    email_change_token_new,
+    recovery_token
+  )
+  values (
+    '00000000-0000-0000-0000-000000000000',
+    v_employee_id,
+    'authenticated',
+    'authenticated',
+    v_email,
+    crypt(p_password, gen_salt('bf')),
+    now(),
+    jsonb_build_object('provider', 'email', 'providers', jsonb_build_array('email')),
+    jsonb_build_object(
+      'employee_no', trim(p_employee_no),
+      'role', 'employee',
+      'first_name', trim(p_first_name),
+      'middle_name', nullif(trim(p_middle_name), ''),
+      'last_name', trim(p_last_name),
+      'suffix', nullif(trim(p_suffix), ''),
+      'department', trim(p_department),
+      'position_title', trim(p_position_title),
+      'contact_no', nullif(trim(p_contact_no), '')
+    ),
+    now(),
+    now(),
+    '',
+    '',
+    '',
+    ''
+  );
+
+  update public.profiles
+  set
+    email = v_email,
+    employee_no = trim(p_employee_no),
+    first_name = trim(p_first_name),
+    middle_name = nullif(trim(p_middle_name), ''),
+    last_name = trim(p_last_name),
+    suffix = nullif(trim(p_suffix), ''),
+    department = trim(p_department),
+    position_title = trim(p_position_title),
+    contact_no = nullif(trim(p_contact_no), ''),
+    hire_date = p_hire_date,
+    employment_status = p_employment_status,
+    leave_credits = coalesce(p_leave_credits, 0),
+    is_approved = true
+  where id = v_employee_id and role = 'employee';
+
+  return v_employee_id;
+end;
+$$;
+
+create or replace function public.admin_update_employee(
+  p_employee_id uuid,
+  p_employee_no text,
+  p_email text,
+  p_password text default null,
+  p_first_name text default null,
+  p_middle_name text default null,
+  p_last_name text default null,
+  p_suffix text default null,
+  p_department text default null,
+  p_position_title text default null,
+  p_contact_no text default null,
+  p_hire_date date default null,
+  p_employment_status public.employment_status default 'active',
+  p_leave_credits numeric default 0
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_email text := lower(trim(p_email));
+begin
+  if not public.is_admin_user() then
+    raise exception 'Only admins can update employee accounts.';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles
+    where id = p_employee_id and role = 'employee'
+  ) then
+    raise exception 'Employee account not found.';
+  end if;
+
+  update auth.users
+  set
+    email = v_email,
+    encrypted_password = case
+      when coalesce(trim(p_password), '') = '' then encrypted_password
+      else crypt(p_password, gen_salt('bf'))
+    end,
+    raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object(
+      'employee_no', trim(p_employee_no),
+      'role', 'employee',
+      'first_name', trim(p_first_name),
+      'middle_name', nullif(trim(p_middle_name), ''),
+      'last_name', trim(p_last_name),
+      'suffix', nullif(trim(p_suffix), ''),
+      'department', trim(p_department),
+      'position_title', trim(p_position_title),
+      'contact_no', nullif(trim(p_contact_no), '')
+    ),
+    email_confirmed_at = coalesce(email_confirmed_at, now()),
+    updated_at = now()
+  where id = p_employee_id;
+
+  update public.profiles
+  set
+    email = v_email,
+    employee_no = trim(p_employee_no),
+    first_name = trim(p_first_name),
+    middle_name = nullif(trim(p_middle_name), ''),
+    last_name = trim(p_last_name),
+    suffix = nullif(trim(p_suffix), ''),
+    department = trim(p_department),
+    position_title = trim(p_position_title),
+    contact_no = nullif(trim(p_contact_no), ''),
+    hire_date = p_hire_date,
+    employment_status = p_employment_status,
+    leave_credits = coalesce(p_leave_credits, 0)
+  where id = p_employee_id and role = 'employee';
+
+  return p_employee_id;
+end;
+$$;
+
+create or replace function public.admin_delete_employee(p_employee_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if not public.is_admin_user() then
+    raise exception 'Only admins can delete employee accounts.';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles
+    where id = p_employee_id and role = 'employee'
+  ) then
+    raise exception 'Employee account not found.';
+  end if;
+
+  delete from auth.users
+  where id = p_employee_id;
+end;
+$$;
+
+grant execute on function public.is_admin_user(uuid) to authenticated;
+grant execute on function public.admin_create_employee(text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
+grant execute on function public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
+grant execute on function public.admin_delete_employee(uuid) to authenticated;
+
 -- Standard admin account policy:
 -- This project is limited to one admin row only.
 -- The unique partial index above blocks a second admin profile.
