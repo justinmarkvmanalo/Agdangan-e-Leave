@@ -38,6 +38,7 @@
     const roleInput = document.getElementById("selected-role");
     const loginForm = document.getElementById("login-form");
     const demoFillButton = document.getElementById("demo-fill");
+    const adminCreateForm = document.getElementById("admin-create-form");
 
     if (configStatus) {
       configStatus.textContent = isConfigured
@@ -54,6 +55,9 @@
         subtitle.textContent = role === "admin"
           ? "Use your administrator email and password to review and approve leave requests."
           : "Use your employee email and password to open your leave dashboard.";
+        if (adminCreateForm) {
+          adminCreateForm.classList.toggle("hidden", role !== "admin");
+        }
       });
     });
 
@@ -106,6 +110,71 @@
 
       window.location.href = profile.role === "admin" ? "admin-dashboard.html" : "employee-dashboard.html";
     });
+
+    if (adminCreateForm) {
+      adminCreateForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!supabase) {
+          window.alert("Supabase is not configured yet. Update supabase-config.js first.");
+          return;
+        }
+
+        const adminCheck = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("role", "admin")
+          .limit(1);
+
+        if (adminCheck.error) {
+          window.alert(adminCheck.error.message);
+          return;
+        }
+
+        if (adminCheck.data && adminCheck.data.length > 0) {
+          window.alert("An admin account already exists.");
+          return;
+        }
+
+        const formData = new FormData(adminCreateForm);
+        const email = String(formData.get("email") || "").trim();
+        const password = String(formData.get("password") || "");
+        const firstName = String(formData.get("firstName") || "").trim();
+        const middleName = String(formData.get("middleName") || "").trim();
+        const lastName = String(formData.get("lastName") || "").trim();
+        const department = String(formData.get("department") || "").trim();
+        const positionTitle = String(formData.get("positionTitle") || "").trim();
+
+        const signUpResult = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              role: "admin",
+              first_name: firstName,
+              middle_name: middleName,
+              last_name: lastName,
+              department: department,
+              position_title: positionTitle
+            }
+          }
+        });
+
+        if (signUpResult.error) {
+          window.alert(signUpResult.error.message);
+          return;
+        }
+
+        window.alert("Admin account created. You can now sign in using the admin login form.");
+        adminCreateForm.reset();
+        document.getElementById("admin-first-name").value = "Justin Mark";
+        document.getElementById("admin-middle-name").value = "V.";
+        document.getElementById("admin-last-name").value = "Manalo";
+        document.getElementById("admin-department").value = "Mayors office";
+        document.getElementById("admin-position-title").value = "IT Support";
+        document.getElementById("admin-email").value = "justinmarkvmanalo07@gmail.com";
+      });
+    }
   }
 
   async function initEmployeeDashboard() {

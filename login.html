@@ -84,6 +84,56 @@
           This system is configured for one standard admin account only. Do not add public admin registration.
         </p>
       </form>
+
+      <form class="auth-form hidden" id="admin-create-form">
+        <h3>Create Temporary Admin</h3>
+        <p class="muted">Use this once to create the single admin account, then continue using normal sign in.</p>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="admin-first-name">First Name</label>
+            <input id="admin-first-name" name="firstName" type="text" value="Justin Mark" required>
+          </div>
+
+          <div class="field">
+            <label for="admin-middle-name">Middle Name</label>
+            <input id="admin-middle-name" name="middleName" type="text" value="V." required>
+          </div>
+
+          <div class="field">
+            <label for="admin-last-name">Last Name</label>
+            <input id="admin-last-name" name="lastName" type="text" value="Manalo" required>
+          </div>
+
+          <div class="field">
+            <label for="admin-department">Department</label>
+            <input id="admin-department" name="department" type="text" value="Mayors office" required>
+          </div>
+
+          <div class="field">
+            <label for="admin-position-title">Position Title</label>
+            <input id="admin-position-title" name="positionTitle" type="text" value="IT Support" required>
+          </div>
+
+          <div class="field field-full">
+            <label for="admin-email">Admin Email</label>
+            <input id="admin-email" name="email" type="email" value="justinmarkvmanalo07@gmail.com" required>
+          </div>
+
+          <div class="field field-full">
+            <label for="admin-password">Admin Password</label>
+            <input id="admin-password" name="password" type="password" placeholder="Create admin password" required>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="button button-primary">Create Admin Account</button>
+        </div>
+
+        <p class="helper-text">
+          This form is temporary and intended for the first standard admin only.
+        </p>
+      </form>
     </section>
   </main>
 
