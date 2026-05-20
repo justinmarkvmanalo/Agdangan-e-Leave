@@ -6,19 +6,19 @@
   <title>Agdangan e-Leave</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
-    <div class="brand">
+    <a class="brand" href="index.html">
       <img src="Copilot_20260520_200219.png" alt="Agdangan e-Leave official logo" class="brand-logo">
       <div class="brand-copy">
         <span class="eyebrow">Republic of the Philippines</span>
         <h1>Agdangan e-Leave</h1>
         <p>Municipal digital leave request services for employees.</p>
       </div>
-    </div>
+    </a>
 
     <nav class="site-nav" aria-label="Primary navigation">
       <a href="#home" class="active">Home</a>
@@ -31,66 +31,80 @@
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <p class="hero-kicker">Online Leave Management</p>
-        <h2>Handle official leave requests with a cleaner, faster municipal workflow.</h2>
+        <h2>Official leave filing for Agdangan employees and administrators.</h2>
         <p class="hero-text">
-          Designed around the visual direction of your reference layout, this homepage gives Agdangan e-Leave a formal
-          landing experience with strong branding, clear calls to action, and a government-ready presentation.
+          A streamlined portal for account login, leave application, request tracking, and approval management with
+          separate admin and employee access.
         </p>
         <div class="hero-actions">
-          <a href="#service" class="button button-primary">View Service</a>
-          <a href="#highlights" class="button button-secondary">Learn More</a>
+          <a href="login.html" class="button button-primary">Open Login Portal</a>
+          <a href="#service" class="button button-secondary">Explore Service</a>
         </div>
       </div>
     </section>
 
     <section class="highlights" id="highlights">
       <article class="panel panel-intro">
-        <p class="section-label">Why It Works</p>
-        <h3>Built for a public-facing system that still feels modern.</h3>
+        <p class="section-label">Platform Overview</p>
+        <h3>One portal, two roles, clear accountability.</h3>
         <p>
-          The layout keeps the wide hero, layered text, and strong visual hierarchy from the design reference while
-          adapting it for an official e-leave platform.
+          Employees can submit leave requests and monitor approval status. Administrators can review applications,
+          manage records, and maintain an organized digital workflow.
         </p>
       </article>
 
       <article class="panel panel-feature">
         <span>01</span>
-        <h3>Official Identity</h3>
-        <p>Your provided logo is treated as the primary visual mark across the page.</p>
+        <h3>Employee Access</h3>
+        <p>Employees sign in to submit requests, view history, and track approved or pending leave.</p>
       </article>
 
       <article class="panel panel-feature">
         <span>02</span>
-        <h3>Focused Navigation</h3>
-        <p>The header only keeps `Home` and `Service`, as requested.</p>
+        <h3>Admin Access</h3>
+        <p>Admins sign in to verify user data, review requests, and approve or reject applications.</p>
       </article>
 
       <article class="panel panel-feature">
         <span>03</span>
-        <h3>Service-Ready Layout</h3>
-        <p>Below the hero, the page introduces the main e-leave service in a clear, accessible format.</p>
+        <h3>Supabase Ready</h3>
+        <p>The pages are prepared for Supabase Auth, profiles, and leave request records.</p>
       </article>
     </section>
 
     <section class="service-section" id="service">
       <div class="service-copy">
         <p class="section-label">Service</p>
-        <h3>Agdangan e-Leave Portal</h3>
+        <h3>Agdangan e-Leave Digital Service</h3>
         <p>
-          Submit leave requests, monitor approval progress, and maintain employee leave records through a single
-          organized digital service.
+          The service flow is split into a secure login screen, an employee dashboard for filing leave, and an admin
+          dashboard for approval and monitoring.
         </p>
+        <div class="service-links">
+          <a href="login.html" class="mini-card">
+            <strong>Login Portal</strong>
+            <span>Entry point for admin and employee accounts.</span>
+          </a>
+          <a href="employee-dashboard.html" class="mini-card">
+            <strong>Employee Dashboard</strong>
+            <span>Submit and track leave requests.</span>
+          </a>
+          <a href="admin-dashboard.html" class="mini-card">
+            <strong>Admin Dashboard</strong>
+            <span>Review, approve, and monitor records.</span>
+          </a>
+        </div>
       </div>
 
       <div class="service-card">
-        <h4>Core Service Access</h4>
+        <h4>Core Service Coverage</h4>
         <ul>
-          <li>File vacation and sick leave requests online</li>
-          <li>Track request status and approval movement</li>
-          <li>Maintain consistent digital employee records</li>
-          <li>Reduce paperwork and manual follow-up</li>
+          <li>Email and password login through Supabase Auth</li>
+          <li>Role-based access for admin and employee accounts</li>
+          <li>Leave filing form with dates, leave type, and reason</li>
+          <li>Admin review tools for approval, rejection, and notes</li>
         </ul>
-        <a href="#home" class="button button-primary">Back to Home</a>
+        <a href="login.html" class="button button-primary">Go to Login</a>
       </div>
     </section>
   </main>
