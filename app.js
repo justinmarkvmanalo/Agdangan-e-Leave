@@ -94,7 +94,7 @@
       const profile = await fetchCurrentProfile();
 
       if (!profile) {
-        window.alert("Profile record not found. Confirm the user exists in public.profiles.");
+        window.alert("Profile record not found. The login worked, but the app could not load or create the matching profile.");
         return;
       }
 
@@ -171,19 +171,83 @@
     }
 
     const { data: authData } = await supabase.auth.getUser();
-    const userId = authData.user && authData.user.id;
+    const authUser = authData.user;
+    const userId = authUser && authUser.id;
 
     if (!userId) {
       return null;
     }
 
-    const { data, error } = await supabase
+    const profileById = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
+      .maybeSingle();
+
+    if (!profileById.error && profileById.data) {
+      return profileById.data;
+    }
+
+    const ensuredProfile = await ensureProfileForCurrentUser(authUser);
+    if (ensuredProfile) {
+      return ensuredProfile;
+    }
+
+    const profileByEmail = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("email", authUser.email)
+      .maybeSingle();
+
+    if (!profileByEmail.error && profileByEmail.data) {
+      console.warn("Profile row exists by email but not by auth user id.", {
+        authUserId: userId,
+        profileId: profileByEmail.data.id
+      });
+      return profileByEmail.data;
+    }
+
+    console.error("Unable to load profile.", {
+      byIdError: profileById.error,
+      byEmailError: profileByEmail.error,
+      authUserId: userId,
+      authEmail: authUser.email
+    });
+    return null;
+  }
+
+  async function ensureProfileForCurrentUser(authUser) {
+    if (!authUser || !authUser.id || !authUser.email) {
+      return null;
+    }
+
+    const meta = authUser.user_metadata || {};
+    const role = meta.role === "admin" ? "admin" : "employee";
+    const profilePayload = {
+      id: authUser.id,
+      email: authUser.email,
+      employee_no: meta.employee_no || null,
+      role,
+      first_name: meta.first_name || authUser.email.split("@")[0] || "User",
+      middle_name: meta.middle_name || null,
+      last_name: meta.last_name || "Account",
+      suffix: meta.suffix || null,
+      department: meta.department || "Unassigned",
+      position_title: meta.position_title || (role === "admin" ? "Administrator" : "Employee"),
+      contact_no: meta.contact_no || null,
+      is_approved: true,
+      employment_status: "active",
+      leave_credits: 0
+    };
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .upsert(profilePayload, { onConflict: "id" })
+      .select()
       .single();
 
     if (error) {
+      console.error("Unable to bootstrap profile for current user.", error);
       return null;
     }
 

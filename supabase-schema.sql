@@ -151,6 +151,13 @@ to authenticated
 using (auth.uid() = id)
 with check (auth.uid() = id);
 
+drop policy if exists "users_can_insert_own_profile" on public.profiles;
+create policy "users_can_insert_own_profile"
+on public.profiles
+for insert
+to authenticated
+with check (auth.uid() = id);
+
 drop policy if exists "admins_can_view_all_profiles" on public.profiles;
 create policy "admins_can_view_all_profiles"
 on public.profiles
