@@ -66,6 +66,9 @@ create index if not exists idx_profiles_role on public.profiles(role);
 create index if not exists idx_profiles_employee_no on public.profiles(employee_no);
 create index if not exists idx_leave_requests_employee_id on public.leave_requests(employee_id);
 create index if not exists idx_leave_requests_status on public.leave_requests(status);
+create unique index if not exists only_one_admin_allowed
+on public.profiles (role)
+where role = 'admin';
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -223,11 +226,15 @@ with check (
   )
 );
 
--- Signup metadata example for an admin account:
+-- Standard admin account policy:
+-- This project is limited to one admin row only.
+-- The unique partial index above blocks a second admin profile.
+--
+-- Admin account target:
 -- {
 --   "role": "admin",
---   "first_name": "System",
---   "last_name": "Administrator",
+--   "first_name": "Justin Mark V",
+--   "last_name": "Manalo",
 --   "department": "HR",
 --   "position_title": "Municipal Administrator"
 -- }
