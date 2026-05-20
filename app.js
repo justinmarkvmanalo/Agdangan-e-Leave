@@ -471,7 +471,6 @@
       const formData = new FormData(form);
       const employeeId = String(formData.get("employeeRecordId") || "").trim();
       const payload = {
-        employee_no: String(formData.get("employeeNo") || "").trim(),
         email: String(formData.get("email") || "").trim(),
         first_name: String(formData.get("firstName") || "").trim(),
         middle_name: normalizeOptionalText(formData.get("middleName")),
@@ -513,7 +512,6 @@
     }
 
     form.elements.employeeRecordId.value = profile.id || "";
-    form.elements.employeeNo.value = profile.employee_no || "";
     form.elements.email.value = profile.email || "";
     form.elements.firstName.value = profile.first_name || "";
     form.elements.middleName.value = profile.middle_name || "";
@@ -526,6 +524,7 @@
     form.elements.employmentStatus.value = profile.employment_status || "active";
     form.elements.leaveCredits.value = Number(profile.leave_credits || 0);
     form.elements.password.value = "";
+    setText("employee-number-preview", profile.employee_no || "Auto-generated on create");
 
     setText("employee-submit-button", "Update Employee");
     document.getElementById("employee-cancel-button")?.classList.remove("hidden");
@@ -542,13 +541,13 @@
     form.elements.employeeRecordId.value = "";
     form.elements.employmentStatus.value = "active";
     form.elements.leaveCredits.value = 0;
+    setText("employee-number-preview", "Auto-generated on create");
     setText("employee-submit-button", "Create Employee");
     document.getElementById("employee-cancel-button")?.classList.add("hidden");
   }
 
   async function createEmployeeAccount(payload) {
     const { error } = await supabase.rpc("admin_create_employee", {
-      p_employee_no: payload.employee_no,
       p_email: payload.email,
       p_password: payload.password,
       p_first_name: payload.first_name,
@@ -576,7 +575,6 @@
   async function updateEmployeeAccount(employeeId, payload) {
     const { error } = await supabase.rpc("admin_update_employee", {
       p_employee_id: employeeId,
-      p_employee_no: payload.employee_no,
       p_email: payload.email,
       p_password: payload.password || null,
       p_first_name: payload.first_name,
@@ -729,7 +727,7 @@
     fillEmployeeHeader({
       first_name: "Juan",
       last_name: "Dela Cruz",
-      employee_no: "EMP-001",
+      employee_no: "EMP-0001",
       department: "Treasury",
       position_title: "Administrative Aide",
       leave_credits: 12.5
@@ -765,13 +763,14 @@
     setText("stat-admin-pending", "5");
     setText("stat-admin-approved", "16");
     setText("stat-admin-rejected", "2");
+    setText("employee-number-preview", "Auto-generated on create");
 
     const list = document.getElementById("admin-summary-list");
     if (list) {
       list.innerHTML = `
         <li>
           <strong>Juan Dela Cruz</strong>
-          <div>EMP-001</div>
+          <div>EMP-0001</div>
           <div>Treasury | Administrative Aide</div>
         </li>
         <li>
@@ -797,7 +796,7 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Juan Dela Cruz</strong><br>EMP-001<br>juan.delacruz@agdangan.gov.ph</td>
+              <td><strong>Juan Dela Cruz</strong><br>EMP-0001<br>juan.delacruz@agdangan.gov.ph</td>
               <td>Treasury<br>Administrative Aide</td>
               <td><span class="badge approved">Active</span></td>
               <td>12.50</td>

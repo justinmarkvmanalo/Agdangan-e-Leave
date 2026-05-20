@@ -70,6 +70,45 @@ create unique index if not exists only_one_admin_allowed
 on public.profiles (role)
 where role = 'admin';
 
+create sequence if not exists public.employee_no_seq start 1;
+
+create or replace function public.sync_employee_no_sequence()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_max_no bigint;
+begin
+  select coalesce(
+    max(nullif(regexp_replace(employee_no, '\D', '', 'g'), '')::bigint),
+    0
+  )
+  into v_max_no
+  from public.profiles
+  where role = 'employee';
+
+  perform setval('public.employee_no_seq', greatest(v_max_no, 1), v_max_no > 0);
+end;
+$$;
+
+select public.sync_employee_no_sequence();
+
+create or replace function public.next_employee_no()
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_next_no bigint;
+begin
+  v_next_no := nextval('public.employee_no_seq');
+  return 'EMP-' || lpad(v_next_no::text, 4, '0');
+end;
+$$;
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -92,7 +131,11 @@ begin
   )
   values (
     new.id,
-    new.raw_user_meta_data ->> 'employee_no',
+    case
+      when coalesce((new.raw_user_meta_data ->> 'role')::public.user_role, 'employee') = 'employee'
+        then coalesce(new.raw_user_meta_data ->> 'employee_no', public.next_employee_no())
+      else new.raw_user_meta_data ->> 'employee_no'
+    end,
     coalesce((new.raw_user_meta_data ->> 'role')::public.user_role, 'employee'),
     new.email,
     coalesce(new.raw_user_meta_data ->> 'first_name', ''),
@@ -247,8 +290,8 @@ as $$
   );
 $$;
 
+drop function if exists public.admin_create_employee(text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric);
 create or replace function public.admin_create_employee(
-  p_employee_no text,
   p_email text,
   p_password text,
   p_first_name text,
@@ -270,13 +313,10 @@ as $$
 declare
   v_employee_id uuid := gen_random_uuid();
   v_email text := lower(trim(p_email));
+  v_employee_no text := public.next_employee_no();
 begin
   if not public.is_admin_user() then
     raise exception 'Only admins can create employee accounts.';
-  end if;
-
-  if coalesce(trim(p_employee_no), '') = '' then
-    raise exception 'Employee number is required.';
   end if;
 
   if coalesce(v_email, '') = '' then
@@ -314,7 +354,7 @@ begin
     now(),
     jsonb_build_object('provider', 'email', 'providers', jsonb_build_array('email')),
     jsonb_build_object(
-      'employee_no', trim(p_employee_no),
+      'employee_no', v_employee_no,
       'role', 'employee',
       'first_name', trim(p_first_name),
       'middle_name', nullif(trim(p_middle_name), ''),
@@ -335,7 +375,7 @@ begin
   update public.profiles
   set
     email = v_email,
-    employee_no = trim(p_employee_no),
+    employee_no = v_employee_no,
     first_name = trim(p_first_name),
     middle_name = nullif(trim(p_middle_name), ''),
     last_name = trim(p_last_name),
@@ -353,9 +393,9 @@ begin
 end;
 $$;
 
+drop function if exists public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric);
 create or replace function public.admin_update_employee(
   p_employee_id uuid,
-  p_employee_no text,
   p_email text,
   p_password text default null,
   p_first_name text default null,
@@ -397,7 +437,11 @@ begin
       else crypt(p_password, gen_salt('bf'))
     end,
     raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object(
-      'employee_no', trim(p_employee_no),
+      'employee_no', (
+        select employee_no
+        from public.profiles
+        where id = p_employee_id
+      ),
       'role', 'employee',
       'first_name', trim(p_first_name),
       'middle_name', nullif(trim(p_middle_name), ''),
@@ -414,7 +458,6 @@ begin
   update public.profiles
   set
     email = v_email,
-    employee_no = trim(p_employee_no),
     first_name = trim(p_first_name),
     middle_name = nullif(trim(p_middle_name), ''),
     last_name = trim(p_last_name),
@@ -456,8 +499,8 @@ end;
 $$;
 
 grant execute on function public.is_admin_user(uuid) to authenticated;
-grant execute on function public.admin_create_employee(text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
-grant execute on function public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
+grant execute on function public.admin_create_employee(text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
+grant execute on function public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
 grant execute on function public.admin_delete_employee(uuid) to authenticated;
 
 -- Standard admin account policy:
@@ -475,7 +518,7 @@ grant execute on function public.admin_delete_employee(uuid) to authenticated;
 --
 -- Signup metadata example for an employee account:
 -- {
---   "employee_no": "EMP-001",
+--   "employee_no": "EMP-0001",
 --   "role": "employee",
 --   "first_name": "Juan",
 --   "last_name": "Dela Cruz",
