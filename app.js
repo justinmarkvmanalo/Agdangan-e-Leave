@@ -175,11 +175,9 @@
   }
 
   async function fetchAdminProfile(adminId) {
-    const { data, error } = await db
-      .from("admins")
-      .select("*")
-      .eq("id", adminId)
-      .maybeSingle();
+    const { data, error } = await db.rpc("get_admin_profile", {
+      p_admin_id: adminId
+    });
 
     if (error) {
       console.error("Unable to load admin profile.", error);
@@ -190,11 +188,9 @@
   }
 
   async function fetchEmployeeProfile(employeeId) {
-    const { data, error } = await db
-      .from("employees")
-      .select("*")
-      .eq("id", employeeId)
-      .maybeSingle();
+    const { data, error } = await db.rpc("get_employee_profile", {
+      p_employee_id: employeeId
+    });
 
     if (error) {
       console.error("Unable to load employee profile.", error);
@@ -227,11 +223,9 @@
   }
 
   async function loadEmployeeRequests(employeeId) {
-    const { data, error } = await db
-      .from("leave_requests")
-      .select("*")
-      .eq("employee_id", employeeId)
-      .order("created_at", { ascending: false });
+    const { data, error } = await db.rpc("get_employee_leave_requests", {
+      p_employee_id: employeeId
+    });
 
     if (error) {
       window.alert(error.message);
@@ -285,7 +279,14 @@
         reason: String(formData.get("reason") || "")
       };
 
-      const { error } = await db.from("leave_requests").insert(payload);
+      const { error } = await db.rpc("create_leave_request", {
+        p_employee_id: payload.employee_id,
+        p_leave_type: payload.leave_type,
+        p_start_date: payload.start_date,
+        p_end_date: payload.end_date,
+        p_days_requested: payload.days_requested,
+        p_reason: payload.reason
+      });
 
       if (error) {
         window.alert(error.message);
@@ -299,10 +300,15 @@
   }
 
   async function loadAdminProfiles() {
-    const { data, error } = await db
-      .from("employees")
-      .select("id, admin_id, employee_no, email, first_name, middle_name, last_name, suffix, department, position_title, contact_no, employment_status, hire_date, leave_credits")
-      .order("last_name", { ascending: true });
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { data, error } = await db.rpc("get_admin_employees", {
+      p_admin_id: session.userId
+    });
 
     if (error) {
       window.alert(error.message);
@@ -567,10 +573,15 @@
   }
 
   async function loadAdminRequests() {
-    const { data, error } = await db
-      .from("leave_requests")
-      .select("id, leave_type, start_date, end_date, days_requested, reason, status, employee_id, reviewed_by_admin_id")
-      .order("created_at", { ascending: false });
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { data, error } = await db.rpc("get_admin_leave_requests", {
+      p_admin_id: session.userId
+    });
 
     if (error) {
       window.alert(error.message);
@@ -644,14 +655,11 @@
       return;
     }
 
-    const { error } = await db
-      .from("leave_requests")
-      .update({
-        status,
-        reviewed_by_admin_id: session.userId,
-        reviewed_at: new Date().toISOString()
-      })
-      .eq("id", requestId);
+    const { error } = await db.rpc("update_leave_request_status", {
+      p_admin_id: session.userId,
+      p_request_id: requestId,
+      p_status: status
+    });
 
     if (error) {
       window.alert(error.message);

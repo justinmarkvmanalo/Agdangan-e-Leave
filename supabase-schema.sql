@@ -55,9 +55,9 @@ create table if not exists public.leave_requests (
   check (end_date >= start_date)
 );
 
-alter table public.admins disable row level security;
-alter table public.employees disable row level security;
-alter table public.leave_requests disable row level security;
+alter table public.admins enable row level security;
+alter table public.employees enable row level security;
+alter table public.leave_requests enable row level security;
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -149,6 +149,128 @@ begin
       and e.employment_status = 'active'
     limit 1;
   end if;
+end;
+$$;
+
+create or replace function public.get_admin_profile(p_admin_id bigint)
+returns public.admins
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  admin_profile public.admins;
+begin
+  select *
+  into admin_profile
+  from public.admins
+  where id = p_admin_id
+    and is_active = true;
+
+  return admin_profile;
+end;
+$$;
+
+create or replace function public.get_employee_profile(p_employee_id bigint)
+returns public.employees
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  employee_profile public.employees;
+begin
+  select *
+  into employee_profile
+  from public.employees
+  where id = p_employee_id
+    and employment_status = 'active';
+
+  return employee_profile;
+end;
+$$;
+
+create or replace function public.get_admin_employees(p_admin_id bigint)
+returns setof public.employees
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select e.*
+  from public.employees e
+  where e.admin_id = p_admin_id
+  order by e.last_name asc, e.first_name asc;
+end;
+$$;
+
+create or replace function public.get_employee_leave_requests(p_employee_id bigint)
+returns setof public.leave_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select lr.*
+  from public.leave_requests lr
+  where lr.employee_id = p_employee_id
+  order by lr.created_at desc;
+end;
+$$;
+
+create or replace function public.get_admin_leave_requests(p_admin_id bigint)
+returns setof public.leave_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select lr.*
+  from public.leave_requests lr
+  inner join public.employees e on e.id = lr.employee_id
+  where e.admin_id = p_admin_id
+  order by lr.created_at desc;
+end;
+$$;
+
+create or replace function public.create_leave_request(
+  p_employee_id bigint,
+  p_leave_type text,
+  p_start_date date,
+  p_end_date date,
+  p_days_requested integer,
+  p_reason text
+)
+returns public.leave_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_request public.leave_requests;
+begin
+  insert into public.leave_requests (
+    employee_id,
+    leave_type,
+    start_date,
+    end_date,
+    days_requested,
+    reason
+  )
+  values (
+    p_employee_id,
+    trim(p_leave_type),
+    p_start_date,
+    p_end_date,
+    p_days_requested,
+    trim(p_reason)
+  )
+  returning * into new_request;
+
+  return new_request;
 end;
 $$;
 
@@ -266,6 +388,35 @@ as $$
 begin
   delete from public.employees
   where id = p_employee_id;
+end;
+$$;
+
+create or replace function public.update_leave_request_status(
+  p_admin_id bigint,
+  p_request_id bigint,
+  p_status text
+)
+returns public.leave_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_request public.leave_requests;
+begin
+  update public.leave_requests lr
+  set
+    status = p_status,
+    reviewed_by_admin_id = p_admin_id,
+    reviewed_at = now()
+  from public.employees e
+  where lr.id = p_request_id
+    and e.id = lr.employee_id
+    and e.admin_id = p_admin_id
+    and p_status in ('approved', 'rejected')
+  returning lr.* into updated_request;
+
+  return updated_request;
 end;
 $$;
 

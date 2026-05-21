@@ -21,6 +21,11 @@ Setup steps in Supabase:
 3. Run the full SQL file from [supabase-schema.sql](/C:/Users/Justin%20Mark/OneDrive/Desktop/Agdangan%20e-Leave/supabase-schema.sql:1).
 4. Keep using your project URL and anon key in `supabase-config.js`.
 
+RLS note:
+- This version is prepared for `RLS` to stay enabled on `admins`, `employees`, and `leave_requests`.
+- The browser no longer needs direct table reads for the dashboard. It uses `SECURITY DEFINER` RPC functions instead.
+- If you previously enabled `RLS` before these function changes were applied, rerun the full schema file so the new RPCs are created.
+
 Default seeded admin:
 - Email: `admin@agdangan.gov.ph`
 - Password: `password123`
@@ -29,4 +34,5 @@ Notes:
 - Table IDs are `bigint generated always as identity`, so they auto-increment.
 - Employee numbers are generated as `EMP-0001`, `EMP-0002`, and so on.
 - This is a basic project-style setup. Passwords are stored as plain text because you asked to avoid Auth and keep it simple.
-- If you want this to be production-safe later, the next step is password hashing plus server-side access control.
+- `RLS` is not a complete security solution here because this project does not use `supabase.auth`. The browser session is still app-managed, not JWT-backed.
+- If you want this to be production-safe later, the next step is password hashing plus real server-side identity using `supabase.auth` or your own verified backend session.
