@@ -60,50 +60,107 @@
     </section>
 
     <section class="dashboard-grid">
-      <article class="dashboard-card">
-        <p class="card-label">New Request</p>
-        <h3>Submit Leave Application</h3>
-
-        <form class="auth-form" id="leave-request-form">
-          <div class="field-grid">
-            <div class="field">
-              <label for="leave-type">Leave Type</label>
-              <select id="leave-type" name="leaveType" required>
-                <option value="">Select leave type</option>
-                <option value="vacation">Vacation</option>
-                <option value="sick">Sick</option>
-                <option value="emergency">Emergency</option>
-                <option value="maternity">Maternity</option>
-                <option value="paternity">Paternity</option>
-                <option value="special">Special</option>
-              </select>
+      <article class="dashboard-card leave-paper-card">
+        <div class="leave-paper">
+          <div class="leave-paper-topline">
+            <div>
+              <p class="leave-paper-note">Civil Service Form No. 6</p>
+              <p class="leave-paper-note">Revised 2020</p>
             </div>
-
-            <div class="field">
-              <label for="days-requested">Days Requested</label>
-              <input id="days-requested" name="daysRequested" type="number" min="0.5" step="0.5" required>
-            </div>
-
-            <div class="field">
-              <label for="start-date">Start Date</label>
-              <input id="start-date" name="startDate" type="date" required>
-            </div>
-
-            <div class="field">
-              <label for="end-date">End Date</label>
-              <input id="end-date" name="endDate" type="date" required>
-            </div>
-
-            <div class="field field-full">
-              <label for="reason">Reason</label>
-              <textarea id="reason" name="reason" placeholder="State the reason for this leave request." required></textarea>
-            </div>
+            <div class="leave-paper-stamp">Stamp of Date of Filing</div>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="button button-primary">Submit Request</button>
+          <div class="leave-paper-heading">
+            <p class="leave-paper-government">Republic of the Philippines</p>
+            <p class="leave-paper-government">Municipality of Agdangan</p>
+            <p class="leave-paper-government">Official e-Leave Service</p>
+            <h3>Application for Leave</h3>
           </div>
-        </form>
+
+          <form class="leave-paper-form" id="leave-request-form">
+            <div class="leave-paper-row">
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">1. Office / Department</span>
+                <div class="leave-paper-line">Employee unit will appear from your profile during review.</div>
+              </div>
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">2. Applicant</span>
+                <div class="leave-paper-line">Employee record from this account</div>
+              </div>
+            </div>
+
+            <div class="leave-paper-row leave-paper-row-compact">
+              <div class="leave-paper-cell">
+                <label class="leave-paper-label" for="start-date">3. Date of Filing / Start Date</label>
+                <input id="start-date" name="startDate" type="date" required>
+              </div>
+              <div class="leave-paper-cell">
+                <label class="leave-paper-label" for="end-date">4. End Date</label>
+                <input id="end-date" name="endDate" type="date" required>
+              </div>
+              <div class="leave-paper-cell">
+                <label class="leave-paper-label" for="days-requested">5. Working Days</label>
+                <input id="days-requested" name="daysRequested" type="number" min="0.5" step="0.5" required>
+              </div>
+            </div>
+
+            <div class="leave-paper-section-title">6. Details of Application</div>
+
+            <div class="leave-paper-panel-grid">
+              <fieldset class="leave-paper-panel">
+                <legend>6.A Type of Leave to Be Availed Of</legend>
+                <div class="leave-type-grid">
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="vacation" required>
+                    <span>Vacation Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="sick" required>
+                    <span>Sick Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="emergency" required>
+                    <span>Emergency Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="maternity" required>
+                    <span>Maternity Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="paternity" required>
+                    <span>Paternity Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="special" required>
+                    <span>Special Leave</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="leave-paper-panel">
+                <legend>6.B Details of Leave</legend>
+                <div class="field">
+                  <label for="reason">Purpose / Reason</label>
+                  <textarea id="reason" name="reason" placeholder="State the reason for this leave request." required></textarea>
+                </div>
+                <p class="helper-text">Use a clear explanation so the approving office can review the request faster.</p>
+              </fieldset>
+            </div>
+
+            <div class="leave-paper-row leave-paper-row-footer">
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">6.C Inclusive Dates</span>
+                <div class="leave-paper-line">From the selected start date up to the selected end date.</div>
+              </div>
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">6.D Applicant Action</span>
+                <div class="form-actions">
+                  <button type="submit" class="button button-primary">Submit Leave Application</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </article>
 
       <article class="dashboard-card">

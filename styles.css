@@ -54,33 +54,34 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.1rem;
-  min-height: 68px;
-  padding: 0.35rem 3.5rem;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
+  gap: 1rem;
+  min-height: 60px;
+  padding: 0.22rem 3rem;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 0.7rem;
   min-width: 0;
 }
 
 .brand-logo {
-  width: 240px;
+  width: 110px;
   max-width: 100%;
   height: auto;
   flex: 0 0 auto;
-  filter: drop-shadow(0 8px 18px rgba(16, 49, 90, 0.14));
+  filter: none;
 }
 
 .brand-copy {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 0.02rem;
 }
 
 .brand-copy h1,
@@ -95,7 +96,7 @@ textarea {
 .stat-label,
 .card-label {
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   font-size: 0.74rem;
   font-weight: 800;
 }
@@ -108,24 +109,24 @@ textarea {
 }
 
 .brand-copy h1 {
-  margin-top: 0.02rem;
-  font-size: clamp(1.12rem, 1.3vw, 1.55rem);
+  margin-top: 0;
+  font-size: clamp(0.9rem, 1.15vw, 1.2rem);
   line-height: 1;
   color: var(--blue);
 }
 
 .brand-copy p {
-  margin-top: 0.1rem;
+  margin-top: 0;
   color: var(--ink-soft);
-  font-size: 0.78rem;
-  line-height: 1.2;
+  font-size: 0.72rem;
+  line-height: 1.08;
 }
 
 .site-nav,
 .utility-nav {
   display: flex;
   align-items: center;
-  gap: 1.4rem;
+  gap: 1.9rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -134,7 +135,8 @@ textarea {
 .utility-nav a,
 .utility-nav button {
   position: relative;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.2rem;
+  font-size: 0.92rem;
   color: var(--navy);
   background: none;
   border: 0;
@@ -550,6 +552,197 @@ textarea {
   color: var(--navy);
 }
 
+.leave-paper-card {
+  padding: 1rem;
+  background: linear-gradient(180deg, rgba(244, 248, 252, 0.96), rgba(233, 241, 248, 0.92));
+}
+
+.leave-paper {
+  background: #fffdf8;
+  border: 1px solid rgba(32, 53, 82, 0.18);
+  box-shadow: 0 16px 34px rgba(16, 49, 90, 0.12);
+}
+
+.leave-paper-topline,
+.leave-paper-row,
+.leave-paper-panel-grid {
+  display: grid;
+}
+
+.leave-paper-topline {
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.25rem;
+}
+
+.leave-paper-note,
+.leave-paper-government {
+  margin: 0;
+}
+
+.leave-paper-note {
+  font-size: 0.76rem;
+  font-style: italic;
+  line-height: 1.25;
+}
+
+.leave-paper-stamp {
+  align-self: start;
+  min-width: 9.5rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(32, 53, 82, 0.22);
+  text-align: center;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.leave-paper-heading {
+  padding: 0.35rem 1.25rem 1rem;
+  text-align: center;
+  border-bottom: 2px solid rgba(32, 53, 82, 0.34);
+}
+
+.leave-paper-government {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #222f42;
+}
+
+.leave-paper-heading h3 {
+  margin: 0.85rem 0 0;
+  font-size: clamp(1.8rem, 2.7vw, 2.45rem);
+  text-transform: uppercase;
+  color: #111c2d;
+}
+
+.leave-paper-form {
+  display: grid;
+}
+
+.leave-paper-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.leave-paper-row-compact {
+  grid-template-columns: 1.15fr 1.15fr 0.7fr;
+}
+
+.leave-paper-cell,
+.leave-paper-panel {
+  padding: 0.85rem 1rem;
+  border-right: 1px solid rgba(32, 53, 82, 0.34);
+  border-bottom: 1px solid rgba(32, 53, 82, 0.34);
+}
+
+.leave-paper-row > .leave-paper-cell:last-child,
+.leave-paper-row-footer > .leave-paper-cell:last-child {
+  border-right: 0;
+}
+
+.leave-paper-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1b2d46;
+}
+
+.leave-paper-line {
+  min-height: 2.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(32, 53, 82, 0.5);
+  font-size: 0.92rem;
+  color: rgba(19, 32, 51, 0.74);
+}
+
+.leave-paper-section-title {
+  padding: 0.4rem 1rem;
+  border-top: 1px solid rgba(32, 53, 82, 0.34);
+  border-bottom: 1px solid rgba(32, 53, 82, 0.34);
+  text-align: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #19283e;
+  background: rgba(214, 222, 233, 0.44);
+}
+
+.leave-paper-panel-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.leave-paper-panel {
+  min-width: 0;
+  margin: 0;
+  border-top: 0;
+  border-left: 0;
+  border-right: 1px solid rgba(32, 53, 82, 0.34);
+  border-bottom: 1px solid rgba(32, 53, 82, 0.34);
+}
+
+.leave-paper-panel:last-child {
+  border-right: 0;
+}
+
+.leave-paper-panel legend {
+  padding: 0 0.35rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #18263b;
+}
+
+.leave-type-grid {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.35rem;
+}
+
+.leave-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.leave-option input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.leave-paper-panel .field label {
+  color: #1b2d46;
+}
+
+.leave-paper-panel .field textarea,
+.leave-paper-row input {
+  border-radius: 0;
+  border: 1px solid rgba(32, 53, 82, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: none;
+}
+
+.leave-paper-panel .field textarea {
+  min-height: 11rem;
+}
+
+.leave-paper-row input {
+  padding: 0.8rem 0.85rem;
+}
+
+.leave-paper-row-footer {
+  grid-template-columns: 1.25fr 0.75fr;
+}
+
+.leave-paper-row-footer .form-actions {
+  justify-content: flex-end;
+  margin-top: 1.8rem;
+}
+
 .request-list {
   display: grid;
   gap: 1rem;
@@ -619,7 +812,8 @@ textarea {
   .service-section,
   .app-layout,
   .stats-grid,
-  .dashboard-grid {
+  .dashboard-grid,
+  .leave-paper-panel-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -640,8 +834,8 @@ textarea {
     align-items: flex-start;
     gap: 0.7rem;
     min-height: auto;
-    padding-top: 0.55rem;
-    padding-bottom: 0.55rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
   }
 
   .field-grid {
@@ -655,15 +849,15 @@ textarea {
   }
 
   .brand-logo {
-    width: 196px;
+    width: 96px;
   }
 
   .brand-copy h1 {
-    font-size: 1.02rem;
+    font-size: 0.9rem;
   }
 
   .brand-copy p {
-    font-size: 0.74rem;
+    font-size: 0.68rem;
   }
 
   .site-nav,
@@ -683,5 +877,26 @@ textarea {
 
   .dashboard-header {
     flex-direction: column;
+  }
+
+  .leave-paper-topline,
+  .leave-paper-row,
+  .leave-paper-row-compact,
+  .leave-paper-row-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .leave-paper-cell,
+  .leave-paper-panel {
+    border-right: 0;
+  }
+
+  .leave-paper-row-footer .form-actions {
+    justify-content: stretch;
+    margin-top: 1rem;
+  }
+
+  .leave-paper-row-footer .button {
+    width: 100%;
   }
 }
