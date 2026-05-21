@@ -11,6 +11,8 @@
   let supabase = null;
   let db = null;
   let adminEmployeeProfiles = [];
+  let adminLeaveRequests = [];
+  let selectedAdminRequestId = null;
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
@@ -45,8 +47,9 @@
     const demoFillButton = document.getElementById("demo-fill");
 
     if (configStatus) {
+      configStatus.hidden = isConfigured;
       configStatus.textContent = isConfigured
-        ? "Supabase configuration detected. Sign in using the admins, employees, and leave_requests tables."
+        ? ""
         : "Supabase is not configured yet. Open supabase-config.js and set your project values first.";
     }
 
@@ -670,14 +673,21 @@
       return;
     }
 
-    const pending = data.filter((item) => item.status === "pending").length;
-    const approved = data.filter((item) => item.status === "approved").length;
-    const rejected = data.filter((item) => item.status === "rejected").length;
+    adminLeaveRequests = Array.isArray(data) ? data : [];
+
+    const pending = adminLeaveRequests.filter((item) => item.status === "pending").length;
+    const approved = adminLeaveRequests.filter((item) => item.status === "approved").length;
+    const rejected = adminLeaveRequests.filter((item) => item.status === "rejected").length;
 
     setText("stat-admin-pending", String(pending));
     setText("stat-admin-approved", String(approved));
     setText("stat-admin-rejected", String(rejected));
 
+    renderAdminRequestsTable(adminLeaveRequests);
+    syncSelectedAdminRequest();
+  }
+
+  function renderAdminRequestsTable(data) {
     const container = document.getElementById("admin-requests-table");
     if (!container) {
       return;
@@ -692,6 +702,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th>Employee</th>
             <th>Leave Type</th>
             <th>Dates</th>
             <th>Days</th>
@@ -703,6 +714,7 @@
         <tbody>
           ${data.map((request) => `
             <tr>
+              <td>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</td>
               <td>${escapeHtml(capitalize(request.leave_type))}</td>
               <td>${escapeHtml(request.start_date)}<br>${escapeHtml(request.end_date)}</td>
               <td>${escapeHtml(String(request.days_requested))}</td>
@@ -710,6 +722,7 @@
               <td>${escapeHtml(request.reason)}</td>
               <td>
                 <div class="table-actions">
+                  <button type="button" class="button button-muted" data-view-request="${request.id}">View Form</button>
                   <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
                   <button type="button" class="button button-danger" data-update-request="${request.id}" data-status="rejected">Reject</button>
                 </div>
@@ -720,13 +733,67 @@
       </table>
     `;
 
-    const buttons = Array.from(container.querySelectorAll("[data-update-request]"));
-    buttons.forEach((button) => {
+    Array.from(container.querySelectorAll("[data-view-request]")).forEach((button) => {
+      button.addEventListener("click", () => {
+        const requestId = Number(button.getAttribute("data-view-request"));
+        selectedAdminRequestId = requestId;
+        renderSelectedAdminRequest();
+      });
+    });
+
+    Array.from(container.querySelectorAll("[data-update-request]")).forEach((button) => {
       button.addEventListener("click", async () => {
         const requestId = Number(button.getAttribute("data-update-request"));
         const status = button.getAttribute("data-status");
+        selectedAdminRequestId = requestId;
         await updateLeaveStatus(requestId, status);
       });
+    });
+  }
+
+  function syncSelectedAdminRequest() {
+    if (!adminLeaveRequests.length) {
+      selectedAdminRequestId = null;
+      renderSelectedAdminRequest();
+      return;
+    }
+
+    const selectedRequestExists = adminLeaveRequests.some((request) => request.id === selectedAdminRequestId);
+    if (!selectedRequestExists) {
+      selectedAdminRequestId = adminLeaveRequests[0].id;
+    }
+
+    renderSelectedAdminRequest();
+  }
+
+  function renderSelectedAdminRequest() {
+    const container = document.getElementById("admin-request-preview");
+    if (!container) {
+      return;
+    }
+
+    const request = adminLeaveRequests.find((item) => item.id === selectedAdminRequestId);
+    if (!request) {
+      container.innerHTML = '<p class="empty-state">Select a leave request to view the full application form.</p>';
+      return;
+    }
+
+    container.innerHTML = buildAdminRequestPreviewMarkup(request);
+
+    container.querySelector("[data-admin-print-request]")?.addEventListener("click", () => {
+      printAdminLeaveRequest(request);
+    });
+
+    container.querySelector("[data-admin-download-word]")?.addEventListener("click", () => {
+      downloadAdminLeaveRequestWord(request);
+    });
+
+    container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async () => {
+      await updateLeaveStatus(request.id, "approved");
+    });
+
+    container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async () => {
+      await updateLeaveStatus(request.id, "rejected");
     });
   }
 
@@ -749,6 +816,318 @@
     }
 
     await loadAdminRequests();
+  }
+
+  function buildAdminRequestPreviewMarkup(request) {
+    return `
+      <div class="admin-request-toolbar">
+        <div>
+          <strong>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</strong>
+          <div class="muted">Request #${escapeHtml(String(request.id))} | ${escapeHtml(capitalize(request.status))}</div>
+        </div>
+        <div class="table-actions">
+          <button type="button" class="button button-muted" data-admin-print-request>Print / Save PDF</button>
+          <button type="button" class="button button-muted" data-admin-download-word>Download Word</button>
+          <button type="button" class="button button-success" data-admin-approve-request>Approve</button>
+          <button type="button" class="button button-danger" data-admin-reject-request>Reject</button>
+        </div>
+      </div>
+      ${buildAdminRequestPaperMarkup(request)}
+    `;
+  }
+
+  function buildAdminRequestPaperMarkup(request) {
+    const leaveType = String(request.leave_type || "").toLowerCase();
+    const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
+    const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
+
+    return `
+      <section class="admin-request-paper">
+        <div class="admin-paper-header">
+          <div>
+            <div class="admin-paper-eyebrow">Republic of the Philippines</div>
+            <h4>Application for Leave</h4>
+          </div>
+          <div class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</div>
+        </div>
+
+        <div class="admin-paper-grid admin-paper-grid-two">
+          <div class="admin-paper-field">
+            <span class="admin-paper-label">1. Office / Department</span>
+            <div class="admin-paper-value">${escapeHtml(request.office_department || "-")}</div>
+          </div>
+          <div class="admin-paper-field">
+            <span class="admin-paper-label">2. Applicant</span>
+            <div class="admin-paper-value">${escapeHtml(getApplicantFullName(request) || "-")}</div>
+          </div>
+        </div>
+
+        <div class="admin-paper-grid admin-paper-grid-three">
+          <div class="admin-paper-field">
+            <span class="admin-paper-label">3. Date of Filing</span>
+            <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.filing_date))}</div>
+          </div>
+          <div class="admin-paper-field">
+            <span class="admin-paper-label">4. Position</span>
+            <div class="admin-paper-value">${escapeHtml(request.position_title || "-")}</div>
+          </div>
+          <div class="admin-paper-field">
+            <span class="admin-paper-label">5. Salary</span>
+            <div class="admin-paper-value">${escapeHtml(request.salary_display || "N/A")}</div>
+          </div>
+        </div>
+
+        <div class="admin-paper-section-title">6. Details of Application</div>
+
+        <div class="admin-paper-grid admin-paper-grid-two">
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">6.A Type of Leave to Be Availed Of</span>
+            <div class="admin-paper-option-list">
+              ${renderAdminOptionRow("Vacation Leave", leaveType === "vacation")}
+              ${renderAdminOptionRow("Sick Leave", leaveType === "sick")}
+              ${renderAdminOptionRow("Emergency Leave", leaveType === "emergency")}
+              ${renderAdminOptionRow("Maternity Leave", leaveType === "maternity")}
+              ${renderAdminOptionRow("Paternity Leave", leaveType === "paternity")}
+              ${renderAdminOptionRow("Special Leave", leaveType === "special")}
+            </div>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Others</span>
+              <div class="admin-paper-value">${escapeHtml(request.other_leave_details || "-")}</div>
+            </div>
+          </div>
+
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">6.B Details of Leave</span>
+            <div class="admin-paper-subsection">
+              <strong>Vacation / Special Privilege Leave</strong>
+              ${renderAdminOptionRow("Within the Philippines", vacationLocations.includes("within-ph"))}
+              ${renderAdminOptionRow("Abroad", vacationLocations.includes("abroad"))}
+            </div>
+            <div class="admin-paper-subsection">
+              <strong>Sick Leave</strong>
+              ${renderAdminOptionRow("In Hospital", sickDetails.includes("in-hospital"))}
+              ${renderAdminOptionRow("Out Patient", sickDetails.includes("out-patient"))}
+            </div>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Specify Purpose / Reason</span>
+              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.reason || "-")}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-paper-grid admin-paper-grid-two">
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">6.C Number of Working Days Applied For</span>
+            <div class="admin-paper-value">${escapeHtml(String(request.days_requested || "-"))}</div>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Inclusive Dates</span>
+              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.start_date))} to ${escapeHtml(formatDateDisplay(request.end_date))}</div>
+            </div>
+          </div>
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">6.D Commutation</span>
+            ${renderAdminOptionRow("Not Requested", request.commutation === "not-requested")}
+            ${renderAdminOptionRow("Requested", request.commutation === "requested")}
+          </div>
+        </div>
+
+        <div class="admin-paper-section-title">7. Action on Application</div>
+
+        <div class="admin-paper-grid admin-paper-grid-two">
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">7.A Certification of Leave Credits</span>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">As of</span>
+              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.credit_as_of))}</div>
+            </div>
+            <table class="admin-paper-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Vacation Leave</th>
+                  <th>Sick Leave</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Total Earned</td>
+                  <td>${escapeHtml(formatNumberDisplay(request.credit_earned_vacation))}</td>
+                  <td>${escapeHtml(formatNumberDisplay(request.credit_earned_sick))}</td>
+                </tr>
+                <tr>
+                  <td>Balance</td>
+                  <td>${escapeHtml(formatNumberDisplay(request.credit_balance_vacation))}</td>
+                  <td>${escapeHtml(formatNumberDisplay(request.credit_balance_sick))}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">7.B Recommendation</span>
+            ${renderAdminOptionRow("For approval", request.recommendation === "approved" || request.status === "approved")}
+            ${renderAdminOptionRow("For disapproval", request.recommendation === "rejected" || request.status === "rejected")}
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Details</span>
+              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.recommendation_details || "-")}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-paper-grid admin-paper-grid-two">
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">7.C Approved For</span>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Days with pay</span>
+              <div class="admin-paper-value">${escapeHtml(formatIntegerDisplay(request.approved_with_pay_days))}</div>
+            </div>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Days without pay</span>
+              <div class="admin-paper-value">${escapeHtml(formatIntegerDisplay(request.approved_without_pay_days))}</div>
+            </div>
+            <div class="admin-paper-field admin-paper-subfield">
+              <span class="admin-paper-label">Others</span>
+              <div class="admin-paper-value">${escapeHtml(request.approved_other_details || "-")}</div>
+            </div>
+          </div>
+          <div class="admin-paper-panel">
+            <span class="admin-paper-label">7.D Disapproved Due To</span>
+            <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.disapproval_details || "-")}</div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderAdminOptionRow(label, isChecked) {
+    return `
+      <div class="admin-paper-option">
+        <span class="admin-paper-check">${isChecked ? "X" : "&nbsp;"}</span>
+        <span>${escapeHtml(label)}</span>
+      </div>
+    `;
+  }
+
+  function printAdminLeaveRequest(request) {
+    const printWindow = window.open("", "_blank", "width=960,height=1200");
+    if (!printWindow) {
+      window.alert("Allow pop-ups to print or save this leave form as PDF.");
+      return;
+    }
+
+    printWindow.document.write(buildAdminRequestDocument(request, "print"));
+    printWindow.document.close();
+    printWindow.focus();
+  }
+
+  function downloadAdminLeaveRequestWord(request) {
+    const documentHtml = buildAdminRequestDocument(request, "word");
+    const blob = new Blob(["\ufeff", documentHtml], { type: "application/msword" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `leave-request-${request.id}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  function buildAdminRequestDocument(request, mode) {
+    const title = `Leave Request ${request.id}`;
+    const autoPrint = mode === "print"
+      ? "<script>window.addEventListener('load', function () { window.print(); });<\/script>"
+      : "";
+
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>${escapeHtml(title)}</title>
+        <style>
+          @page { size: A4; margin: 12mm; }
+          body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #111;
+          }
+          .print-shell {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 12mm;
+            box-sizing: border-box;
+            background: #fff;
+          }
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            border: 1px solid #222;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .admin-paper-header, .admin-paper-grid { display: grid; gap: 12px; }
+          .admin-paper-grid-two { grid-template-columns: 1fr 1fr; }
+          .admin-paper-grid-three { grid-template-columns: 1fr 1fr 1fr; }
+          .admin-paper-panel, .admin-paper-field {
+            border: 1px solid #222;
+            padding: 10px;
+            min-width: 0;
+          }
+          .admin-paper-header {
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            margin-bottom: 12px;
+          }
+          .admin-paper-eyebrow { font-size: 12px; text-transform: uppercase; }
+          .admin-paper-header h4 { margin: 6px 0 0; font-size: 24px; text-transform: uppercase; }
+          .admin-paper-section-title {
+            border: 1px solid #222;
+            padding: 8px 10px;
+            margin: 12px 0;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .admin-paper-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .admin-paper-value { min-height: 20px; border-bottom: 1px solid #666; padding-bottom: 4px; }
+          .admin-paper-value-block { min-height: 54px; }
+          .admin-paper-subfield { margin-top: 10px; }
+          .admin-paper-option-list, .admin-paper-subsection { display: grid; gap: 6px; margin-top: 8px; }
+          .admin-paper-option { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+          .admin-paper-check {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border: 1px solid #222;
+            font-size: 11px;
+            font-weight: 700;
+          }
+          .admin-paper-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+          .admin-paper-table th, .admin-paper-table td { border: 1px solid #222; padding: 6px; text-align: center; }
+          .admin-paper-table th:first-child, .admin-paper-table td:first-child { text-align: left; }
+        </style>
+      </head>
+      <body>
+        <div class="print-shell">
+          ${buildAdminRequestPaperMarkup(request)}
+        </div>
+        ${autoPrint}
+      </body>
+      </html>
+    `;
   }
 
   function bindSignOut() {
@@ -871,6 +1250,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th>Employee</th>
               <th>Leave Type</th>
               <th>Dates</th>
               <th>Days</th>
@@ -881,16 +1261,52 @@
           </thead>
           <tbody>
             <tr>
+              <td>Juan Dela Cruz</td>
               <td>Vacation</td>
               <td>2026-05-28<br>2026-05-30</td>
               <td>3</td>
               <td><span class="badge pending">Pending</span></td>
               <td>Family travel</td>
-              <td><div class="table-actions"><button type="button" class="button button-success">Approve</button><button type="button" class="button button-danger">Reject</button></div></td>
+              <td><div class="table-actions"><button type="button" class="button button-muted">View Form</button><button type="button" class="button button-success">Approve</button><button type="button" class="button button-danger">Reject</button></div></td>
             </tr>
           </tbody>
         </table>
       `;
+    }
+
+    const preview = document.getElementById("admin-request-preview");
+    if (preview) {
+      preview.innerHTML = buildAdminRequestPreviewMarkup({
+        id: 1,
+        status: "pending",
+        leave_type: "vacation",
+        office_department: "Treasury",
+        applicant_last_name: "Dela Cruz",
+        applicant_first_name: "Juan",
+        applicant_middle_name: "S.",
+        filing_date: "2026-05-21",
+        position_title: "Administrative Aide",
+        salary_display: "N/A",
+        start_date: "2026-05-28",
+        end_date: "2026-05-30",
+        days_requested: 3,
+        other_leave_details: "",
+        vacation_location: ["within-ph"],
+        sick_leave_details: [],
+        commutation: "not-requested",
+        reason: "Family travel",
+        credit_as_of: null,
+        credit_earned_vacation: null,
+        credit_earned_sick: null,
+        credit_balance_vacation: null,
+        credit_balance_sick: null,
+        recommendation: null,
+        recommendation_details: "",
+        approved_with_pay_days: null,
+        approved_without_pay_days: null,
+        approved_other_details: "",
+        disapproval_details: ""
+      });
     }
   }
 
@@ -926,5 +1342,47 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function getApplicantFullName(request) {
+    return [
+      request.applicant_first_name,
+      request.applicant_middle_name,
+      request.applicant_last_name
+    ].filter(Boolean).join(" ").trim();
+  }
+
+  function formatDateDisplay(value) {
+    if (!value) {
+      return "-";
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  }
+
+  function formatNumberDisplay(value) {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
+
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue.toFixed(2) : String(value);
+  }
+
+  function formatIntegerDisplay(value) {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
+
+    return String(value);
   }
 })();

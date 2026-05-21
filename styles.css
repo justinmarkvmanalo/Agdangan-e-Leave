@@ -652,7 +652,9 @@ textarea {
   letter-spacing: 0.01em;
 }
 
-.leave-paper-form {
+.leave-paper-form,
+.leave-paper-row,
+.leave-paper-panel-grid {
   display: grid;
 }
 
@@ -1040,6 +1042,152 @@ textarea {
   gap: 0.55rem;
 }
 
+.admin-request-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-request-paper {
+  width: 100%;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid rgba(16, 49, 90, 0.12);
+  background: #fffdfa;
+  box-shadow: 0 20px 48px rgba(16, 49, 90, 0.08);
+}
+
+.admin-paper-header,
+.admin-paper-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admin-paper-header {
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  margin-bottom: 0.9rem;
+}
+
+.admin-paper-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-paper-header h4 {
+  margin: 0.45rem 0 0;
+  font-size: 1.55rem;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.admin-paper-grid-two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.admin-paper-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-paper-panel,
+.admin-paper-field {
+  min-width: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(20, 20, 20, 0.72);
+}
+
+.admin-paper-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.admin-paper-value {
+  min-height: 1.45rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.72);
+  font-size: 0.8rem;
+  color: #111;
+}
+
+.admin-paper-value-block {
+  min-height: 4.25rem;
+}
+
+.admin-paper-section-title {
+  margin: 0.9rem 0;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(20, 20, 20, 0.72);
+  background: rgba(0, 0, 0, 0.035);
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-paper-option-list,
+.admin-paper-subsection {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.admin-paper-subsection {
+  margin-top: 0.8rem;
+}
+
+.admin-paper-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.admin-paper-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 1px solid rgba(20, 20, 20, 0.72);
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.admin-paper-subfield {
+  margin-top: 0.7rem;
+}
+
+.admin-paper-table {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+
+.admin-paper-table th,
+.admin-paper-table td {
+  border: 1px solid rgba(20, 20, 20, 0.72);
+  padding: 0.3rem 0.35rem;
+  text-align: center;
+}
+
+.admin-paper-table th:first-child,
+.admin-paper-table td:first-child {
+  text-align: left;
+}
+
 @media (max-width: 1180px) {
   .highlights,
   .service-section,
@@ -1047,6 +1195,11 @@ textarea {
   .stats-grid,
   .dashboard-grid,
   .leave-paper-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-paper-grid-two,
+  .admin-paper-grid-three {
     grid-template-columns: 1fr;
   }
 }
@@ -1073,6 +1226,15 @@ textarea {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-request-toolbar,
+  .admin-paper-header {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-request-toolbar {
+    display: grid;
   }
 }
 
