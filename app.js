@@ -132,8 +132,7 @@
 
     const profile = await fetchEmployeeProfile(session.userId);
     if (!profile) {
-      clearSession();
-      window.location.href = "login.html";
+      window.alert("Unable to load the employee profile after login. Check Supabase table access and RLS settings.");
       return;
     }
 
@@ -158,8 +157,7 @@
 
     const profile = await fetchAdminProfile(session.userId);
     if (!profile) {
-      clearSession();
-      window.location.href = "login.html";
+      window.alert("Unable to load the admin profile after login. Check Supabase table access and RLS settings.");
       return;
     }
 

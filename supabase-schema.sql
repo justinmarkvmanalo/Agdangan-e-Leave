@@ -55,6 +55,10 @@ create table if not exists public.leave_requests (
   check (end_date >= start_date)
 );
 
+alter table public.admins disable row level security;
+alter table public.employees disable row level security;
+alter table public.leave_requests disable row level security;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
