@@ -60,21 +60,28 @@
     </section>
 
     <section class="dashboard-grid">
-      <article class="dashboard-card leave-paper-card">
+      <article class="dashboard-card dashboard-card-wide leave-paper-card">
         <div class="leave-paper">
           <div class="leave-paper-topline">
-            <div>
+            <div class="leave-paper-form-series">
               <p class="leave-paper-note">Civil Service Form No. 6</p>
               <p class="leave-paper-note">Revised 2020</p>
+              <p class="leave-paper-annex">Annex A-1</p>
             </div>
             <div class="leave-paper-stamp">Stamp of Date of Filing</div>
           </div>
 
-          <div class="leave-paper-heading">
-            <p class="leave-paper-government">Republic of the Philippines</p>
-            <p class="leave-paper-government">Municipality of Agdangan</p>
-            <p class="leave-paper-government">Official e-Leave Service</p>
-            <h3>Application for Leave</h3>
+          <div class="leave-paper-heading-grid">
+            <div class="leave-paper-seal-wrap">
+              <img src="Copilot_20260520_200219.png" alt="Agdangan seal" class="leave-paper-seal">
+            </div>
+            <div class="leave-paper-heading">
+              <p class="leave-paper-government">Republic of the Philippines</p>
+              <p class="leave-paper-government">Municipality of Agdangan</p>
+              <p class="leave-paper-government">Official e-Leave Service</p>
+              <h3>Application for Leave</h3>
+            </div>
+            <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
           </div>
 
           <form class="leave-paper-form" id="leave-request-form">
@@ -85,7 +92,11 @@
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">2. Applicant</span>
-                <div class="leave-paper-line">Employee record from this account</div>
+                <div class="leave-paper-inline-fields">
+                  <span class="leave-paper-inline-line">Last</span>
+                  <span class="leave-paper-inline-line">First</span>
+                  <span class="leave-paper-inline-line">Middle</span>
+                </div>
               </div>
             </div>
 
@@ -95,12 +106,14 @@
                 <input id="start-date" name="startDate" type="date" required>
               </div>
               <div class="leave-paper-cell">
-                <label class="leave-paper-label" for="end-date">4. End Date</label>
-                <input id="end-date" name="endDate" type="date" required>
+                <span class="leave-paper-label">4. Position</span>
+                <div class="leave-paper-line">Recorded from employee account</div>
               </div>
               <div class="leave-paper-cell">
-                <label class="leave-paper-label" for="days-requested">5. Working Days</label>
-                <input id="days-requested" name="daysRequested" type="number" min="0.5" step="0.5" required>
+                <span class="leave-paper-label">5. Working Days</span>
+                <div class="leave-paper-tight-field">
+                  <input id="days-requested" name="daysRequested" type="number" min="0.5" step="0.5" required>
+                </div>
               </div>
             </div>
 
@@ -135,29 +148,87 @@
                     <span>Special Leave</span>
                   </label>
                 </div>
+                <div class="leave-paper-other-line">
+                  <span>Others:</span>
+                  <div class="leave-paper-line"></div>
+                </div>
               </fieldset>
 
               <fieldset class="leave-paper-panel">
                 <legend>6.B Details of Leave</legend>
-                <div class="field">
-                  <label for="reason">Purpose / Reason</label>
+                <div class="leave-paper-subgroup">
+                  <p>In case of Vacation / Special Privilege Leave:</p>
+                  <div class="leave-paper-bullets">
+                    <span>Within the Philippines</span>
+                    <span>Abroad</span>
+                  </div>
+                </div>
+
+                <div class="leave-paper-subgroup">
+                  <p>In case of Sick Leave:</p>
+                  <div class="leave-paper-bullets">
+                    <span>In Hospital</span>
+                    <span>Out Patient</span>
+                  </div>
+                </div>
+
+                <div class="field leave-paper-reason-field">
+                  <label for="reason">Specify Purpose / Reason</label>
                   <textarea id="reason" name="reason" placeholder="State the reason for this leave request." required></textarea>
                 </div>
-                <p class="helper-text">Use a clear explanation so the approving office can review the request faster.</p>
               </fieldset>
             </div>
 
-            <div class="leave-paper-row leave-paper-row-footer">
+            <div class="leave-paper-row leave-paper-row-detail">
               <div class="leave-paper-cell">
-                <span class="leave-paper-label">6.C Inclusive Dates</span>
-                <div class="leave-paper-line">From the selected start date up to the selected end date.</div>
-              </div>
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">6.D Applicant Action</span>
-                <div class="form-actions">
-                  <button type="submit" class="button button-primary">Submit Leave Application</button>
+                <span class="leave-paper-label">6.C Number of Working Days Applied For</span>
+                <div class="leave-paper-tight-field">
+                  <input id="end-date" name="endDate" type="date" required>
+                </div>
+                <div class="leave-paper-subline-group">
+                  <span>Inclusive Dates</span>
+                  <div class="leave-paper-line"></div>
                 </div>
               </div>
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">6.D Commutation</span>
+                <div class="leave-paper-bullets">
+                  <span>Not Requested</span>
+                  <span>Requested</span>
+                </div>
+                <div class="leave-paper-signature">
+                  <div class="leave-paper-line"></div>
+                  <span>(Signature of Applicant)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="leave-paper-section-title">7. Action on Application</div>
+
+            <div class="leave-paper-row leave-paper-row-action">
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">7.A Certification of Leave Credits</span>
+                <div class="leave-paper-action-box">
+                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-line"></div>
+                </div>
+              </div>
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">7.B Recommendation</span>
+                <div class="leave-paper-action-box">
+                  <div class="leave-paper-bullets">
+                    <span>For approval</span>
+                    <span>For disapproval due to</span>
+                  </div>
+                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-line"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="leave-paper-footer">
+              <button type="submit" class="button button-primary">Submit Leave Application</button>
             </div>
           </form>
         </div>
