@@ -65,9 +65,8 @@
             <div class="leave-paper-form-series">
               <p class="leave-paper-note">Civil Service Form No. 6</p>
               <p class="leave-paper-note">Revised 2020</p>
-              <p class="leave-paper-annex">Annex A-1</p>
             </div>
-            <div class="leave-paper-stamp">Stamp of Date of Filing</div>
+            <div class="leave-paper-stamp">Stamp of Date of Receipt:</div>
           </div>
 
           <div class="leave-paper-heading-grid">
@@ -76,8 +75,8 @@
             </div>
             <div class="leave-paper-heading">
               <p class="leave-paper-government">Republic of the Philippines</p>
-              <p class="leave-paper-government">Municipality of Agdangan</p>
-              <p class="leave-paper-government">Official e-Leave Service</p>
+              <p class="leave-paper-government">MGO Agdangan</p>
+              <p class="leave-paper-government">Agdangan, Quezon</p>
               <h3>Application for Leave</h3>
             </div>
             <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
@@ -91,6 +90,11 @@
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">2. Applicant</span>
+                <div class="leave-paper-inline-captions" aria-hidden="true">
+                  <span>(Last)</span>
+                  <span>(First)</span>
+                  <span>(Middle)</span>
+                </div>
                 <div class="leave-paper-inline-fields">
                   <input id="applicant-last" class="leave-paper-input leave-paper-input-line" type="text" name="applicantLastName" placeholder="Last">
                   <input id="applicant-first" class="leave-paper-input leave-paper-input-line" type="text" name="applicantFirstName" placeholder="First">
@@ -125,12 +129,12 @@
                     <span>Vacation Leave</span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="sick" required>
-                    <span>Sick Leave</span>
+                    <input type="radio" name="leaveType" value="mandatory-forced" required>
+                    <span>Mandatory/Forced Leave</span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="emergency" required>
-                    <span>Emergency Leave</span>
+                    <input type="radio" name="leaveType" value="sick" required>
+                    <span>Sick Leave</span>
                   </label>
                   <label class="leave-option">
                     <input type="radio" name="leaveType" value="maternity" required>
@@ -141,8 +145,40 @@
                     <span>Paternity Leave</span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="special" required>
-                    <span>Special Leave</span>
+                    <input type="radio" name="leaveType" value="special-privilege" required>
+                    <span>Special Privilege Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="solo-parent" required>
+                    <span>Solo Parent Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="study" required>
+                    <span>Study Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="vawc" required>
+                    <span>10-Day VAWC Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="rehabilitation-privilege" required>
+                    <span>Rehabilitation Privilege</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="special-benefits-women" required>
+                    <span>Special Leave Benefits for Women</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="special-emergency-calamity" required>
+                    <span>Special Emergency (Calamity) Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="adoption" required>
+                    <span>Adoption Leave</span>
+                  </label>
+                  <label class="leave-option">
+                    <input type="radio" name="leaveType" value="others" required>
+                    <span>Others</span>
                   </label>
                 </div>
                 <div class="leave-paper-other-line">
@@ -157,20 +193,43 @@
                   <p>In case of Vacation / Special Privilege Leave:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="leaveLocation" value="within-ph"> <span>Within the Philippines</span></label>
-                    <label><input type="checkbox" name="leaveLocation" value="abroad"> <span>Abroad</span></label>
+                    <label><input type="checkbox" name="leaveLocation" value="abroad"> <span>Abroad (Specify)</span></label>
                   </div>
                 </div>
 
                 <div class="leave-paper-subgroup">
                   <p>In case of Sick Leave:</p>
                   <div class="leave-paper-bullets">
-                    <label><input type="checkbox" name="sickDetail" value="in-hospital"> <span>In Hospital</span></label>
-                    <label><input type="checkbox" name="sickDetail" value="out-patient"> <span>Out Patient</span></label>
+                    <label><input type="checkbox" name="sickDetail" value="in-hospital"> <span>In Hospital (Specify Illness)</span></label>
+                    <label><input type="checkbox" name="sickDetail" value="out-patient"> <span>Out Patient (Specify Illness)</span></label>
+                  </div>
+                </div>
+
+                <div class="leave-paper-subgroup">
+                  <p>In case of Special Leave Benefits for Women:</p>
+                  <div class="leave-paper-bullets">
+                    <label><input type="checkbox" name="leavePurpose" value="women-illness"> <span>(Specify Illness)</span></label>
+                  </div>
+                </div>
+
+                <div class="leave-paper-subgroup">
+                  <p>In case of Study Leave:</p>
+                  <div class="leave-paper-bullets">
+                    <label><input type="checkbox" name="leavePurpose" value="masters-completion"> <span>Completion of Master's Degree</span></label>
+                    <label><input type="checkbox" name="leavePurpose" value="bar-review"> <span>BAR/Board Examination Review</span></label>
+                  </div>
+                </div>
+
+                <div class="leave-paper-subgroup">
+                  <p>Other purpose:</p>
+                  <div class="leave-paper-bullets">
+                    <label><input type="checkbox" name="leavePurpose" value="monetization"> <span>Monetization of Leave Credits</span></label>
+                    <label><input type="checkbox" name="leavePurpose" value="terminal"> <span>Terminal Leave</span></label>
                   </div>
                 </div>
 
                 <div class="field leave-paper-reason-field">
-                  <label for="reason">Specify Purpose / Reason</label>
+                  <label for="reason">Specify Purpose / Reason / Details</label>
                   <textarea id="reason" name="reason" placeholder="State the reason for this leave request." required></textarea>
                 </div>
               </fieldset>

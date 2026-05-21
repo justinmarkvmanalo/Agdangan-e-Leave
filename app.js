@@ -13,6 +13,22 @@
   let adminEmployeeProfiles = [];
   let adminLeaveRequests = [];
   let selectedAdminRequestId = null;
+  const leaveTypeLabels = {
+    vacation: "Vacation Leave",
+    "mandatory-forced": "Mandatory/Forced Leave",
+    sick: "Sick Leave",
+    maternity: "Maternity Leave",
+    paternity: "Paternity Leave",
+    "special-privilege": "Special Privilege Leave",
+    "solo-parent": "Solo Parent Leave",
+    study: "Study Leave",
+    vawc: "10-Day VAWC Leave",
+    "rehabilitation-privilege": "Rehabilitation Privilege",
+    "special-benefits-women": "Special Leave Benefits for Women",
+    "special-emergency-calamity": "Special Emergency (Calamity) Leave",
+    adoption: "Adoption Leave",
+    others: "Others"
+  };
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
@@ -266,7 +282,7 @@
 
     list.innerHTML = data.map((request) => `
       <li>
-        <strong>${escapeHtml(capitalize(request.leave_type))}</strong>
+        <strong>${escapeHtml(formatLeaveType(request.leave_type))}</strong>
         <div>${escapeHtml(request.start_date)} to ${escapeHtml(request.end_date)}</div>
         <div>${escapeHtml(request.days_requested)} day(s)</div>
         <div><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></div>
@@ -287,12 +303,8 @@
     const leaveTypeInputs = Array.from(form.querySelectorAll('input[name="leaveType"]'));
 
     const syncLeaveTypeState = () => {
-      const isSpecial = leaveTypeInputs.some((input) => input.checked && input.value === "special");
       if (leaveOtherInput) {
-        leaveOtherInput.disabled = !isSpecial;
-        if (!isSpecial) {
-          leaveOtherInput.value = "";
-        }
+        leaveOtherInput.disabled = false;
       }
     };
 
@@ -342,9 +354,7 @@
         start_date: String(formData.get("startDate") || ""),
         end_date: String(formData.get("endDate") || ""),
         days_requested: Number(formData.get("daysRequested") || 0),
-        other_leave_details: String(formData.get("leaveType") || "") === "special"
-          ? String(document.getElementById("leave-other")?.value || "").trim()
-          : "",
+        other_leave_details: String(document.getElementById("leave-other")?.value || "").trim(),
         vacation_location: vacationLocation,
         sick_leave_details: sickLeaveDetails,
         commutation: String(formData.get("commutation") || ""),
@@ -715,7 +725,7 @@
           ${data.map((request) => `
             <tr>
               <td>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</td>
-              <td>${escapeHtml(capitalize(request.leave_type))}</td>
+              <td>${escapeHtml(formatLeaveType(request.leave_type))}</td>
               <td>${escapeHtml(request.start_date)}<br>${escapeHtml(request.end_date)}</td>
               <td>${escapeHtml(String(request.days_requested))}</td>
               <td><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></td>
@@ -884,11 +894,19 @@
             <span class="admin-paper-label">6.A Type of Leave to Be Availed Of</span>
             <div class="admin-paper-option-list">
               ${renderAdminOptionRow("Vacation Leave", leaveType === "vacation")}
+              ${renderAdminOptionRow("Mandatory/Forced Leave", leaveType === "mandatory-forced")}
               ${renderAdminOptionRow("Sick Leave", leaveType === "sick")}
-              ${renderAdminOptionRow("Emergency Leave", leaveType === "emergency")}
               ${renderAdminOptionRow("Maternity Leave", leaveType === "maternity")}
               ${renderAdminOptionRow("Paternity Leave", leaveType === "paternity")}
-              ${renderAdminOptionRow("Special Leave", leaveType === "special")}
+              ${renderAdminOptionRow("Special Privilege Leave", leaveType === "special-privilege")}
+              ${renderAdminOptionRow("Solo Parent Leave", leaveType === "solo-parent")}
+              ${renderAdminOptionRow("Study Leave", leaveType === "study")}
+              ${renderAdminOptionRow("10-Day VAWC Leave", leaveType === "vawc")}
+              ${renderAdminOptionRow("Rehabilitation Privilege", leaveType === "rehabilitation-privilege")}
+              ${renderAdminOptionRow("Special Leave Benefits for Women", leaveType === "special-benefits-women")}
+              ${renderAdminOptionRow("Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity")}
+              ${renderAdminOptionRow("Adoption Leave", leaveType === "adoption")}
+              ${renderAdminOptionRow("Others", leaveType === "others")}
             </div>
             <div class="admin-paper-field admin-paper-subfield">
               <span class="admin-paper-label">Others</span>
@@ -901,12 +919,12 @@
             <div class="admin-paper-subsection">
               <strong>Vacation / Special Privilege Leave</strong>
               ${renderAdminOptionRow("Within the Philippines", vacationLocations.includes("within-ph"))}
-              ${renderAdminOptionRow("Abroad", vacationLocations.includes("abroad"))}
+              ${renderAdminOptionRow("Abroad (Specify)", vacationLocations.includes("abroad"))}
             </div>
             <div class="admin-paper-subsection">
               <strong>Sick Leave</strong>
-              ${renderAdminOptionRow("In Hospital", sickDetails.includes("in-hospital"))}
-              ${renderAdminOptionRow("Out Patient", sickDetails.includes("out-patient"))}
+              ${renderAdminOptionRow("In Hospital (Specify Illness)", sickDetails.includes("in-hospital"))}
+              ${renderAdminOptionRow("Out Patient (Specify Illness)", sickDetails.includes("out-patient"))}
             </div>
             <div class="admin-paper-field admin-paper-subfield">
               <span class="admin-paper-label">Specify Purpose / Reason</span>
@@ -1384,5 +1402,10 @@
     }
 
     return String(value);
+  }
+
+  function formatLeaveType(value) {
+    const key = String(value || "").trim().toLowerCase();
+    return leaveTypeLabels[key] || capitalize(key);
   }
 })();
