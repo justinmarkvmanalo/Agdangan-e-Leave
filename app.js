@@ -139,7 +139,7 @@
     fillEmployeeHeader(profile);
     populateLeaveApplicationProfile(profile);
     await loadEmployeeRequests(profile.id);
-    bindLeaveRequestForm(profile.id);
+    bindLeaveRequestForm(profile);
   }
 
   async function initAdminDashboard() {
@@ -271,7 +271,7 @@
     `).join("");
   }
 
-  function bindLeaveRequestForm(employeeId) {
+  function bindLeaveRequestForm(profile) {
     const form = document.getElementById("leave-request-form");
     if (!form) {
       return;
@@ -323,22 +323,48 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(form);
+      const vacationLocation = formData.getAll("leaveLocation").map((value) => String(value));
+      const sickLeaveDetails = formData.getAll("sickDetail").map((value) => String(value));
 
       const payload = {
-        employee_id: employeeId,
+        employee_id: profile.id,
         leave_type: String(formData.get("leaveType") || ""),
+        office_department: String(document.getElementById("office-department")?.value || profile.department || ""),
+        applicant_last_name: String(document.getElementById("applicant-last")?.value || profile.last_name || ""),
+        applicant_first_name: String(document.getElementById("applicant-first")?.value || profile.first_name || ""),
+        applicant_middle_name: String(document.getElementById("applicant-middle")?.value || profile.middle_name || ""),
+        filing_date: String(document.getElementById("filing-date")?.value || ""),
+        position_title: String(document.getElementById("position-title")?.value || profile.position_title || ""),
+        salary_display: String(document.getElementById("salary-display")?.value || "N/A"),
         start_date: String(formData.get("startDate") || ""),
         end_date: String(formData.get("endDate") || ""),
         days_requested: Number(formData.get("daysRequested") || 0),
+        other_leave_details: String(formData.get("leaveType") || "") === "special"
+          ? String(document.getElementById("leave-other")?.value || "").trim()
+          : "",
+        vacation_location: vacationLocation,
+        sick_leave_details: sickLeaveDetails,
+        commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
       };
 
       const { error } = await db.rpc("create_leave_request", {
         p_employee_id: payload.employee_id,
         p_leave_type: payload.leave_type,
+        p_office_department: payload.office_department,
+        p_applicant_last_name: payload.applicant_last_name,
+        p_applicant_first_name: payload.applicant_first_name,
+        p_applicant_middle_name: payload.applicant_middle_name,
+        p_filing_date: payload.filing_date,
+        p_position_title: payload.position_title,
+        p_salary_display: payload.salary_display,
         p_start_date: payload.start_date,
         p_end_date: payload.end_date,
         p_days_requested: payload.days_requested,
+        p_other_leave_details: payload.other_leave_details,
+        p_vacation_location: payload.vacation_location,
+        p_sick_leave_details: payload.sick_leave_details,
+        p_commutation: payload.commutation,
         p_reason: payload.reason
       });
 
@@ -348,7 +374,9 @@
       }
 
       form.reset();
-      await loadEmployeeRequests(employeeId);
+      populateLeaveApplicationProfile(profile);
+      syncLeaveTypeState();
+      await loadEmployeeRequests(profile.id);
       window.alert("Leave request submitted.");
     });
   }
