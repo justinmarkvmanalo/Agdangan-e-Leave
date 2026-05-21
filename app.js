@@ -137,6 +137,7 @@
     }
 
     fillEmployeeHeader(profile);
+    populateLeaveApplicationProfile(profile);
     await loadEmployeeRequests(profile.id);
     bindLeaveRequestForm(profile.id);
   }
@@ -222,6 +223,16 @@
     }
   }
 
+  function populateLeaveApplicationProfile(profile) {
+    setInputValue("office-department", profile.department || "");
+    setInputValue("applicant-last", profile.last_name || "");
+    setInputValue("applicant-first", profile.first_name || "");
+    setInputValue("applicant-middle", profile.middle_name || "");
+    setInputValue("position-title", profile.position_title || "");
+    setInputValue("salary-display", "N/A");
+    setInputValue("filing-date", new Date().toISOString().slice(0, 10));
+  }
+
   async function loadEmployeeRequests(employeeId) {
     const { data, error } = await db.rpc("get_employee_leave_requests", {
       p_employee_id: employeeId
@@ -265,6 +276,49 @@
     if (!form) {
       return;
     }
+
+    const startDateInput = form.querySelector("#start-date");
+    const endDateInput = form.querySelector("#end-date");
+    const daysRequestedInput = form.querySelector("#days-requested");
+    const leaveOtherInput = form.querySelector("#leave-other");
+    const leaveTypeInputs = Array.from(form.querySelectorAll('input[name="leaveType"]'));
+
+    const syncLeaveTypeState = () => {
+      const isSpecial = leaveTypeInputs.some((input) => input.checked && input.value === "special");
+      if (leaveOtherInput) {
+        leaveOtherInput.disabled = !isSpecial;
+        if (!isSpecial) {
+          leaveOtherInput.value = "";
+        }
+      }
+    };
+
+    const syncDaysRequested = () => {
+      if (!startDateInput || !endDateInput || !daysRequestedInput) {
+        return;
+      }
+
+      const startDateValue = startDateInput.value;
+      const endDateValue = endDateInput.value;
+      if (!startDateValue || !endDateValue) {
+        return;
+      }
+
+      const startDate = new Date(`${startDateValue}T00:00:00`);
+      const endDate = new Date(`${endDateValue}T00:00:00`);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) {
+        return;
+      }
+
+      const millisecondsPerDay = 24 * 60 * 60 * 1000;
+      const computedDays = Math.floor((endDate - startDate) / millisecondsPerDay) + 1;
+      daysRequestedInput.value = String(computedDays);
+    };
+
+    leaveTypeInputs.forEach((input) => input.addEventListener("change", syncLeaveTypeState));
+    startDateInput?.addEventListener("change", syncDaysRequested);
+    endDateInput?.addEventListener("change", syncDaysRequested);
+    syncLeaveTypeState();
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -816,6 +870,13 @@
     const element = document.getElementById(id);
     if (element) {
       element.textContent = value;
+    }
+  }
+
+  function setInputValue(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value;
     }
   }
 

@@ -21,18 +21,17 @@
     </a>
 
     <nav class="utility-nav" aria-label="Employee navigation">
-      <a href="index.html">Home</a>
-      <a href="index.html#service">Service</a>
+      <a href="#employee-service">Employee Service</a>
       <button type="button" id="sign-out-button">Sign Out</button>
     </nav>
   </header>
 
   <main class="page-shell">
-    <section class="dashboard-header">
+    <section class="dashboard-header" id="employee-service">
       <div class="dashboard-title">
         <p class="section-label">Employee Dashboard</p>
         <h2 id="employee-name">Welcome, Employee</h2>
-        <p id="employee-meta">Use this page to submit a leave request and monitor its current status.</p>
+        <p id="employee-meta">Use this employee service page to submit a leave request and monitor its current status.</p>
       </div>
 
       <div class="dashboard-meta">
@@ -87,33 +86,31 @@
           <form class="leave-paper-form" id="leave-request-form">
             <div class="leave-paper-row">
               <div class="leave-paper-cell">
-                <span class="leave-paper-label">1. Office / Department</span>
-                <div class="leave-paper-line">Employee unit will appear from your profile during review.</div>
+                <label class="leave-paper-label" for="office-department">1. Office / Department</label>
+                <input id="office-department" class="leave-paper-input leave-paper-input-line" type="text" readonly>
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">2. Applicant</span>
                 <div class="leave-paper-inline-fields">
-                  <span class="leave-paper-inline-line">Last</span>
-                  <span class="leave-paper-inline-line">First</span>
-                  <span class="leave-paper-inline-line">Middle</span>
+                  <input id="applicant-last" class="leave-paper-input leave-paper-input-line" type="text" placeholder="Last" readonly>
+                  <input id="applicant-first" class="leave-paper-input leave-paper-input-line" type="text" placeholder="First" readonly>
+                  <input id="applicant-middle" class="leave-paper-input leave-paper-input-line" type="text" placeholder="Middle" readonly>
                 </div>
               </div>
             </div>
 
             <div class="leave-paper-row leave-paper-row-compact">
               <div class="leave-paper-cell">
-                <label class="leave-paper-label" for="start-date">3. Date of Filing / Start Date</label>
-                <input id="start-date" name="startDate" type="date" required>
+                <label class="leave-paper-label" for="filing-date">3. Date of Filing</label>
+                <input id="filing-date" class="leave-paper-input" type="date" readonly>
               </div>
               <div class="leave-paper-cell">
-                <span class="leave-paper-label">4. Position</span>
-                <div class="leave-paper-line">Recorded from employee account</div>
+                <label class="leave-paper-label" for="position-title">4. Position</label>
+                <input id="position-title" class="leave-paper-input leave-paper-input-line" type="text" readonly>
               </div>
               <div class="leave-paper-cell">
-                <span class="leave-paper-label">5. Working Days</span>
-                <div class="leave-paper-tight-field">
-                  <input id="days-requested" name="daysRequested" type="number" min="0.5" step="0.5" required>
-                </div>
+                <label class="leave-paper-label" for="salary-display">5. Salary</label>
+                <input id="salary-display" class="leave-paper-input leave-paper-input-line" type="text" placeholder="N/A" readonly>
               </div>
             </div>
 
@@ -149,8 +146,8 @@
                   </label>
                 </div>
                 <div class="leave-paper-other-line">
-                  <span>Others:</span>
-                  <div class="leave-paper-line"></div>
+                  <label for="leave-other">Others:</label>
+                  <input id="leave-other" class="leave-paper-input leave-paper-input-line" type="text">
                 </div>
               </fieldset>
 
@@ -159,16 +156,16 @@
                 <div class="leave-paper-subgroup">
                   <p>In case of Vacation / Special Privilege Leave:</p>
                   <div class="leave-paper-bullets">
-                    <span>Within the Philippines</span>
-                    <span>Abroad</span>
+                    <label><input type="checkbox" name="leaveLocation" value="within-ph"> <span>Within the Philippines</span></label>
+                    <label><input type="checkbox" name="leaveLocation" value="abroad"> <span>Abroad</span></label>
                   </div>
                 </div>
 
                 <div class="leave-paper-subgroup">
                   <p>In case of Sick Leave:</p>
                   <div class="leave-paper-bullets">
-                    <span>In Hospital</span>
-                    <span>Out Patient</span>
+                    <label><input type="checkbox" name="sickDetail" value="in-hospital"> <span>In Hospital</span></label>
+                    <label><input type="checkbox" name="sickDetail" value="out-patient"> <span>Out Patient</span></label>
                   </div>
                 </div>
 
@@ -181,20 +178,23 @@
 
             <div class="leave-paper-row leave-paper-row-detail">
               <div class="leave-paper-cell">
-                <span class="leave-paper-label">6.C Number of Working Days Applied For</span>
+                <label class="leave-paper-label" for="days-requested">6.C Number of Working Days Applied For</label>
                 <div class="leave-paper-tight-field">
-                  <input id="end-date" name="endDate" type="date" required>
+                  <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="0.5" step="0.5" required>
                 </div>
                 <div class="leave-paper-subline-group">
-                  <span>Inclusive Dates</span>
-                  <div class="leave-paper-line"></div>
+                  <label for="start-date">Inclusive Dates</label>
+                  <div class="leave-paper-date-range">
+                    <input id="start-date" class="leave-paper-input leave-paper-input-line" name="startDate" type="date" required>
+                    <input id="end-date" class="leave-paper-input leave-paper-input-line" name="endDate" type="date" required>
+                  </div>
                 </div>
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">6.D Commutation</span>
                 <div class="leave-paper-bullets">
-                  <span>Not Requested</span>
-                  <span>Requested</span>
+                  <label><input type="radio" name="commutation" value="not-requested"> <span>Not Requested</span></label>
+                  <label><input type="radio" name="commutation" value="requested"> <span>Requested</span></label>
                 </div>
                 <div class="leave-paper-signature">
                   <div class="leave-paper-line"></div>
@@ -208,23 +208,78 @@
             <div class="leave-paper-row leave-paper-row-action">
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">7.A Certification of Leave Credits</span>
-                <div class="leave-paper-action-box">
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
+                <div class="leave-paper-credit-note">As of</div>
+                <table class="leave-paper-credit-table" aria-label="Leave credits certification">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Vacation Leave</th>
+                      <th>Sick Leave</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Total Earned</td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Less this application</td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>Balance</td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="leave-paper-officer">
+                  <div class="leave-paper-line"></div>
+                  <strong>Authorized Officer</strong>
                 </div>
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">7.B Recommendation</span>
                 <div class="leave-paper-action-box">
                   <div class="leave-paper-bullets">
-                    <span>For approval</span>
-                    <span>For disapproval due to</span>
+                    <label><input type="checkbox" disabled> <span>For approval</span></label>
+                    <label><input type="checkbox" disabled> <span>For disapproval due to</span></label>
                   </div>
+                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-line"></div>
+                </div>
+                <div class="leave-paper-officer">
+                  <div class="leave-paper-line"></div>
+                  <strong>Immediate Head</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="leave-paper-row leave-paper-row-bottom">
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">7.C Approved For</span>
+                <div class="leave-paper-approval-lines">
+                  <div class="leave-paper-approval-item">______ days with pay</div>
+                  <div class="leave-paper-approval-item">______ days without pay</div>
+                  <div class="leave-paper-approval-item">______ others (Specify)</div>
+                </div>
+              </div>
+              <div class="leave-paper-cell">
+                <span class="leave-paper-label">7.D Disapproved Due To</span>
+                <div class="leave-paper-action-box">
+                  <div class="leave-paper-action-line"></div>
                   <div class="leave-paper-action-line"></div>
                   <div class="leave-paper-action-line"></div>
                 </div>
               </div>
+            </div>
+
+            <div class="leave-paper-authorized">
+              <div class="leave-paper-line"></div>
+              <strong>Authorized Official</strong>
             </div>
 
             <div class="leave-paper-footer">
