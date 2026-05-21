@@ -54,8 +54,9 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
-  padding: 1rem 4.5rem;
+  gap: 1.5rem;
+  min-height: 88px;
+  padding: 0.65rem 4rem;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
@@ -64,15 +65,22 @@ textarea {
 .brand {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.15rem;
   min-width: 0;
 }
 
 .brand-logo {
-  width: 168px;
+  width: 210px;
   max-width: 100%;
   height: auto;
-  filter: drop-shadow(0 10px 25px rgba(140, 73, 255, 0.18));
+  flex: 0 0 auto;
+  filter: drop-shadow(0 10px 22px rgba(16, 49, 90, 0.16));
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .brand-copy h1,
@@ -100,15 +108,17 @@ textarea {
 }
 
 .brand-copy h1 {
-  margin-top: 0.2rem;
-  font-size: clamp(1.5rem, 2vw, 2.2rem);
+  margin-top: 0.08rem;
+  font-size: clamp(1.3rem, 1.6vw, 1.85rem);
+  line-height: 1.02;
   color: var(--blue);
 }
 
 .brand-copy p {
-  margin-top: 0.25rem;
+  margin-top: 0.18rem;
   color: var(--ink-soft);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 .site-nav,
@@ -628,6 +638,10 @@ textarea {
   .site-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+    min-height: auto;
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
   }
 
   .field-grid {
@@ -637,12 +651,19 @@ textarea {
 
 @media (max-width: 720px) {
   .brand {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 0.8rem;
   }
 
   .brand-logo {
-    width: 126px;
+    width: 172px;
+  }
+
+  .brand-copy h1 {
+    font-size: 1.2rem;
+  }
+
+  .brand-copy p {
+    font-size: 0.82rem;
   }
 
   .site-nav,
