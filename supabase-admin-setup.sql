@@ -1,7 +1,7 @@
 -- Optional admin update for the basic table-based schema.
 -- Run this after supabase-schema.sql if you want to replace the default seeded admin details.
 
-update hrm.admins
+update public.admins
 set
   email = 'justinmarkvmanalo07@gmail.com',
   password = 'password123',
@@ -23,5 +23,5 @@ select
   department,
   position_title,
   is_active
-from hrm.admins
+from public.admins
 where email = 'justinmarkvmanalo07@gmail.com';

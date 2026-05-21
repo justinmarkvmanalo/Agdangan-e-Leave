@@ -3,9 +3,7 @@
 -- No public.profiles
 -- Integer auto-increment IDs with simple parent-child relationships
 
-create schema if not exists hrm;
-
-create table if not exists hrm.admins (
+create table if not exists public.admins (
   id bigint generated always as identity primary key,
   email text not null unique,
   password text not null,
@@ -21,9 +19,9 @@ create table if not exists hrm.admins (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists hrm.employees (
+create table if not exists public.employees (
   id bigint generated always as identity primary key,
-  admin_id bigint references hrm.admins(id) on delete set null,
+  admin_id bigint references public.admins(id) on delete set null,
   employee_no text not null unique,
   email text not null unique,
   password text not null,
@@ -41,10 +39,10 @@ create table if not exists hrm.employees (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists hrm.leave_requests (
+create table if not exists public.leave_requests (
   id bigint generated always as identity primary key,
-  employee_id bigint not null references hrm.employees(id) on delete cascade,
-  reviewed_by_admin_id bigint references hrm.admins(id) on delete set null,
+  employee_id bigint not null references public.employees(id) on delete cascade,
+  reviewed_by_admin_id bigint references public.admins(id) on delete set null,
   leave_type text not null,
   start_date date not null,
   end_date date not null,
@@ -57,7 +55,7 @@ create table if not exists hrm.leave_requests (
   check (end_date >= start_date)
 );
 
-create or replace function hrm.set_updated_at()
+create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
 as $$
@@ -67,25 +65,25 @@ begin
 end;
 $$;
 
-drop trigger if exists admins_set_updated_at on hrm.admins;
+drop trigger if exists admins_set_updated_at on public.admins;
 create trigger admins_set_updated_at
-before update on hrm.admins
+before update on public.admins
 for each row
-execute function hrm.set_updated_at();
+execute function public.set_updated_at();
 
-drop trigger if exists employees_set_updated_at on hrm.employees;
+drop trigger if exists employees_set_updated_at on public.employees;
 create trigger employees_set_updated_at
-before update on hrm.employees
+before update on public.employees
 for each row
-execute function hrm.set_updated_at();
+execute function public.set_updated_at();
 
-drop trigger if exists leave_requests_set_updated_at on hrm.leave_requests;
+drop trigger if exists leave_requests_set_updated_at on public.leave_requests;
 create trigger leave_requests_set_updated_at
-before update on hrm.leave_requests
+before update on public.leave_requests
 for each row
-execute function hrm.set_updated_at();
+execute function public.set_updated_at();
 
-create or replace function hrm.next_employee_no()
+create or replace function public.next_employee_no()
 returns text
 language plpgsql
 as $$
@@ -94,13 +92,13 @@ declare
 begin
   select coalesce(max(substring(employee_no from '[0-9]+$')::bigint), 0) + 1
   into next_number
-  from hrm.employees;
+  from public.employees;
 
   return 'EMP-' || lpad(next_number::text, 4, '0');
 end;
 $$;
 
-create or replace function hrm.login_user(
+create or replace function public.login_user(
   p_email text,
   p_password text,
   p_role text default null
@@ -113,7 +111,7 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = hrm
+set search_path = public
 as $$
 begin
   if p_role is null or p_role = 'admin' then
@@ -123,7 +121,7 @@ begin
       a.id,
       a.email,
       trim(a.first_name || ' ' || a.last_name)
-    from hrm.admins a
+    from public.admins a
     where lower(a.email) = lower(p_email)
       and a.password = p_password
       and a.is_active = true
@@ -141,7 +139,7 @@ begin
       e.id,
       e.email,
       trim(e.first_name || ' ' || e.last_name)
-    from hrm.employees e
+    from public.employees e
     where lower(e.email) = lower(p_email)
       and e.password = p_password
       and e.employment_status = 'active'
@@ -150,7 +148,7 @@ begin
 end;
 $$;
 
-create or replace function hrm.create_employee(
+create or replace function public.create_employee(
   p_admin_id bigint,
   p_email text,
   p_password text,
@@ -165,15 +163,15 @@ create or replace function hrm.create_employee(
   p_employment_status text,
   p_leave_credits numeric
 )
-returns hrm.employees
+returns public.employees
 language plpgsql
 security definer
-set search_path = hrm
+set search_path = public
 as $$
 declare
-  new_employee hrm.employees;
+  new_employee public.employees;
 begin
-  insert into hrm.employees (
+  insert into public.employees (
     admin_id,
     employee_no,
     email,
@@ -191,7 +189,7 @@ begin
   )
   values (
     p_admin_id,
-    hrm.next_employee_no(),
+    public.next_employee_no(),
     lower(trim(p_email)),
     p_password,
     trim(p_first_name),
@@ -211,7 +209,7 @@ begin
 end;
 $$;
 
-create or replace function hrm.update_employee(
+create or replace function public.update_employee(
   p_employee_id bigint,
   p_email text,
   p_password text default null,
@@ -226,15 +224,15 @@ create or replace function hrm.update_employee(
   p_employment_status text default null,
   p_leave_credits numeric default null
 )
-returns hrm.employees
+returns public.employees
 language plpgsql
 security definer
-set search_path = hrm
+set search_path = public
 as $$
 declare
-  updated_employee hrm.employees;
+  updated_employee public.employees;
 begin
-  update hrm.employees
+  update public.employees
   set
     email = lower(trim(coalesce(p_email, email))),
     password = coalesce(nullif(p_password, ''), password),
@@ -255,33 +253,33 @@ begin
 end;
 $$;
 
-create or replace function hrm.delete_employee(p_employee_id bigint)
+create or replace function public.delete_employee(p_employee_id bigint)
 returns void
 language plpgsql
 security definer
-set search_path = hrm
+set search_path = public
 as $$
 begin
-  delete from hrm.employees
+  delete from public.employees
   where id = p_employee_id;
 end;
 $$;
 
-grant usage on schema hrm to anon, authenticated;
-grant select, insert, update, delete on all tables in schema hrm to anon, authenticated;
-grant usage, select on all sequences in schema hrm to anon, authenticated;
-grant execute on all functions in schema hrm to anon, authenticated;
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to anon, authenticated;
+grant usage, select on all sequences in schema public to anon, authenticated;
+grant execute on all functions in schema public to anon, authenticated;
 
-alter default privileges in schema hrm
+alter default privileges in schema public
 grant select, insert, update, delete on tables to anon, authenticated;
 
-alter default privileges in schema hrm
+alter default privileges in schema public
 grant usage, select on sequences to anon, authenticated;
 
-alter default privileges in schema hrm
+alter default privileges in schema public
 grant execute on functions to anon, authenticated;
 
-insert into hrm.admins (
+insert into public.admins (
   email,
   password,
   first_name,
@@ -298,6 +296,6 @@ select
   'Municipal Administrator'
 where not exists (
   select 1
-  from hrm.admins
+  from public.admins
   where email = 'admin@agdangan.gov.ph'
 );

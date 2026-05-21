@@ -6,7 +6,6 @@
     config.url !== "YOUR_SUPABASE_URL" &&
     config.anonKey !== "YOUR_SUPABASE_ANON_KEY";
 
-  const schemaName = config.dbSchema || "hrm";
   const sessionKey = "agdangan-eleave-session";
 
   let supabase = null;
@@ -15,7 +14,7 @@
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
-    db = typeof supabase.schema === "function" ? supabase.schema(schemaName) : supabase;
+    db = supabase;
   }
 
   const pageName = window.location.pathname.split("/").pop() || "index.html";
@@ -47,7 +46,7 @@
 
     if (configStatus) {
       configStatus.textContent = isConfigured
-        ? `Supabase configuration detected. Sign in using the ${schemaName} schema tables.`
+        ? "Supabase configuration detected. Sign in using the admins, employees, and leave_requests tables."
         : "Supabase is not configured yet. Open supabase-config.js and set your project values first.";
     }
 
