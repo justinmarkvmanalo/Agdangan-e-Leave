@@ -1,31 +1,32 @@
--- Agdangan e-Leave Supabase schema
--- Use Supabase Auth for login credentials.
--- Use public.profiles for admin and employee data.
+-- Agdangan e-Leave basic Supabase schema
+-- No supabase.auth
+-- No public.profiles
+-- Integer auto-increment IDs with simple parent-child relationships
 
-create extension if not exists "pgcrypto";
+create schema if not exists hrm;
 
-create type public.user_role as enum ('admin', 'employee');
-create type public.employment_status as enum ('active', 'inactive', 'resigned');
-create type public.leave_type as enum (
-  'vacation',
-  'sick',
-  'emergency',
-  'maternity',
-  'paternity',
-  'special'
-);
-create type public.leave_status as enum (
-  'pending',
-  'approved',
-  'rejected',
-  'cancelled'
-);
-
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  employee_no text unique,
-  role public.user_role not null default 'employee',
+create table if not exists hrm.admins (
+  id bigint generated always as identity primary key,
   email text not null unique,
+  password text not null,
+  first_name text not null,
+  middle_name text,
+  last_name text not null,
+  suffix text,
+  department text not null default 'HR',
+  position_title text not null default 'Administrator',
+  contact_no text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists hrm.employees (
+  id bigint generated always as identity primary key,
+  admin_id bigint references hrm.admins(id) on delete set null,
+  employee_no text not null unique,
+  email text not null unique,
+  password text not null,
   first_name text not null,
   middle_name text,
   last_name text not null,
@@ -33,130 +34,30 @@ create table if not exists public.profiles (
   department text not null,
   position_title text not null,
   contact_no text,
-  employment_status public.employment_status not null default 'active',
   hire_date date,
+  employment_status text not null default 'active' check (employment_status in ('active', 'inactive', 'suspended')),
   leave_credits numeric(10,2) not null default 0,
-  is_approved boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  constraint employee_no_required_for_employee check (
-    role = 'admin' or employee_no is not null
-  )
+  updated_at timestamptz not null default now()
 );
 
-create table if not exists public.leave_requests (
-  id uuid primary key default gen_random_uuid(),
-  employee_id uuid not null references public.profiles(id) on delete cascade,
-  leave_type public.leave_type not null,
+create table if not exists hrm.leave_requests (
+  id bigint generated always as identity primary key,
+  employee_id bigint not null references hrm.employees(id) on delete cascade,
+  reviewed_by_admin_id bigint references hrm.admins(id) on delete set null,
+  leave_type text not null,
   start_date date not null,
   end_date date not null,
-  days_requested numeric(10,2) not null,
+  days_requested integer not null check (days_requested > 0),
   reason text not null,
-  status public.leave_status not null default 'pending',
-  reviewed_by uuid references public.profiles(id),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   reviewed_at timestamptz,
-  admin_notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint valid_leave_dates check (end_date >= start_date),
-  constraint valid_days_requested check (days_requested > 0)
+  check (end_date >= start_date)
 );
 
-create index if not exists idx_profiles_role on public.profiles(role);
-create index if not exists idx_profiles_employee_no on public.profiles(employee_no);
-create index if not exists idx_leave_requests_employee_id on public.leave_requests(employee_id);
-create index if not exists idx_leave_requests_status on public.leave_requests(status);
-create unique index if not exists only_one_admin_allowed
-on public.profiles (role)
-where role = 'admin';
-
-create sequence if not exists public.employee_no_seq start 1;
-
-create or replace function public.sync_employee_no_sequence()
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_max_no bigint;
-begin
-  select coalesce(
-    max(nullif(regexp_replace(employee_no, '\D', '', 'g'), '')::bigint),
-    0
-  )
-  into v_max_no
-  from public.profiles
-  where role = 'employee';
-
-  perform setval('public.employee_no_seq', greatest(v_max_no, 1), v_max_no > 0);
-end;
-$$;
-
-select public.sync_employee_no_sequence();
-
-create or replace function public.next_employee_no()
-returns text
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_next_no bigint;
-begin
-  v_next_no := nextval('public.employee_no_seq');
-  return 'EMP-' || lpad(v_next_no::text, 4, '0');
-end;
-$$;
-
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  insert into public.profiles (
-    id,
-    employee_no,
-    role,
-    email,
-    first_name,
-    middle_name,
-    last_name,
-    suffix,
-    department,
-    position_title,
-    contact_no
-  )
-  values (
-    new.id,
-    case
-      when coalesce((new.raw_user_meta_data ->> 'role')::public.user_role, 'employee') = 'employee'
-        then coalesce(new.raw_user_meta_data ->> 'employee_no', public.next_employee_no())
-      else new.raw_user_meta_data ->> 'employee_no'
-    end,
-    coalesce((new.raw_user_meta_data ->> 'role')::public.user_role, 'employee'),
-    new.email,
-    coalesce(new.raw_user_meta_data ->> 'first_name', ''),
-    new.raw_user_meta_data ->> 'middle_name',
-    coalesce(new.raw_user_meta_data ->> 'last_name', ''),
-    new.raw_user_meta_data ->> 'suffix',
-    coalesce(new.raw_user_meta_data ->> 'department', ''),
-    coalesce(new.raw_user_meta_data ->> 'position_title', ''),
-    new.raw_user_meta_data ->> 'contact_no'
-  );
-
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-after insert on auth.users
-for each row execute procedure public.handle_new_user();
-
-create or replace function public.set_updated_at()
+create or replace function hrm.set_updated_at()
 returns trigger
 language plpgsql
 as $$
@@ -166,236 +67,152 @@ begin
 end;
 $$;
 
-drop trigger if exists set_profiles_updated_at on public.profiles;
-create trigger set_profiles_updated_at
-before update on public.profiles
-for each row execute procedure public.set_updated_at();
+drop trigger if exists admins_set_updated_at on hrm.admins;
+create trigger admins_set_updated_at
+before update on hrm.admins
+for each row
+execute function hrm.set_updated_at();
 
-drop trigger if exists set_leave_requests_updated_at on public.leave_requests;
-create trigger set_leave_requests_updated_at
-before update on public.leave_requests
-for each row execute procedure public.set_updated_at();
+drop trigger if exists employees_set_updated_at on hrm.employees;
+create trigger employees_set_updated_at
+before update on hrm.employees
+for each row
+execute function hrm.set_updated_at();
 
-alter table public.profiles enable row level security;
-alter table public.leave_requests enable row level security;
+drop trigger if exists leave_requests_set_updated_at on hrm.leave_requests;
+create trigger leave_requests_set_updated_at
+before update on hrm.leave_requests
+for each row
+execute function hrm.set_updated_at();
 
-drop policy if exists "users_can_view_own_profile" on public.profiles;
-create policy "users_can_view_own_profile"
-on public.profiles
-for select
-to authenticated
-using (auth.uid() = id);
-
-drop policy if exists "users_can_update_own_profile" on public.profiles;
-create policy "users_can_update_own_profile"
-on public.profiles
-for update
-to authenticated
-using (auth.uid() = id)
-with check (auth.uid() = id);
-
-drop policy if exists "users_can_insert_own_profile" on public.profiles;
-create policy "users_can_insert_own_profile"
-on public.profiles
-for insert
-to authenticated
-with check (auth.uid() = id);
-
-drop policy if exists "admins_can_view_all_profiles" on public.profiles;
-create policy "admins_can_view_all_profiles"
-on public.profiles
-for select
-to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  )
-);
-
-drop policy if exists "admins_can_update_all_profiles" on public.profiles;
-create policy "admins_can_update_all_profiles"
-on public.profiles
-for update
-to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  )
-)
-with check (
-  exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  )
-);
-
-drop policy if exists "employees_can_create_own_leave_requests" on public.leave_requests;
-create policy "employees_can_create_own_leave_requests"
-on public.leave_requests
-for insert
-to authenticated
-with check (employee_id = auth.uid());
-
-drop policy if exists "employees_can_view_own_leave_requests" on public.leave_requests;
-create policy "employees_can_view_own_leave_requests"
-on public.leave_requests
-for select
-to authenticated
-using (employee_id = auth.uid());
-
-drop policy if exists "employees_can_update_pending_own_leave_requests" on public.leave_requests;
-create policy "employees_can_update_pending_own_leave_requests"
-on public.leave_requests
-for update
-to authenticated
-using (employee_id = auth.uid() and status = 'pending')
-with check (employee_id = auth.uid() and status = 'pending');
-
-drop policy if exists "admins_can_manage_all_leave_requests" on public.leave_requests;
-create policy "admins_can_manage_all_leave_requests"
-on public.leave_requests
-for all
-to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  )
-)
-with check (
-  exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  )
-);
-
-create or replace function public.is_admin_user(p_user_id uuid default auth.uid())
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = p_user_id and role = 'admin'
-  );
-$$;
-
-drop function if exists public.admin_create_employee(text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric);
-create or replace function public.admin_create_employee(
-  p_email text,
-  p_password text,
-  p_first_name text,
-  p_middle_name text default null,
-  p_last_name text default null,
-  p_suffix text default null,
-  p_department text default null,
-  p_position_title text default null,
-  p_contact_no text default null,
-  p_hire_date date default null,
-  p_employment_status public.employment_status default 'active',
-  p_leave_credits numeric default 0
-)
-returns uuid
+create or replace function hrm.next_employee_no()
+returns text
 language plpgsql
-security definer
-set search_path = public, auth
 as $$
 declare
-  v_employee_id uuid := gen_random_uuid();
-  v_email text := lower(trim(p_email));
-  v_employee_no text := public.next_employee_no();
+  next_number bigint;
 begin
-  if not public.is_admin_user() then
-    raise exception 'Only admins can create employee accounts.';
-  end if;
+  select coalesce(max(substring(employee_no from '[0-9]+$')::bigint), 0) + 1
+  into next_number
+  from hrm.employees;
 
-  if coalesce(v_email, '') = '' then
-    raise exception 'Email is required.';
-  end if;
-
-  if coalesce(trim(p_password), '') = '' then
-    raise exception 'Password is required.';
-  end if;
-
-  insert into auth.users (
-    instance_id,
-    id,
-    aud,
-    role,
-    email,
-    encrypted_password,
-    email_confirmed_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    created_at,
-    updated_at,
-    confirmation_token,
-    email_change,
-    email_change_token_new,
-    recovery_token
-  )
-  values (
-    '00000000-0000-0000-0000-000000000000',
-    v_employee_id,
-    'authenticated',
-    'authenticated',
-    v_email,
-    crypt(p_password, gen_salt('bf')),
-    now(),
-    jsonb_build_object('provider', 'email', 'providers', jsonb_build_array('email')),
-    jsonb_build_object(
-      'employee_no', v_employee_no,
-      'role', 'employee',
-      'first_name', trim(p_first_name),
-      'middle_name', nullif(trim(p_middle_name), ''),
-      'last_name', trim(p_last_name),
-      'suffix', nullif(trim(p_suffix), ''),
-      'department', trim(p_department),
-      'position_title', trim(p_position_title),
-      'contact_no', nullif(trim(p_contact_no), '')
-    ),
-    now(),
-    now(),
-    '',
-    '',
-    '',
-    ''
-  );
-
-  update public.profiles
-  set
-    email = v_email,
-    employee_no = v_employee_no,
-    first_name = trim(p_first_name),
-    middle_name = nullif(trim(p_middle_name), ''),
-    last_name = trim(p_last_name),
-    suffix = nullif(trim(p_suffix), ''),
-    department = trim(p_department),
-    position_title = trim(p_position_title),
-    contact_no = nullif(trim(p_contact_no), ''),
-    hire_date = p_hire_date,
-    employment_status = p_employment_status,
-    leave_credits = coalesce(p_leave_credits, 0),
-    is_approved = true
-  where id = v_employee_id and role = 'employee';
-
-  return v_employee_id;
+  return 'EMP-' || lpad(next_number::text, 4, '0');
 end;
 $$;
 
-drop function if exists public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric);
-create or replace function public.admin_update_employee(
-  p_employee_id uuid,
+create or replace function hrm.login_user(
+  p_email text,
+  p_password text,
+  p_role text default null
+)
+returns table (
+  role text,
+  user_id bigint,
+  email text,
+  display_name text
+)
+language plpgsql
+security definer
+set search_path = hrm
+as $$
+begin
+  if p_role is null or p_role = 'admin' then
+    return query
+    select
+      'admin'::text,
+      a.id,
+      a.email,
+      trim(a.first_name || ' ' || a.last_name)
+    from hrm.admins a
+    where lower(a.email) = lower(p_email)
+      and a.password = p_password
+      and a.is_active = true
+    limit 1;
+
+    if found then
+      return;
+    end if;
+  end if;
+
+  if p_role is null or p_role = 'employee' then
+    return query
+    select
+      'employee'::text,
+      e.id,
+      e.email,
+      trim(e.first_name || ' ' || e.last_name)
+    from hrm.employees e
+    where lower(e.email) = lower(p_email)
+      and e.password = p_password
+      and e.employment_status = 'active'
+    limit 1;
+  end if;
+end;
+$$;
+
+create or replace function hrm.create_employee(
+  p_admin_id bigint,
+  p_email text,
+  p_password text,
+  p_first_name text,
+  p_middle_name text,
+  p_last_name text,
+  p_suffix text,
+  p_department text,
+  p_position_title text,
+  p_contact_no text,
+  p_hire_date date,
+  p_employment_status text,
+  p_leave_credits numeric
+)
+returns hrm.employees
+language plpgsql
+security definer
+set search_path = hrm
+as $$
+declare
+  new_employee hrm.employees;
+begin
+  insert into hrm.employees (
+    admin_id,
+    employee_no,
+    email,
+    password,
+    first_name,
+    middle_name,
+    last_name,
+    suffix,
+    department,
+    position_title,
+    contact_no,
+    hire_date,
+    employment_status,
+    leave_credits
+  )
+  values (
+    p_admin_id,
+    hrm.next_employee_no(),
+    lower(trim(p_email)),
+    p_password,
+    trim(p_first_name),
+    nullif(trim(coalesce(p_middle_name, '')), ''),
+    trim(p_last_name),
+    nullif(trim(coalesce(p_suffix, '')), ''),
+    trim(p_department),
+    trim(p_position_title),
+    nullif(trim(coalesce(p_contact_no, '')), ''),
+    p_hire_date,
+    coalesce(p_employment_status, 'active'),
+    coalesce(p_leave_credits, 0)
+  )
+  returning * into new_employee;
+
+  return new_employee;
+end;
+$$;
+
+create or replace function hrm.update_employee(
+  p_employee_id bigint,
   p_email text,
   p_password text default null,
   p_first_name text default null,
@@ -406,122 +223,81 @@ create or replace function public.admin_update_employee(
   p_position_title text default null,
   p_contact_no text default null,
   p_hire_date date default null,
-  p_employment_status public.employment_status default 'active',
-  p_leave_credits numeric default 0
+  p_employment_status text default null,
+  p_leave_credits numeric default null
 )
-returns uuid
+returns hrm.employees
 language plpgsql
 security definer
-set search_path = public, auth
+set search_path = hrm
 as $$
 declare
-  v_email text := lower(trim(p_email));
+  updated_employee hrm.employees;
 begin
-  if not public.is_admin_user() then
-    raise exception 'Only admins can update employee accounts.';
-  end if;
-
-  if not exists (
-    select 1
-    from public.profiles
-    where id = p_employee_id and role = 'employee'
-  ) then
-    raise exception 'Employee account not found.';
-  end if;
-
-  update auth.users
+  update hrm.employees
   set
-    email = v_email,
-    encrypted_password = case
-      when coalesce(trim(p_password), '') = '' then encrypted_password
-      else crypt(p_password, gen_salt('bf'))
-    end,
-    raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object(
-      'employee_no', (
-        select employee_no
-        from public.profiles
-        where id = p_employee_id
-      ),
-      'role', 'employee',
-      'first_name', trim(p_first_name),
-      'middle_name', nullif(trim(p_middle_name), ''),
-      'last_name', trim(p_last_name),
-      'suffix', nullif(trim(p_suffix), ''),
-      'department', trim(p_department),
-      'position_title', trim(p_position_title),
-      'contact_no', nullif(trim(p_contact_no), '')
-    ),
-    email_confirmed_at = coalesce(email_confirmed_at, now()),
-    updated_at = now()
-  where id = p_employee_id;
+    email = lower(trim(coalesce(p_email, email))),
+    password = coalesce(nullif(p_password, ''), password),
+    first_name = coalesce(nullif(trim(coalesce(p_first_name, '')), ''), first_name),
+    middle_name = case when p_middle_name is null then middle_name else nullif(trim(p_middle_name), '') end,
+    last_name = coalesce(nullif(trim(coalesce(p_last_name, '')), ''), last_name),
+    suffix = case when p_suffix is null then suffix else nullif(trim(p_suffix), '') end,
+    department = coalesce(nullif(trim(coalesce(p_department, '')), ''), department),
+    position_title = coalesce(nullif(trim(coalesce(p_position_title, '')), ''), position_title),
+    contact_no = case when p_contact_no is null then contact_no else nullif(trim(p_contact_no), '') end,
+    hire_date = coalesce(p_hire_date, hire_date),
+    employment_status = coalesce(p_employment_status, employment_status),
+    leave_credits = coalesce(p_leave_credits, leave_credits)
+  where id = p_employee_id
+  returning * into updated_employee;
 
-  update public.profiles
-  set
-    email = v_email,
-    first_name = trim(p_first_name),
-    middle_name = nullif(trim(p_middle_name), ''),
-    last_name = trim(p_last_name),
-    suffix = nullif(trim(p_suffix), ''),
-    department = trim(p_department),
-    position_title = trim(p_position_title),
-    contact_no = nullif(trim(p_contact_no), ''),
-    hire_date = p_hire_date,
-    employment_status = p_employment_status,
-    leave_credits = coalesce(p_leave_credits, 0)
-  where id = p_employee_id and role = 'employee';
-
-  return p_employee_id;
+  return updated_employee;
 end;
 $$;
 
-create or replace function public.admin_delete_employee(p_employee_id uuid)
+create or replace function hrm.delete_employee(p_employee_id bigint)
 returns void
 language plpgsql
 security definer
-set search_path = public, auth
+set search_path = hrm
 as $$
 begin
-  if not public.is_admin_user() then
-    raise exception 'Only admins can delete employee accounts.';
-  end if;
-
-  if not exists (
-    select 1
-    from public.profiles
-    where id = p_employee_id and role = 'employee'
-  ) then
-    raise exception 'Employee account not found.';
-  end if;
-
-  delete from auth.users
+  delete from hrm.employees
   where id = p_employee_id;
 end;
 $$;
 
-grant execute on function public.is_admin_user(uuid) to authenticated;
-grant execute on function public.admin_create_employee(text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
-grant execute on function public.admin_update_employee(uuid, text, text, text, text, text, text, text, text, text, date, public.employment_status, numeric) to authenticated;
-grant execute on function public.admin_delete_employee(uuid) to authenticated;
+grant usage on schema hrm to anon, authenticated;
+grant select, insert, update, delete on all tables in schema hrm to anon, authenticated;
+grant usage, select on all sequences in schema hrm to anon, authenticated;
+grant execute on all functions in schema hrm to anon, authenticated;
 
--- Standard admin account policy:
--- This project is limited to one admin row only.
--- The unique partial index above blocks a second admin profile.
---
--- Admin account target:
--- {
---   "role": "admin",
---   "first_name": "Justin Mark V",
---   "last_name": "Manalo",
---   "department": "HR",
---   "position_title": "Municipal Administrator"
--- }
---
--- Signup metadata example for an employee account:
--- {
---   "employee_no": "EMP-0001",
---   "role": "employee",
---   "first_name": "Juan",
---   "last_name": "Dela Cruz",
---   "department": "Treasury",
---   "position_title": "Administrative Aide"
--- }
+alter default privileges in schema hrm
+grant select, insert, update, delete on tables to anon, authenticated;
+
+alter default privileges in schema hrm
+grant usage, select on sequences to anon, authenticated;
+
+alter default privileges in schema hrm
+grant execute on functions to anon, authenticated;
+
+insert into hrm.admins (
+  email,
+  password,
+  first_name,
+  last_name,
+  department,
+  position_title
+)
+select
+  'admin@agdangan.gov.ph',
+  'password123',
+  'System',
+  'Administrator',
+  'HR',
+  'Municipal Administrator'
+where not exists (
+  select 1
+  from hrm.admins
+  where email = 'admin@agdangan.gov.ph'
+);

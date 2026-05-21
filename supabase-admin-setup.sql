@@ -1,28 +1,27 @@
--- Run this after supabase-schema.sql
--- This sets the existing Auth user as the one standard admin.
+-- Optional admin update for the basic table-based schema.
+-- Run this after supabase-schema.sql if you want to replace the default seeded admin details.
 
-update public.profiles
+update hrm.admins
 set
-  role = 'admin',
+  email = 'justinmarkvmanalo07@gmail.com',
+  password = 'password123',
   first_name = 'Justin Mark',
   middle_name = 'V.',
   last_name = 'Manalo',
   suffix = null,
   department = 'HR',
   position_title = 'IT Support',
-  is_approved = true,
-  employment_status = 'active'
-where email = 'justinmarkvmanalo07@gmail.com';
+  is_active = true
+where email = 'admin@agdangan.gov.ph';
 
 select
   id,
   email,
-  role,
   first_name,
   middle_name,
   last_name,
   department,
   position_title,
-  is_approved
-from public.profiles
+  is_active
+from hrm.admins
 where email = 'justinmarkvmanalo07@gmail.com';

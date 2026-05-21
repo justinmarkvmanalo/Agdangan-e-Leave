@@ -29,10 +29,10 @@
   <main class="app-layout">
     <section class="auth-copy">
       <p class="section-label">Secure Access</p>
-      <h2>Sign in by role and connect the portal to Supabase.</h2>
+      <h2>Sign in by role using simple Supabase tables.</h2>
       <p>
-        This screen is already prepared for Supabase Auth. Fill in your project URL and anon key in
-        <code>supabase-config.js</code>, then use admin and employee accounts based on the SQL schema.
+        This screen now uses a basic schema with separate admin and employee tables. Fill in
+        <code>supabase-config.js</code>, run the SQL schema, then sign in with the records stored in those tables.
       </p>
 
       <div class="auth-grid">
@@ -81,7 +81,7 @@
         </div>
 
         <p class="helper-text">
-          This system is configured for one standard admin account only. Do not add public admin registration.
+          This system uses simple table-based login and does not rely on Supabase Auth registration.
         </p>
       </form>
     </section>

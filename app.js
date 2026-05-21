@@ -6,11 +6,16 @@
     config.url !== "YOUR_SUPABASE_URL" &&
     config.anonKey !== "YOUR_SUPABASE_ANON_KEY";
 
+  const schemaName = config.dbSchema || "hrm";
+  const sessionKey = "agdangan-eleave-session";
+
   let supabase = null;
+  let db = null;
   let adminEmployeeProfiles = [];
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
+    db = typeof supabase.schema === "function" ? supabase.schema(schemaName) : supabase;
   }
 
   const pageName = window.location.pathname.split("/").pop() || "index.html";
@@ -42,7 +47,7 @@
 
     if (configStatus) {
       configStatus.textContent = isConfigured
-        ? "Supabase configuration detected. Sign in using an admin or employee account."
+        ? `Supabase configuration detected. Sign in using the ${schemaName} schema tables.`
         : "Supabase is not configured yet. Open supabase-config.js and set your project values first.";
     }
 
@@ -53,8 +58,8 @@
         roleInput.value = role;
         title.textContent = role === "admin" ? "Admin Sign In" : "Employee Sign In";
         subtitle.textContent = role === "admin"
-          ? "Use your administrator email and password to review and approve leave requests."
-          : "Use your employee email and password to open your leave dashboard.";
+          ? "Use your admin table credentials to review and approve leave requests."
+          : "Use your employee table credentials to open your leave dashboard.";
       });
     });
 
@@ -75,56 +80,60 @@
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      if (!supabase) {
+      if (!db) {
         window.alert("Supabase is not configured yet. Update supabase-config.js first.");
         return;
       }
 
       const formData = new FormData(loginForm);
-      const email = String(formData.get("email") || "").trim();
+      const email = String(formData.get("email") || "").trim().toLowerCase();
       const password = String(formData.get("password") || "");
       const selectedRole = String(formData.get("selectedRole") || "employee");
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await db.rpc("login_user", {
+        p_email: email,
+        p_password: password,
+        p_role: selectedRole
+      });
 
       if (error) {
         window.alert(error.message);
         return;
       }
 
-      const profile = await fetchCurrentProfile();
-
-      if (!profile) {
-        window.alert("Profile record not found. The login worked, but the app could not load or create the matching profile.");
+      const account = Array.isArray(data) ? data[0] : data;
+      if (!account) {
+        window.alert("Invalid login credentials.");
         return;
       }
 
-      if (profile.role !== selectedRole) {
-        await supabase.auth.signOut();
-        window.alert("This account does not match the selected role.");
-        return;
-      }
+      saveSession({
+        role: account.role,
+        userId: Number(account.user_id),
+        email: account.email
+      });
 
-      window.location.href = profile.role === "admin" ? "admin-dashboard.html" : "employee-dashboard.html";
+      window.location.href = account.role === "admin" ? "admin-dashboard.html" : "employee-dashboard.html";
     });
   }
 
   async function initEmployeeDashboard() {
     bindSignOut();
 
-    if (!supabase) {
+    if (!db) {
       renderEmployeeDemo();
       return;
     }
 
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
+    const session = getSession();
+    if (!session || session.role !== "employee") {
       window.location.href = "login.html";
       return;
     }
 
-    const profile = await fetchCurrentProfile();
-    if (!profile || profile.role !== "employee") {
+    const profile = await fetchEmployeeProfile(session.userId);
+    if (!profile) {
+      clearSession();
       window.location.href = "login.html";
       return;
     }
@@ -137,19 +146,20 @@
   async function initAdminDashboard() {
     bindSignOut();
 
-    if (!supabase) {
+    if (!db) {
       renderAdminDemo();
       return;
     }
 
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
+    const session = getSession();
+    if (!session || session.role !== "admin") {
       window.location.href = "login.html";
       return;
     }
 
-    const profile = await fetchCurrentProfile();
-    if (!profile || profile.role !== "admin") {
+    const profile = await fetchAdminProfile(session.userId);
+    if (!profile) {
+      clearSession();
       window.location.href = "login.html";
       return;
     }
@@ -163,93 +173,34 @@
       adminMeta.textContent = `${profile.department} | ${profile.position_title}`;
     }
 
-    bindAdminEmployeeForm();
+    bindAdminEmployeeForm(profile.id);
     await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
   }
 
-  async function fetchCurrentProfile() {
-    if (!supabase) {
-      return null;
-    }
-
-    const { data: authData } = await supabase.auth.getUser();
-    const authUser = authData.user;
-    const userId = authUser && authUser.id;
-
-    if (!userId) {
-      return null;
-    }
-
-    const profileById = await supabase
-      .from("profiles")
+  async function fetchAdminProfile(adminId) {
+    const { data, error } = await db
+      .from("admins")
       .select("*")
-      .eq("id", userId)
+      .eq("id", adminId)
       .maybeSingle();
-
-    if (!profileById.error && profileById.data) {
-      return profileById.data;
-    }
-
-    const ensuredProfile = await ensureProfileForCurrentUser(authUser);
-    if (ensuredProfile) {
-      return ensuredProfile;
-    }
-
-    const profileByEmail = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("email", authUser.email)
-      .maybeSingle();
-
-    if (!profileByEmail.error && profileByEmail.data) {
-      console.warn("Profile row exists by email but not by auth user id.", {
-        authUserId: userId,
-        profileId: profileByEmail.data.id
-      });
-      return profileByEmail.data;
-    }
-
-    console.error("Unable to load profile.", {
-      byIdError: profileById.error,
-      byEmailError: profileByEmail.error,
-      authUserId: userId,
-      authEmail: authUser.email
-    });
-    return null;
-  }
-
-  async function ensureProfileForCurrentUser(authUser) {
-    if (!authUser || !authUser.id || !authUser.email) {
-      return null;
-    }
-
-    const meta = authUser.user_metadata || {};
-    const role = meta.role === "admin" ? "admin" : "employee";
-    const profilePayload = {
-      id: authUser.id,
-      email: authUser.email,
-      employee_no: meta.employee_no || null,
-      role,
-      first_name: meta.first_name || authUser.email.split("@")[0] || "User",
-      middle_name: meta.middle_name || null,
-      last_name: meta.last_name || "Account",
-      suffix: meta.suffix || null,
-      department: meta.department || "Unassigned",
-      position_title: meta.position_title || (role === "admin" ? "Administrator" : "Employee"),
-      contact_no: meta.contact_no || null,
-      is_approved: true,
-      employment_status: "active",
-      leave_credits: 0
-    };
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .upsert(profilePayload, { onConflict: "id" })
-      .select()
-      .single();
 
     if (error) {
-      console.error("Unable to bootstrap profile for current user.", error);
+      console.error("Unable to load admin profile.", error);
+      return null;
+    }
+
+    return data;
+  }
+
+  async function fetchEmployeeProfile(employeeId) {
+    const { data, error } = await db
+      .from("employees")
+      .select("*")
+      .eq("id", employeeId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Unable to load employee profile.", error);
       return null;
     }
 
@@ -279,7 +230,7 @@
   }
 
   async function loadEmployeeRequests(employeeId) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("leave_requests")
       .select("*")
       .eq("employee_id", employeeId)
@@ -337,7 +288,7 @@
         reason: String(formData.get("reason") || "")
       };
 
-      const { error } = await supabase.from("leave_requests").insert(payload);
+      const { error } = await db.from("leave_requests").insert(payload);
 
       if (error) {
         window.alert(error.message);
@@ -351,10 +302,9 @@
   }
 
   async function loadAdminProfiles() {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, employee_no, email, first_name, middle_name, last_name, suffix, department, position_title, contact_no, employment_status, hire_date, leave_credits, role")
-      .eq("role", "employee")
+    const { data, error } = await db
+      .from("employees")
+      .select("id, admin_id, employee_no, email, first_name, middle_name, last_name, suffix, department, position_title, contact_no, employment_status, hire_date, leave_credits")
       .order("last_name", { ascending: true });
 
     if (error) {
@@ -432,7 +382,7 @@
 
     Array.from(container.querySelectorAll("[data-edit-employee]")).forEach((button) => {
       button.addEventListener("click", () => {
-        const employeeId = button.getAttribute("data-edit-employee");
+        const employeeId = Number(button.getAttribute("data-edit-employee"));
         const profile = adminEmployeeProfiles.find((item) => item.id === employeeId);
         if (profile) {
           populateEmployeeForm(profile);
@@ -442,13 +392,13 @@
 
     Array.from(container.querySelectorAll("[data-delete-employee]")).forEach((button) => {
       button.addEventListener("click", async () => {
-        const employeeId = button.getAttribute("data-delete-employee");
+        const employeeId = Number(button.getAttribute("data-delete-employee"));
         const profile = adminEmployeeProfiles.find((item) => item.id === employeeId);
         if (!profile) {
           return;
         }
 
-        const confirmed = window.confirm(`Delete ${profile.first_name} ${profile.last_name}? This also removes the employee login and leave records.`);
+        const confirmed = window.confirm(`Delete ${profile.first_name} ${profile.last_name}? This also removes the employee leave records.`);
         if (!confirmed) {
           return;
         }
@@ -458,7 +408,7 @@
     });
   }
 
-  function bindAdminEmployeeForm() {
+  function bindAdminEmployeeForm(adminId) {
     const form = document.getElementById("employee-management-form");
     const cancelButton = document.getElementById("employee-cancel-button");
 
@@ -469,9 +419,10 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(form);
-      const employeeId = String(formData.get("employeeRecordId") || "").trim();
+      const employeeId = Number(formData.get("employeeRecordId") || 0);
       const payload = {
-        email: String(formData.get("email") || "").trim(),
+        admin_id: adminId,
+        email: String(formData.get("email") || "").trim().toLowerCase(),
         first_name: String(formData.get("firstName") || "").trim(),
         middle_name: normalizeOptionalText(formData.get("middleName")),
         last_name: String(formData.get("lastName") || "").trim(),
@@ -547,7 +498,8 @@
   }
 
   async function createEmployeeAccount(payload) {
-    const { error } = await supabase.rpc("admin_create_employee", {
+    const { error } = await db.rpc("create_employee", {
+      p_admin_id: payload.admin_id,
       p_email: payload.email,
       p_password: payload.password,
       p_first_name: payload.first_name,
@@ -573,7 +525,7 @@
   }
 
   async function updateEmployeeAccount(employeeId, payload) {
-    const { error } = await supabase.rpc("admin_update_employee", {
+    const { error } = await db.rpc("update_employee", {
       p_employee_id: employeeId,
       p_email: payload.email,
       p_password: payload.password || null,
@@ -600,7 +552,7 @@
   }
 
   async function deleteEmployeeAccount(employeeId) {
-    const { error } = await supabase.rpc("admin_delete_employee", {
+    const { error } = await db.rpc("delete_employee", {
       p_employee_id: employeeId
     });
 
@@ -609,7 +561,7 @@
       return;
     }
 
-    if (document.getElementById("employee-record-id")?.value === employeeId) {
+    if (Number(document.getElementById("employee-record-id")?.value || 0) === employeeId) {
       resetEmployeeForm();
     }
 
@@ -618,9 +570,9 @@
   }
 
   async function loadAdminRequests() {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("leave_requests")
-      .select("id, leave_type, start_date, end_date, days_requested, reason, status, employee_id")
+      .select("id, leave_type, start_date, end_date, days_requested, reason, status, employee_id, reviewed_by_admin_id")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -681,7 +633,7 @@
     const buttons = Array.from(container.querySelectorAll("[data-update-request]"));
     buttons.forEach((button) => {
       button.addEventListener("click", async () => {
-        const requestId = button.getAttribute("data-update-request");
+        const requestId = Number(button.getAttribute("data-update-request"));
         const status = button.getAttribute("data-status");
         await updateLeaveStatus(requestId, status);
       });
@@ -689,14 +641,17 @@
   }
 
   async function updateLeaveStatus(requestId, status) {
-    const { data: authData } = await supabase.auth.getUser();
-    const reviewerId = authData.user && authData.user.id;
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "login.html";
+      return;
+    }
 
-    const { error } = await supabase
+    const { error } = await db
       .from("leave_requests")
       .update({
         status,
-        reviewed_by: reviewerId,
+        reviewed_by_admin_id: session.userId,
         reviewed_at: new Date().toISOString()
       })
       .eq("id", requestId);
@@ -716,11 +671,27 @@
     }
 
     button.addEventListener("click", async () => {
-      if (supabase) {
-        await supabase.auth.signOut();
-      }
+      clearSession();
       window.location.href = "login.html";
     });
+  }
+
+  function saveSession(session) {
+    window.localStorage.setItem(sessionKey, JSON.stringify(session));
+  }
+
+  function getSession() {
+    try {
+      const value = window.localStorage.getItem(sessionKey);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error("Unable to parse session data.", error);
+      return null;
+    }
+  }
+
+  function clearSession() {
+    window.localStorage.removeItem(sessionKey);
   }
 
   function renderEmployeeDemo() {
