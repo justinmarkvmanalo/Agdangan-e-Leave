@@ -13,8 +13,6 @@
   let adminEmployeeProfiles = [];
   let adminLeaveRequests = [];
   let selectedAdminRequestId = null;
-  let leaveTemplateDataUrlPromise = null;
-  const leaveTemplateImagePath = "leave-form-template.jpeg";
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
     "mandatory-forced": "Mandatory/Forced Leave",
@@ -792,12 +790,12 @@
 
     container.innerHTML = buildAdminRequestPreviewMarkup(request);
 
-    container.querySelector("[data-admin-print-request]")?.addEventListener("click", async () => {
-      await printAdminLeaveRequest(request);
+    container.querySelector("[data-admin-print-request]")?.addEventListener("click", () => {
+      printAdminLeaveRequest(request);
     });
 
-    container.querySelector("[data-admin-download-word]")?.addEventListener("click", async () => {
-      await downloadAdminLeaveRequestWord(request);
+    container.querySelector("[data-admin-download-word]")?.addEventListener("click", () => {
+      downloadAdminLeaveRequestWord(request);
     });
 
     container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async () => {
@@ -1027,20 +1025,20 @@
     `;
   }
 
-  async function printAdminLeaveRequest(request) {
+  function printAdminLeaveRequest(request) {
     const printWindow = window.open("", "_blank", "width=960,height=1200");
     if (!printWindow) {
       window.alert("Allow pop-ups to print or save this leave form as PDF.");
       return;
     }
 
-    printWindow.document.write(await buildAdminRequestDocument(request, "print"));
+    printWindow.document.write(buildAdminRequestDocument(request, "print"));
     printWindow.document.close();
     printWindow.focus();
   }
 
-  async function downloadAdminLeaveRequestWord(request) {
-    const documentHtml = await buildAdminRequestDocument(request, "word");
+  function downloadAdminLeaveRequestWord(request) {
+    const documentHtml = buildAdminRequestDocument(request, "word");
     const blob = new Blob(["\ufeff", documentHtml], { type: "application/msword" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1052,13 +1050,11 @@
     window.URL.revokeObjectURL(url);
   }
 
-  async function buildAdminRequestDocument(request, mode) {
+  function buildAdminRequestDocument(request, mode) {
     const title = `Leave Request ${request.id}`;
     const autoPrint = mode === "print"
       ? "<script>window.addEventListener('load', function () { window.print(); });<\/script>"
       : "";
-    const templateImage = await getLeaveTemplateDataUrl();
-    const overlayMarkup = buildAdminRequestTemplateOverlayMarkup(request);
 
     return `
       <!DOCTYPE html>
@@ -1067,195 +1063,162 @@
         <meta charset="UTF-8">
         <title>${escapeHtml(title)}</title>
         <style>
-          @page { size: A4; margin: 0; }
+          @page { size: A4; margin: 10mm; }
           body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #e9ecef;
+            background: #f3f4f6;
             color: #111;
           }
           .print-shell {
             width: 210mm;
-            height: 297mm;
+            min-height: 277mm;
             margin: 0 auto;
             box-sizing: border-box;
+          }
+          .admin-request-paper {
+            width: 100%;
+            box-sizing: border-box;
             background: #fff;
-            position: relative;
-            overflow: hidden;
-          }
-          .template-image {
-            position: absolute;
-            inset: 0;
-            width: 210mm;
-            height: 297mm;
-            object-fit: cover;
-          }
-          .template-overlay {
-            position: absolute;
-            inset: 0;
-            font-family: Arial, sans-serif;
-            color: #111;
-          }
-          .field {
-            position: absolute;
-            font-weight: 700;
-            line-height: 1.05;
-            white-space: nowrap;
-          }
-          .field.small { font-size: 9px; }
-          .field.medium { font-size: 10px; }
-          .field.large { font-size: 11px; }
-          .field.xlarge { font-size: 13px; }
-          .field.wrap {
-            white-space: normal;
-            word-break: break-word;
-          }
-          .field.center { text-align: center; }
-          .field.right { text-align: right; }
-          .field.italic { font-style: italic; }
-          .mark {
-            position: absolute;
-            font-weight: 700;
-            font-size: 10px;
-            line-height: 1;
+            border: 2px solid #111;
+            padding: 8mm;
           }
           .status-pill {
-            position: absolute;
-            top: 8mm;
-            right: 8mm;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 1.2mm 2.5mm;
             border: 0.3mm solid #111;
-            background: rgba(255, 255, 255, 0.9);
+            background: #fff;
             font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
+            margin-left: auto;
+          }
+          .admin-paper-header,
+          .admin-paper-grid {
+            display: grid;
+            gap: 3mm;
+          }
+          .admin-paper-header {
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            margin-bottom: 3mm;
+          }
+          .admin-paper-eyebrow {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .admin-paper-header h4 {
+            margin: 2mm 0 0;
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+          }
+          .admin-paper-grid-two {
+            grid-template-columns: 1fr 1fr;
+          }
+          .admin-paper-grid-three {
+            grid-template-columns: 1fr 1fr 1fr;
+          }
+          .admin-paper-panel,
+          .admin-paper-field {
+            min-width: 0;
+            border: 1px solid #111;
+            padding: 2.5mm;
+          }
+          .admin-paper-label {
+            display: block;
+            margin-bottom: 1.2mm;
+            font-size: 10px;
+            text-transform: uppercase;
+          }
+          .admin-paper-value {
+            min-height: 6mm;
+            border-bottom: 1px solid #111;
+            padding-bottom: 1mm;
+            font-size: 11px;
+            font-weight: 700;
+          }
+          .admin-paper-value-block {
+            min-height: 16mm;
+            white-space: pre-wrap;
+          }
+          .admin-paper-section-title {
+            margin: 3mm 0;
+            padding: 1.5mm;
+            border-top: 1px solid #111;
+            border-bottom: 1px solid #111;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          .admin-paper-option-list,
+          .admin-paper-subsection {
+            display: grid;
+            gap: 1.4mm;
+          }
+          .admin-paper-subsection {
+            margin-top: 2mm;
+          }
+          .admin-paper-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 2mm;
+            font-size: 10px;
+            line-height: 1.2;
+          }
+          .admin-paper-check {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.2mm;
+            height: 3.2mm;
+            border: 1px solid #111;
+            font-size: 9px;
+            font-weight: 800;
+            flex-shrink: 0;
+          }
+          .admin-paper-subfield {
+            margin-top: 2mm;
+          }
+          .admin-paper-table {
+            width: 100%;
+            margin-top: 2mm;
+            border-collapse: collapse;
+            font-size: 10px;
+          }
+          .admin-paper-table th,
+          .admin-paper-table td {
+            border: 1px solid #111;
+            padding: 1.2mm;
+            text-align: center;
+          }
+          .admin-paper-table th:first-child,
+          .admin-paper-table td:first-child {
+            text-align: left;
+          }
+          @media print {
+            body {
+              background: #fff;
+            }
+            .print-shell {
+              margin: 0;
+            }
           }
         </style>
       </head>
       <body>
         <div class="print-shell">
-          <img class="template-image" src="${templateImage}" alt="Leave form template">
           <div class="status-pill">${escapeHtml(capitalize(request.status))}</div>
-          <div class="template-overlay">
-            ${overlayMarkup}
-          </div>
+          ${buildAdminRequestPaperMarkup(request)}
         </div>
         ${autoPrint}
       </body>
       </html>
     `;
-  }
-
-  async function getLeaveTemplateDataUrl() {
-    if (!leaveTemplateDataUrlPromise) {
-      leaveTemplateDataUrlPromise = fetch(leaveTemplateImagePath)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Unable to load leave form template image from ${leaveTemplateImagePath}.`);
-          }
-          return response.blob();
-        })
-        .then((blob) => new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(String(reader.result || ""));
-          reader.onerror = () => reject(new Error("Unable to read leave form template image."));
-          reader.readAsDataURL(blob);
-        }))
-        .catch((error) => {
-          leaveTemplateDataUrlPromise = null;
-          throw error;
-        });
-    }
-
-    return leaveTemplateDataUrlPromise;
-  }
-
-  function buildAdminRequestTemplateOverlayMarkup(request) {
-    const topScale = 0.594;
-    const ty = (value) => `${(value * topScale).toFixed(2)}mm`;
-    const leaveType = String(request.leave_type || "").toLowerCase();
-    const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
-    const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
-    const statusApproved = request.status === "approved";
-    const statusRejected = request.status === "rejected";
-    const applicantName = {
-      last: request.applicant_last_name || "",
-      first: request.applicant_first_name || "",
-      middle: request.applicant_middle_name || ""
-    };
-
-    return `
-      ${overlayField("13mm", ty(76.5), "58mm", applicantName.last, "xlarge center")}
-      ${overlayField("83mm", ty(76.5), "42mm", applicantName.first, "xlarge center")}
-      ${overlayField("136mm", ty(76.5), "38mm", applicantName.middle, "xlarge center")}
-      ${overlayField("18mm", ty(76), "45mm", request.office_department || "", "xlarge center")}
-      ${overlayField("36mm", ty(95.6), "28mm", formatDateShort(request.filing_date), "xlarge center")}
-      ${overlayField("106mm", ty(95), "46mm", request.position_title || "", "xlarge center")}
-      ${overlayField("174mm", ty(95), "22mm", request.salary_display || "", "xlarge right")}
-
-      ${overlayMark("16mm", ty(121), leaveType === "vacation")}
-      ${overlayMark("16mm", ty(132), leaveType === "mandatory-forced")}
-      ${overlayMark("16mm", ty(143), leaveType === "sick")}
-      ${overlayMark("16mm", ty(154), leaveType === "maternity")}
-      ${overlayMark("16mm", ty(165), leaveType === "paternity")}
-      ${overlayMark("16mm", ty(176), leaveType === "special-privilege")}
-      ${overlayMark("16mm", ty(187), leaveType === "solo-parent")}
-      ${overlayMark("16mm", ty(198), leaveType === "study")}
-      ${overlayMark("16mm", ty(209), leaveType === "vawc")}
-      ${overlayMark("16mm", ty(220), leaveType === "rehabilitation-privilege")}
-      ${overlayMark("16mm", ty(231), leaveType === "special-benefits-women")}
-      ${overlayMark("16mm", ty(242), leaveType === "special-emergency-calamity")}
-      ${overlayMark("16mm", ty(253), leaveType === "adoption")}
-      ${overlayField("23mm", ty(266), "49mm", request.other_leave_details || "", "large")}
-
-      ${overlayMark("116mm", ty(127), vacationLocations.includes("within-ph"))}
-      ${overlayMark("116mm", ty(138.5), vacationLocations.includes("abroad"))}
-      ${overlayMark("116mm", ty(154), sickDetails.includes("in-hospital"))}
-      ${overlayMark("116mm", ty(165.5), sickDetails.includes("out-patient"))}
-      ${overlayField("151mm", ty(138), "45mm", vacationLocations.includes("abroad") ? (request.reason || "") : "", "medium")}
-      ${overlayField("160mm", ty(154), "36mm", sickDetails.includes("in-hospital") ? (request.reason || "") : "", "medium")}
-      ${overlayField("167mm", ty(165.5), "29mm", sickDetails.includes("out-patient") ? (request.reason || "") : "", "medium")}
-      ${overlayField("122mm", ty(180), "74mm", leaveType === "special-benefits-women" ? (request.reason || "") : "", "medium")}
-      ${overlayMark("116mm", ty(195), leaveType === "study" && /master/i.test(request.reason || ""))}
-      ${overlayMark("116mm", ty(206), leaveType === "study" && /(bar|board)/i.test(request.reason || ""))}
-      ${overlayField("143mm", ty(216.5), "53mm", leaveType === "study" ? (request.reason || "") : "", "medium")}
-      ${overlayMark("116mm", ty(228), /monet/i.test(request.reason || ""))}
-      ${overlayMark("116mm", ty(239.5), /terminal/i.test(request.reason || ""))}
-
-      ${overlayField("35mm", ty(281), "40mm", String(request.days_requested || ""), "xlarge center")}
-      ${overlayField("35mm", ty(296), "50mm", formatDateLong(request.start_date), "large center")}
-      ${overlayField("152mm", ty(291), "12mm", request.commutation === "not-requested" ? "X" : "", "xlarge center")}
-      ${overlayField("152mm", ty(302), "12mm", request.commutation === "requested" ? "X" : "", "xlarge center")}
-      ${overlayField("145mm", ty(308), "50mm", getApplicantFullName(request), "large center")}
-
-      ${overlayField("34mm", ty(350), "55mm", formatDateShort(request.credit_as_of), "large center")}
-      ${overlayField("62mm", ty(364), "24mm", formatNumberDisplay(request.credit_earned_vacation), "large center")}
-      ${overlayField("107mm", ty(364), "24mm", formatNumberDisplay(request.credit_earned_sick), "large center")}
-      ${overlayField("62mm", ty(372.5), "24mm", formatIntegerDisplay(request.days_requested), "large center")}
-      ${overlayField("107mm", ty(372.5), "24mm", formatIntegerDisplay(request.days_requested), "large center")}
-      ${overlayField("62mm", ty(381), "24mm", formatNumberDisplay(request.credit_balance_vacation), "large center")}
-      ${overlayField("107mm", ty(381), "24mm", formatNumberDisplay(request.credit_balance_sick), "large center")}
-      ${overlayField("33mm", ty(398), "85mm", "SHERIL Q. BRIONES, HRMO", "xlarge center")}
-
-      ${overlayMark("117mm", ty(353), statusApproved || request.recommendation === "approved")}
-      ${overlayMark("117mm", ty(364), statusRejected || request.recommendation === "rejected")}
-      ${overlayField("146mm", ty(363), "48mm", request.recommendation_details || request.disapproval_details || "", "medium")}
-      ${overlayField("143mm", ty(397), "52mm", "HANILYN R. YARA", "xlarge center")}
-
-      ${overlayField("35mm", ty(427), "20mm", formatIntegerDisplay(request.approved_with_pay_days), "xlarge center")}
-      ${overlayField("35mm", ty(438), "20mm", formatIntegerDisplay(request.approved_without_pay_days), "xlarge center")}
-      ${overlayField("35mm", ty(449), "38mm", request.approved_other_details || "", "medium")}
-      ${overlayField("137mm", ty(427), "58mm", request.disapproval_details || "", "medium wrap")}
-      ${overlayField("77mm", ty(462), "85mm", "HON. VICENTA C. AGUILAR, MUN. MAYOR", "xlarge center")}
-    `;
-  }
-
-  function overlayField(left, top, width, value, classes) {
-    return `<div class="field ${classes}" style="left:${left};top:${top};width:${width};">${escapeHtml(value || "")}</div>`;
-  }
-
-  function overlayMark(left, top, isChecked) {
-    return isChecked ? `<div class="mark" style="left:${left};top:${top};">X</div>` : "";
   }
 
   function bindSignOut() {
