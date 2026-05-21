@@ -14,7 +14,7 @@
   let adminLeaveRequests = [];
   let selectedAdminRequestId = null;
   let leaveTemplateDataUrlPromise = null;
-  const leaveTemplateImagePath = "8bc64884-13da-46ba-9175-41349fe27db7.jpeg";
+  const leaveTemplateImagePath = "leave-form-template.jpeg";
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
     "mandatory-forced": "Mandatory/Forced Leave",
@@ -1151,7 +1151,7 @@
       leaveTemplateDataUrlPromise = fetch(leaveTemplateImagePath)
         .then((response) => {
           if (!response.ok) {
-            throw new Error("Unable to load leave form template image.");
+            throw new Error(`Unable to load leave form template image from ${leaveTemplateImagePath}.`);
           }
           return response.blob();
         })
