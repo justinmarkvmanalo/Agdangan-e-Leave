@@ -35,6 +35,7 @@ create table if not exists public.employees (
   hire_date date,
   employment_status text not null default 'active' check (employment_status in ('active', 'inactive', 'suspended')),
   leave_credits numeric(10,2) not null default 0,
+  last_credit_accrual_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -99,6 +100,10 @@ alter table public.leave_requests add column if not exists approved_with_pay_day
 alter table public.leave_requests add column if not exists approved_without_pay_days integer;
 alter table public.leave_requests add column if not exists approved_other_details text;
 alter table public.leave_requests add column if not exists disapproval_details text;
+alter table public.employees add column if not exists last_credit_accrual_date date;
+update public.employees
+set last_credit_accrual_date = coalesce(last_credit_accrual_date, current_date)
+where last_credit_accrual_date is null;
 
 alter table public.admins enable row level security;
 alter table public.employees enable row level security;
@@ -225,6 +230,8 @@ as $$
 declare
   employee_profile public.employees;
 begin
+  perform public.apply_employee_monthly_leave_credit(p_employee_id);
+
   select *
   into employee_profile
   from public.employees
@@ -235,6 +242,46 @@ begin
 end;
 $$;
 
+create or replace function public.apply_employee_monthly_leave_credit(p_employee_id bigint)
+returns public.employees
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  employee_record public.employees;
+  anchor_date date;
+  months_to_add integer;
+begin
+  select *
+  into employee_record
+  from public.employees
+  where id = p_employee_id
+  for update;
+
+  if not found then
+    return null;
+  end if;
+
+  anchor_date := coalesce(employee_record.last_credit_accrual_date, current_date);
+  months_to_add := (
+    extract(year from age(current_date, anchor_date))::integer * 12
+    + extract(month from age(current_date, anchor_date))::integer
+  );
+
+  if months_to_add > 0 then
+    update public.employees
+    set
+      leave_credits = round((leave_credits + (months_to_add * 1.25::numeric))::numeric, 2),
+      last_credit_accrual_date = (anchor_date + make_interval(months => months_to_add))::date
+    where id = p_employee_id
+    returning * into employee_record;
+  end if;
+
+  return employee_record;
+end;
+$$;
+
 create or replace function public.get_admin_employees(p_admin_id bigint)
 returns setof public.employees
 language plpgsql
@@ -242,6 +289,10 @@ security definer
 set search_path = public
 as $$
 begin
+  perform public.apply_employee_monthly_leave_credit(e.id)
+  from public.employees e
+  where e.admin_id = p_admin_id;
+
   return query
   select e.*
   from public.employees e
@@ -257,6 +308,8 @@ security definer
 set search_path = public
 as $$
 begin
+  perform public.apply_employee_monthly_leave_credit(p_employee_id);
+
   return query
   select lr.*
   from public.leave_requests lr
@@ -272,6 +325,10 @@ security definer
 set search_path = public
 as $$
 begin
+  perform public.apply_employee_monthly_leave_credit(e.id)
+  from public.employees e
+  where e.admin_id = p_admin_id;
+
   return query
   select lr.*
   from public.leave_requests lr
@@ -389,7 +446,8 @@ begin
     contact_no,
     hire_date,
     employment_status,
-    leave_credits
+    leave_credits,
+    last_credit_accrual_date
   )
   values (
     p_admin_id,
@@ -405,7 +463,8 @@ begin
     nullif(trim(coalesce(p_contact_no, '')), ''),
     p_hire_date,
     coalesce(p_employment_status, 'active'),
-    coalesce(p_leave_credits, 0)
+    coalesce(p_leave_credits, 0),
+    current_date
   )
   returning * into new_employee;
 
@@ -480,19 +539,88 @@ security definer
 set search_path = public
 as $$
 declare
+  request_record public.leave_requests;
+  employee_record public.employees;
+  credits_before_deduction numeric(10,2);
+  credits_after_deduction numeric(10,2);
+  approved_with_pay integer;
+  approved_without_pay integer;
   updated_request public.leave_requests;
 begin
-  update public.leave_requests lr
+  if p_status not in ('approved', 'rejected') then
+    return null;
+  end if;
+
+  select lr.*
+  into request_record
+  from public.leave_requests lr
+  inner join public.employees e on e.id = lr.employee_id
+  where lr.id = p_request_id
+    and e.admin_id = p_admin_id
+  for update;
+
+  if not found then
+    return null;
+  end if;
+
+  employee_record := public.apply_employee_monthly_leave_credit(request_record.employee_id);
+
+  if request_record.status = 'approved' and p_status <> 'approved' and request_record.commutation = 'requested' then
+    update public.employees
+    set leave_credits = round((
+      leave_credits + greatest(
+        coalesce(request_record.credit_earned_vacation, 0) - coalesce(request_record.credit_balance_vacation, 0),
+        0
+      )
+    )::numeric, 2)
+    where id = request_record.employee_id
+    returning * into employee_record;
+  end if;
+
+  credits_before_deduction := round(coalesce(employee_record.leave_credits, 0)::numeric, 2);
+  credits_after_deduction := credits_before_deduction;
+  approved_with_pay := null;
+  approved_without_pay := null;
+
+  if p_status = 'approved' then
+    if request_record.status <> 'approved' and request_record.commutation = 'requested' then
+      credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
+
+      update public.employees
+      set leave_credits = round(credits_after_deduction::numeric, 2)
+      where id = request_record.employee_id
+      returning * into employee_record;
+    end if;
+
+    approved_with_pay := least(floor(credits_before_deduction)::integer, request_record.days_requested);
+    approved_without_pay := greatest(request_record.days_requested - approved_with_pay, 0);
+  end if;
+
+  update public.leave_requests
   set
     status = p_status,
     reviewed_by_admin_id = p_admin_id,
-    reviewed_at = now()
-  from public.employees e
-  where lr.id = p_request_id
-    and e.id = lr.employee_id
-    and e.admin_id = p_admin_id
-    and p_status in ('approved', 'rejected')
-  returning lr.* into updated_request;
+    reviewed_at = now(),
+    credit_as_of = current_date,
+    credit_earned_vacation = credits_before_deduction,
+    credit_earned_sick = credits_before_deduction,
+    credit_balance_vacation = credits_after_deduction,
+    credit_balance_sick = credits_after_deduction,
+    recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
+    recommendation_details = case
+      when p_status = 'approved' then concat('Monthly accrual rate: 1.25 credit per month. With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
+      else 'Request disapproved.'
+    end,
+    approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
+    approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
+    approved_other_details = case
+      when p_status = 'approved' and request_record.commutation = 'requested' then 'Commutation requested and calculated against available leave credits.'
+      when p_status = 'approved' then 'Commutation not requested.'
+      else null
+    end,
+    disapproval_details = case when p_status = 'rejected' then 'Rejected by administrator.' else null end
+  where id = p_request_id
+  returning * into updated_request;
 
   return updated_request;
 end;

@@ -13,6 +13,7 @@
   let adminEmployeeProfiles = [];
   let adminLeaveRequests = [];
   let selectedAdminRequestId = null;
+  const monthlyCreditGain = 1.25;
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
     "mandatory-forced": "Mandatory/Forced Leave",
@@ -20,6 +21,7 @@
     maternity: "Maternity Leave",
     paternity: "Paternity Leave",
     "special-privilege": "Special Privilege Leave",
+    wellness: "Wellness Leave",
     "solo-parent": "Solo Parent Leave",
     study: "Study Leave",
     vawc: "10-Day VAWC Leave",
@@ -313,10 +315,45 @@
     const daysRequestedInput = form.querySelector("#days-requested");
     const leaveOtherInput = form.querySelector("#leave-other");
     const leaveTypeInputs = Array.from(form.querySelectorAll('input[name="leaveType"]'));
+    const groupedDetailInputs = {
+      vacation: Array.from(form.querySelectorAll('input[name="leaveLocation"]')),
+      sick: Array.from(form.querySelectorAll('input[name="sickDetail"]')),
+      women: Array.from(form.querySelectorAll('input[name="leavePurpose"][value="women-illness"]')),
+      study: Array.from(form.querySelectorAll('input[name="leavePurpose"][value="masters-completion"], input[name="leavePurpose"][value="bar-review"]')),
+      "other-purpose": Array.from(form.querySelectorAll('input[name="leavePurpose"][value="monetization"], input[name="leavePurpose"][value="terminal"]'))
+    };
+    const detailGroupRules = {
+      vacation: ["vacation"],
+      "special-privilege": ["vacation"],
+      sick: ["sick"],
+      "special-benefits-women": ["women"],
+      study: ["study"],
+      others: ["other-purpose"]
+    };
 
     const syncLeaveTypeState = () => {
+      const selectedLeaveType = leaveTypeInputs.find((input) => input.checked)?.value || "";
+      const enabledGroups = new Set(detailGroupRules[selectedLeaveType] || []);
+
+      Object.entries(groupedDetailInputs).forEach(([groupKey, inputs]) => {
+        const isEnabled = enabledGroups.has(groupKey);
+        const group = form.querySelector(`[data-detail-group="${groupKey}"]`);
+        group?.classList.toggle("is-disabled", !isEnabled);
+
+        inputs.forEach((input) => {
+          input.disabled = !isEnabled;
+          if (!isEnabled) {
+            input.checked = false;
+          }
+        });
+      });
+
       if (leaveOtherInput) {
-        leaveOtherInput.disabled = false;
+        const otherSelected = selectedLeaveType === "others";
+        leaveOtherInput.disabled = !otherSelected;
+        if (!otherSelected) {
+          leaveOtherInput.value = "";
+        }
       }
     };
 
@@ -342,9 +379,19 @@
       daysRequestedInput.value = String(computedDays);
     };
 
+    const sanitizeDaysRequested = () => {
+      if (!daysRequestedInput) {
+        return;
+      }
+
+      const digitsOnly = String(daysRequestedInput.value || "").replace(/[^\d]/g, "");
+      daysRequestedInput.value = digitsOnly;
+    };
+
     leaveTypeInputs.forEach((input) => input.addEventListener("change", syncLeaveTypeState));
     startDateInput?.addEventListener("change", syncDaysRequested);
     endDateInput?.addEventListener("change", syncDaysRequested);
+    daysRequestedInput?.addEventListener("input", sanitizeDaysRequested);
     syncLeaveTypeState();
 
     form.addEventListener("submit", async (event) => {
@@ -365,13 +412,18 @@
         salary_display: String(document.getElementById("salary-display")?.value || "N/A"),
         start_date: String(formData.get("startDate") || ""),
         end_date: String(formData.get("endDate") || ""),
-        days_requested: Number(formData.get("daysRequested") || 0),
+        days_requested: Number.parseInt(String(formData.get("daysRequested") || "0"), 10),
         other_leave_details: String(document.getElementById("leave-other")?.value || "").trim(),
         vacation_location: vacationLocation,
         sick_leave_details: sickLeaveDetails,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
       };
+
+      if (!Number.isInteger(payload.days_requested) || payload.days_requested <= 0) {
+        window.alert("Working days must be a whole number greater than zero.");
+        return;
+      }
 
       const { error } = await db.rpc("create_leave_request", {
         p_employee_id: payload.employee_id,
@@ -862,6 +914,8 @@
     const leaveType = String(request.leave_type || "").toLowerCase();
     const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
+    const creditSnapshot = buildLeaveCreditSnapshot(request);
+    const creditCells = buildCreditCellValues(request, creditSnapshot);
 
     return `
       <section class="admin-request-paper">
@@ -911,6 +965,7 @@
               ${renderAdminOptionRow("Maternity Leave", leaveType === "maternity")}
               ${renderAdminOptionRow("Paternity Leave", leaveType === "paternity")}
               ${renderAdminOptionRow("Special Privilege Leave", leaveType === "special-privilege")}
+              ${renderAdminOptionRow("Wellness Leave", leaveType === "wellness")}
               ${renderAdminOptionRow("Solo Parent Leave", leaveType === "solo-parent")}
               ${renderAdminOptionRow("Study Leave", leaveType === "study")}
               ${renderAdminOptionRow("10-Day VAWC Leave", leaveType === "vawc")}
@@ -964,11 +1019,11 @@
         <div class="admin-paper-section-title">7. Action on Application</div>
 
         <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-panel">
+          <div class="admin-paper-panel admin-paper-panel-emphasis">
             <span class="admin-paper-label">7.A Certification of Leave Credits</span>
             <div class="admin-paper-field admin-paper-subfield">
               <span class="admin-paper-label">As of</span>
-              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.credit_as_of))}</div>
+              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf))}</div>
             </div>
             <table class="admin-paper-table">
               <thead>
@@ -980,25 +1035,34 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>Total Earned</td>
-                  <td>${escapeHtml(formatNumberDisplay(request.credit_earned_vacation))}</td>
-                  <td>${escapeHtml(formatNumberDisplay(request.credit_earned_sick))}</td>
+                  <td>Current Credits</td>
+                  <td>${escapeHtml(creditCells.vacation.current)}</td>
+                  <td>${escapeHtml(creditCells.sick.current)}</td>
                 </tr>
                 <tr>
-                  <td>Balance</td>
-                  <td>${escapeHtml(formatNumberDisplay(request.credit_balance_vacation))}</td>
-                  <td>${escapeHtml(formatNumberDisplay(request.credit_balance_sick))}</td>
+                  <td>Less Requested Days</td>
+                  <td>${escapeHtml(creditCells.vacation.deduction)}</td>
+                  <td>${escapeHtml(creditCells.sick.deduction)}</td>
+                </tr>
+                <tr>
+                  <td>Projected Balance</td>
+                  <td>${escapeHtml(creditCells.vacation.balance)}</td>
+                  <td>${escapeHtml(creditCells.sick.balance)}</td>
                 </tr>
               </tbody>
             </table>
+            <div class="admin-paper-credit-summary">
+              <div>Monthly credit gain: ${escapeHtml(formatNumberDisplay(creditSnapshot.monthlyGain))}</div>
+              <div>Commutation: ${escapeHtml(isCommutationRequested(request) ? "Requested" : "Not Requested")}</div>
+            </div>
           </div>
-          <div class="admin-paper-panel">
+          <div class="admin-paper-panel admin-paper-panel-emphasis">
             <span class="admin-paper-label">7.B Recommendation</span>
             ${renderAdminOptionRow("For approval", request.recommendation === "approved" || request.status === "approved")}
             ${renderAdminOptionRow("For disapproval", request.recommendation === "rejected" || request.status === "rejected")}
             <div class="admin-paper-field admin-paper-subfield">
               <span class="admin-paper-label">Details</span>
-              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.recommendation_details || "-")}</div>
+              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`)}</div>
             </div>
           </div>
         </div>
@@ -1140,6 +1204,10 @@
             border: 1px solid #111;
             padding: 2.5mm;
           }
+          .admin-paper-panel-emphasis {
+            padding: 3mm;
+            border-width: 1.1px;
+          }
           .admin-paper-label {
             display: block;
             margin-bottom: 1.2mm;
@@ -1212,6 +1280,14 @@
           .admin-paper-table td:first-child {
             text-align: left;
           }
+          .admin-paper-credit-summary {
+            display: grid;
+            gap: 1.2mm;
+            margin-top: 2mm;
+            padding-top: 1.6mm;
+            border-top: 1px solid #111;
+            font-size: 10px;
+          }
           @media print {
             body {
               background: #fff;
@@ -1263,6 +1339,62 @@
     window.localStorage.removeItem(sessionKey);
   }
 
+  function getAdminEmployeeProfileById(employeeId) {
+    return adminEmployeeProfiles.find((profile) => Number(profile.id) === Number(employeeId)) || null;
+  }
+
+  function isCommutationRequested(request) {
+    return String(request?.commutation || "").toLowerCase() === "requested";
+  }
+
+  function buildLeaveCreditSnapshot(request) {
+    const employee = getAdminEmployeeProfileById(request.employee_id);
+    const currentCredits = Number(employee?.leave_credits || 0);
+    const storedCreditsBeforeDeduction = Number(request.credit_earned_vacation);
+    const storedBalanceAfterDeduction = Number(request.credit_balance_vacation);
+    const daysRequested = Number(request.days_requested || 0);
+    const creditsBeforeDeduction = Number.isFinite(storedCreditsBeforeDeduction)
+      ? storedCreditsBeforeDeduction
+      : currentCredits;
+    const deduction = isCommutationRequested(request) ? daysRequested : 0;
+    const projectedBalance = Number.isFinite(storedBalanceAfterDeduction)
+      ? storedBalanceAfterDeduction
+      : Math.max(creditsBeforeDeduction - deduction, 0);
+    const paidDays = request.approved_with_pay_days === null || request.approved_with_pay_days === undefined
+      ? Math.min(daysRequested, Math.floor(creditsBeforeDeduction))
+      : Number(request.approved_with_pay_days);
+    const unpaidDays = request.approved_without_pay_days === null || request.approved_without_pay_days === undefined
+      ? Math.max(daysRequested - paidDays, 0)
+      : Number(request.approved_without_pay_days);
+
+    return {
+      currentCredits: creditsBeforeDeduction,
+      projectedBalance,
+      deduction,
+      paidDays,
+      unpaidDays,
+      monthlyGain: monthlyCreditGain,
+      creditAsOf: request.credit_as_of || new Date().toISOString().slice(0, 10)
+    };
+  }
+
+  function buildCreditCellValues(request, snapshot) {
+    const useSickColumn = ["sick", "wellness"].includes(String(request.leave_type || "").toLowerCase());
+
+    return {
+      vacation: {
+        current: useSickColumn ? "-" : formatNumberDisplay(snapshot.currentCredits),
+        deduction: useSickColumn ? "-" : formatNumberDisplay(snapshot.deduction),
+        balance: useSickColumn ? "-" : formatNumberDisplay(snapshot.projectedBalance)
+      },
+      sick: {
+        current: useSickColumn ? formatNumberDisplay(snapshot.currentCredits) : "-",
+        deduction: useSickColumn ? formatNumberDisplay(snapshot.deduction) : "-",
+        balance: useSickColumn ? formatNumberDisplay(snapshot.projectedBalance) : "-"
+      }
+    };
+  }
+
   function renderEmployeeDemo() {
     fillEmployeeHeader({
       first_name: "Juan",
@@ -1297,6 +1429,11 @@
   }
 
   function renderAdminDemo() {
+    adminEmployeeProfiles = [{
+      id: 1,
+      leave_credits: 12.5
+    }];
+
     setText("admin-name", "Welcome, System Administrator");
     setText("admin-meta", "HR | Municipal Administrator");
     setText("stat-employees", "24");
@@ -1381,6 +1518,7 @@
     if (preview) {
       preview.innerHTML = buildAdminRequestPreviewMarkup({
         id: 1,
+        employee_id: 1,
         status: "pending",
         leave_type: "vacation",
         office_department: "Treasury",

@@ -149,6 +149,10 @@
                     <span>Special Privilege Leave</span>
                   </label>
                   <label class="leave-option">
+                    <input type="radio" name="leaveType" value="wellness" required>
+                    <span>Wellness Leave</span>
+                  </label>
+                  <label class="leave-option">
                     <input type="radio" name="leaveType" value="solo-parent" required>
                     <span>Solo Parent Leave</span>
                   </label>
@@ -189,7 +193,7 @@
 
               <fieldset class="leave-paper-panel">
                 <legend>6.B Details of Leave</legend>
-                <div class="leave-paper-subgroup">
+                <div class="leave-paper-subgroup" data-detail-group="vacation">
                   <p>In case of Vacation / Special Privilege Leave:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="leaveLocation" value="within-ph"> <span>Within the Philippines</span></label>
@@ -197,7 +201,7 @@
                   </div>
                 </div>
 
-                <div class="leave-paper-subgroup">
+                <div class="leave-paper-subgroup" data-detail-group="sick">
                   <p>In case of Sick Leave:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="sickDetail" value="in-hospital"> <span>In Hospital (Specify Illness)</span></label>
@@ -205,14 +209,14 @@
                   </div>
                 </div>
 
-                <div class="leave-paper-subgroup">
+                <div class="leave-paper-subgroup" data-detail-group="women">
                   <p>In case of Special Leave Benefits for Women:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="leavePurpose" value="women-illness"> <span>(Specify Illness)</span></label>
                   </div>
                 </div>
 
-                <div class="leave-paper-subgroup">
+                <div class="leave-paper-subgroup" data-detail-group="study">
                   <p>In case of Study Leave:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="leavePurpose" value="masters-completion"> <span>Completion of Master's Degree</span></label>
@@ -220,7 +224,7 @@
                   </div>
                 </div>
 
-                <div class="leave-paper-subgroup">
+                <div class="leave-paper-subgroup" data-detail-group="other-purpose">
                   <p>Other purpose:</p>
                   <div class="leave-paper-bullets">
                     <label><input type="checkbox" name="leavePurpose" value="monetization"> <span>Monetization of Leave Credits</span></label>
@@ -239,7 +243,7 @@
               <div class="leave-paper-cell">
                 <label class="leave-paper-label" for="days-requested">6.C Number of Working Days Applied For</label>
                 <div class="leave-paper-tight-field">
-                  <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="0.5" step="0.5" required>
+                  <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="1" step="1" inputmode="numeric" required>
                 </div>
                 <div class="leave-paper-subline-group">
                   <label for="start-date">Inclusive Dates</label>
@@ -267,7 +271,7 @@
             <div class="leave-paper-row leave-paper-row-action">
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">7.A Certification of Leave Credits</span>
-                <div class="leave-paper-credit-note">As of</div>
+                <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line"></span></div>
                 <table class="leave-paper-credit-table" aria-label="Leave credits certification">
                   <thead>
                     <tr>
@@ -297,6 +301,7 @@
                 <div class="leave-paper-officer">
                   <div class="leave-paper-line"></div>
                   <strong>Authorized Officer</strong>
+                  <span>(Authorized Officer)</span>
                 </div>
               </div>
               <div class="leave-paper-cell">
@@ -306,13 +311,16 @@
                     <label><input type="checkbox" disabled> <span>For approval</span></label>
                     <label><input type="checkbox" disabled> <span>For disapproval due to</span></label>
                   </div>
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-writing">
+                    <div class="leave-paper-action-line"></div>
+                    <div class="leave-paper-action-line"></div>
+                    <div class="leave-paper-action-line"></div>
+                  </div>
                 </div>
                 <div class="leave-paper-officer">
                   <div class="leave-paper-line"></div>
-                  <strong>Immediate Head</strong>
+                  <strong>Authorized Officer</strong>
+                  <span>(Authorized Officer)</span>
                 </div>
               </div>
             </div>
@@ -321,17 +329,19 @@
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">7.C Approved For</span>
                 <div class="leave-paper-approval-lines">
-                  <div class="leave-paper-approval-item">______ days with pay</div>
-                  <div class="leave-paper-approval-item">______ days without pay</div>
-                  <div class="leave-paper-approval-item">______ others (Specify)</div>
+                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days with pay</div>
+                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days without pay</div>
+                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> others (Specify)</div>
                 </div>
               </div>
               <div class="leave-paper-cell">
                 <span class="leave-paper-label">7.D Disapproved Due To</span>
                 <div class="leave-paper-action-box">
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
-                  <div class="leave-paper-action-line"></div>
+                  <div class="leave-paper-action-writing">
+                    <div class="leave-paper-action-line"></div>
+                    <div class="leave-paper-action-line"></div>
+                    <div class="leave-paper-action-line"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -339,6 +349,7 @@
             <div class="leave-paper-authorized">
               <div class="leave-paper-line"></div>
               <strong>Authorized Official</strong>
+              <span>(Authorized Official)</span>
             </div>
 
             <div class="leave-paper-footer">
