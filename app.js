@@ -1448,6 +1448,7 @@
             display: flex;
             justify-content: center;
             padding-top: 0.5mm;
+            padding-left: 1.5mm;
           }
           .leave-paper-seal {
             width: 14mm;
@@ -1465,7 +1466,7 @@
           }
           .leave-paper-heading h3 {
             margin: 2.5mm 0 0;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
           }
