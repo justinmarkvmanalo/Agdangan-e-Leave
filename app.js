@@ -920,9 +920,14 @@
     return `
       <section class="admin-request-paper">
         <div class="admin-paper-header">
-          <div>
-            <div class="admin-paper-eyebrow">Republic of the Philippines</div>
-            <h4>Application for Leave</h4>
+          <div class="admin-paper-title-wrap">
+            <div class="admin-paper-seal-wrap">
+              <img src="OIP (1).webp" alt="Agdangan seal" class="admin-paper-seal">
+            </div>
+            <div>
+              <div class="admin-paper-eyebrow">Republic of the Philippines</div>
+              <h4>Application for Leave</h4>
+            </div>
           </div>
           <div class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</div>
         </div>
@@ -1176,10 +1181,26 @@
             display: grid;
             gap: 3mm;
           }
+          .admin-paper-title-wrap {
+            display: grid;
+            grid-template-columns: 18mm 1fr;
+            align-items: center;
+            gap: 3mm;
+          }
           .admin-paper-header {
             grid-template-columns: 1fr auto;
             align-items: start;
             margin-bottom: 3mm;
+          }
+          .admin-paper-seal-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .admin-paper-seal {
+            width: 14mm;
+            height: 14mm;
+            object-fit: contain;
           }
           .admin-paper-eyebrow {
             font-size: 11px;

@@ -810,6 +810,14 @@ textarea {
   border-right: 0;
 }
 
+.leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:first-child,
+.leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:nth-child(2),
+.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:first-child,
+.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(2),
+.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(3) {
+  border-right: 0;
+}
+
 .leave-paper-label {
   display: block;
   margin-bottom: 0.42rem;
@@ -1242,10 +1250,29 @@ textarea {
   gap: 0.85rem;
 }
 
+.admin-paper-title-wrap {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .admin-paper-header {
   grid-template-columns: 1fr auto;
   align-items: start;
   margin-bottom: 0.9rem;
+}
+
+.admin-paper-seal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-paper-seal {
+  width: 2.8rem;
+  height: 2.8rem;
+  object-fit: contain;
 }
 
 .admin-paper-eyebrow {
