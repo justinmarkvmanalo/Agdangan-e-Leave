@@ -38,8 +38,35 @@
         </p>
         <div class="hero-actions">
           <a href="login.html" class="button button-primary">Open Login Portal</a>
-          <a href="#service" class="button button-secondary">Explore Service</a>
+          <a href="#home-login" class="button button-secondary">Choose Login Role</a>
         </div>
+      </div>
+    </section>
+
+    <section class="home-login-section" id="home-login">
+      <div class="home-login-copy">
+        <p class="section-label">Login Access</p>
+        <h3>Select the correct portal under Home.</h3>
+        <p>
+          Continue as an employee to file and track leave requests, or enter the administrator portal to review,
+          approve, and manage records.
+        </p>
+      </div>
+
+      <div class="home-login-grid">
+        <a href="login.html?role=employee" class="login-entry-card">
+          <span class="login-entry-tag">Employee</span>
+          <strong>Employee Login</strong>
+          <p>Open leave filing, request history, and personal status tracking.</p>
+          <span class="login-entry-link">Proceed to employee sign in</span>
+        </a>
+
+        <a href="login.html?role=admin" class="login-entry-card login-entry-card-admin">
+          <span class="login-entry-tag">Administrator</span>
+          <strong>Admin Login</strong>
+          <p>Open approval tools, employee account controls, and records monitoring.</p>
+          <span class="login-entry-link">Proceed to admin sign in</span>
+        </a>
       </div>
     </section>
 
@@ -77,14 +104,14 @@
         <p class="section-label">Service</p>
         <h3>Login Portal Access</h3>
         <p>
-          Choose the correct login column to continue to the Agdangan e-Leave service as an employee or administrator.
+          The home page now places both login paths first, so users can immediately continue to the correct portal.
         </p>
         <div class="service-links">
-          <a href="login.html" class="mini-card">
+          <a href="login.html?role=employee" class="mini-card">
             <strong>Employee Login</strong>
             <span>Access leave filing, request status, and employee service records.</span>
           </a>
-          <a href="login.html" class="mini-card">
+          <a href="login.html?role=admin" class="mini-card">
             <strong>Admin Login</strong>
             <span>Access approval tools, monitoring, and administrator service records.</span>
           </a>

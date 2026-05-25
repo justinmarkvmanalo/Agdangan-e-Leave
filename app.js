@@ -61,6 +61,19 @@
     const roleInput = document.getElementById("selected-role");
     const loginForm = document.getElementById("login-form");
     const demoFillButton = document.getElementById("demo-fill");
+    const requestedRole = new URLSearchParams(window.location.search).get("role");
+
+    const applyRole = (role) => {
+      const normalizedRole = role === "admin" ? "admin" : "employee";
+      const activeButton = switchButtons.find((button) => button.getAttribute("data-role-switch") === normalizedRole);
+
+      switchButtons.forEach((item) => item.classList.toggle("active", item === activeButton));
+      roleInput.value = normalizedRole;
+      title.textContent = normalizedRole === "admin" ? "Admin Sign In" : "Employee Sign In";
+      subtitle.textContent = normalizedRole === "admin"
+        ? "Use your admin table credentials to review and approve leave requests."
+        : "Use your employee table credentials to open your leave dashboard.";
+    };
 
     if (configStatus) {
       configStatus.hidden = isConfigured;
@@ -72,14 +85,13 @@
     switchButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const role = button.getAttribute("data-role-switch");
-        switchButtons.forEach((item) => item.classList.toggle("active", item === button));
-        roleInput.value = role;
-        title.textContent = role === "admin" ? "Admin Sign In" : "Employee Sign In";
-        subtitle.textContent = role === "admin"
-          ? "Use your admin table credentials to review and approve leave requests."
-          : "Use your employee table credentials to open your leave dashboard.";
+        applyRole(role);
       });
     });
+
+    if (requestedRole === "admin" || requestedRole === "employee") {
+      applyRole(requestedRole);
+    }
 
     if (demoFillButton) {
       demoFillButton.addEventListener("click", () => {
