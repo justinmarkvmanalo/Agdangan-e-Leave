@@ -27,8 +27,7 @@ body {
   font-family: "Manrope", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at top, rgba(46, 126, 203, 0.18), transparent 32%),
-    linear-gradient(180deg, #f5f9fd 0%, #dbe8f4 100%);
+    linear-gradient(180deg, #f7f9fb 0%, #edf2f6 100%);
 }
 
 body.app-shell {
@@ -169,14 +168,13 @@ textarea {
 
 .hero {
   position: relative;
-  min-height: calc(100vh - 110px);
-  display: flex;
-  align-items: flex-end;
-  padding: 4rem 4.5rem;
+  min-height: calc(100vh - 96px);
+  display: grid;
+  align-items: center;
+  padding: 4.5rem 4.5rem 4rem;
   background:
-    radial-gradient(circle at top left, rgba(243, 191, 66, 0.24), transparent 24%),
-    radial-gradient(circle at right, rgba(46, 126, 203, 0.22), transparent 32%),
-    linear-gradient(135deg, #14345c 0%, #1c4e86 48%, #0d223d 100%);
+    radial-gradient(circle at top left, rgba(243, 191, 66, 0.14), transparent 22%),
+    linear-gradient(135deg, #163b69 0%, #174577 52%, #102945 100%);
   overflow: hidden;
 }
 
@@ -190,8 +188,17 @@ textarea {
 
 .hero-content {
   position: relative;
-  max-width: 43rem;
+  max-width: 40rem;
   color: var(--white);
+}
+
+.hero-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 2rem;
+  align-items: end;
 }
 
 .hero-kicker {
@@ -226,9 +233,49 @@ textarea {
 }
 
 .hero-text {
-  max-width: 38rem;
-  font-size: 1.05rem;
+  max-width: 36rem;
+  font-size: 1.02rem;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.hero-panel {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  padding: 1.8rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  color: var(--white);
+}
+
+.hero-panel h3 {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 1.8rem;
+  line-height: 1.08;
+}
+
+.hero-panel-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.hero-panel-list div {
+  display: grid;
+  gap: 0.18rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.hero-panel-list strong {
+  font-size: 0.98rem;
+}
+
+.hero-panel-list span {
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.55;
 }
 
 .hero-actions,
@@ -284,49 +331,136 @@ textarea {
   color: var(--success);
 }
 
-.highlights,
+.official-strip,
+.overview-section,
 .service-section,
 .app-layout,
-.home-auth-section {
+.service-auth-section,
+.closing-section {
   padding: 5rem 4.5rem;
 }
 
-.home-auth-section {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(231, 240, 248, 0.94));
+.official-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding-top: 1.4rem;
+  padding-bottom: 1.4rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(16, 49, 90, 0.08);
 }
 
-.home-auth-shell {
+.official-strip-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0 1rem;
+  border-left: 3px solid rgba(16, 49, 90, 0.1);
+}
+
+.official-strip-item strong {
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.overview-section {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: start;
 }
 
-.home-auth-form-wrap {
-  display: grid;
-  gap: 1rem;
-  padding: 1.4rem 0 0;
+.overview-copy h3,
+.closing-section h3 {
+  margin: 0.75rem 0 1rem;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2rem, 3vw, 3rem);
+  color: var(--navy);
 }
 
-.home-auth-form {
+.overview-copy p,
+.closing-section p {
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.overview-card {
+  padding: 1.6rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 40px rgba(16, 49, 90, 0.09);
+  border: 1px solid rgba(16, 49, 90, 0.06);
+}
+
+.overview-card span {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.overview-card h4 {
+  margin: 0 0 0.6rem;
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  color: var(--navy);
+}
+
+.overview-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.service-auth-section {
+  display: flex;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(10, 30, 54, 0.03), rgba(10, 30, 54, 0.01)),
+    #ffffff;
+}
+
+.service-auth-card {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 42rem);
+  padding: 2rem;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(246, 249, 252, 0.96), rgba(235, 241, 247, 0.96));
+  box-shadow: 0 24px 60px rgba(16, 49, 90, 0.12);
+  border: 1px solid rgba(16, 49, 90, 0.08);
+}
+
+.service-auth-heading {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2rem, 3vw, 2.7rem);
+  color: var(--navy);
+}
+
+.service-auth-role-wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+.service-auth-form {
   padding: 0;
   background: transparent;
   box-shadow: none;
   border-radius: 0;
 }
 
-.home-auth-form .field input {
+.service-auth-form .field input {
   background: rgba(255, 255, 255, 0.98);
 }
 
-.home-auth-form .form-actions {
+.service-auth-form .form-actions {
   padding-top: 0.5rem;
-}
-
-.highlights {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr 1fr;
-  gap: 1.35rem;
 }
 
 .panel,
@@ -382,10 +516,7 @@ textarea {
 }
 
 .service-section {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 2rem;
-  align-items: start;
+  display: block;
 }
 
 .service-copy h3 {
@@ -433,7 +564,7 @@ textarea {
 }
 
 .auth-copy {
-  padding-top: 2rem;
+  padding-top: 0.5rem;
 }
 
 .auth-copy h2 {
@@ -1234,14 +1365,19 @@ textarea {
   text-align: left;
 }
 
+.closing-section {
+  max-width: 60rem;
+}
+
 @media (max-width: 1180px) {
-  .highlights,
-  .service-section,
+  .overview-section,
   .app-layout,
   .stats-grid,
   .dashboard-grid,
   .leave-paper-panel-grid,
-  .home-auth-shell {
+  .hero-layout,
+  .overview-grid,
+  .official-strip {
     grid-template-columns: 1fr;
   }
 
@@ -1254,11 +1390,12 @@ textarea {
 @media (max-width: 1080px) {
   .site-header,
   .hero,
-  .highlights,
+  .official-strip,
+  .overview-section,
   .service-section,
   .app-layout,
   .page-shell,
-  .home-auth-section {
+  .service-auth-section {
     padding-left: 1.25rem;
     padding-right: 1.25rem;
   }
@@ -1309,13 +1446,17 @@ textarea {
   }
 
   .hero {
-    min-height: 78vh;
+    min-height: auto;
     padding-top: 6rem;
   }
 
   .hero h2,
   .auth-copy h2 {
     font-size: clamp(2.2rem, 10vw, 3.5rem);
+  }
+
+  .hero-panel {
+    padding: 1.4rem;
   }
 
   .dashboard-header {
