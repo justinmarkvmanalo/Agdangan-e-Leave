@@ -28,133 +28,111 @@
 
   <main>
     <section class="hero" id="home">
-      <div class="hero-overlay"></div>
-      <div class="hero-layout">
-        <div class="hero-content">
-          <p class="hero-kicker">Online Leave Management</p>
-          <h2>Official leave filing for Agdangan employees and administrators.</h2>
+      <div class="hero-shell">
+        <section class="hero-copy">
+          <p class="hero-kicker">Republic of the Philippines</p>
+          <h2>Agdangan e-Leave</h2>
           <p class="hero-text">
-            A single municipal portal for leave requests, approval review, and status tracking built for clear,
-            accountable public service.
+            Official municipal leave filing for employees and administrators. Submit requests, review applications, and
+            track decisions in one service portal.
           </p>
+          <div class="hero-meta">
+            <div>
+              <span class="card-label">Service Type</span>
+              <strong>Digital Leave Management</strong>
+            </div>
+            <div>
+              <span class="card-label">Access</span>
+              <strong>Employee and Administrator</strong>
+            </div>
+          </div>
           <div class="hero-actions">
-            <a href="#service" class="button button-primary">Sign In</a>
-            <a href="#overview" class="button button-secondary">Learn More</a>
+            <a href="#service" class="button button-primary">Go to Login</a>
           </div>
-        </div>
+        </section>
 
-        <aside class="hero-panel" aria-label="Portal summary">
-          <p class="card-label">Agdangan Service Portal</p>
-          <h3>One service. Two roles. One official workflow.</h3>
-          <div class="hero-panel-list">
-            <div>
-              <strong>Employee</strong>
-              <span>Submit leave applications and monitor request status.</span>
+        <section class="service-auth-card hero-login-card" id="service" aria-label="Login form">
+          <p class="section-label">Sign In</p>
+          <h3 class="service-auth-heading">Access the portal</h3>
+          <div class="status-banner" id="config-status"></div>
+
+          <div class="service-auth-role-wrap">
+            <div class="role-switch" aria-label="Select login role">
+              <button type="button" class="active" data-role-switch="employee">Employee</button>
+              <button type="button" data-role-switch="admin">Admin</button>
             </div>
-            <div>
-              <strong>Administrator</strong>
-              <span>Review, approve, and manage employee leave records.</span>
-            </div>
-            <div>
-              <strong>Official Record</strong>
-              <span>Maintain a structured and traceable filing process.</span>
-            </div>
+
+            <form class="auth-form service-auth-form" id="login-form">
+              <h3 id="auth-title">Employee Sign In</h3>
+              <p class="muted" id="auth-subtitle">Use your employee email and password to open your leave dashboard.</p>
+
+              <div class="field-grid">
+                <div class="field field-full">
+                  <label for="email">Email</label>
+                  <input id="email" name="email" type="email" placeholder="name@agdangan.gov.ph" required>
+                </div>
+
+                <div class="field field-full">
+                  <label for="password">Password</label>
+                  <input id="password" name="password" type="password" placeholder="Enter your password" required>
+                </div>
+              </div>
+
+              <input id="selected-role" name="selectedRole" type="hidden" value="employee">
+
+              <div class="form-actions">
+                <button type="submit" class="button button-primary">Sign In</button>
+                <button type="button" class="button button-muted" id="demo-fill">Fill Demo Credentials</button>
+              </div>
+            </form>
           </div>
-        </aside>
+        </section>
       </div>
     </section>
 
-    <section class="official-strip" id="overview">
-      <div class="official-strip-item">
-        <span class="card-label">Access</span>
-        <strong>Employee and admin sign-in</strong>
-      </div>
-      <div class="official-strip-item">
-        <span class="card-label">Service</span>
-        <strong>Digital leave filing and approval</strong>
-      </div>
-      <div class="official-strip-item">
-        <span class="card-label">Purpose</span>
-        <strong>Clear and accountable municipal workflow</strong>
-      </div>
+    <section class="trust-strip">
+      <p><strong>Official service:</strong> Municipal leave filing and approval</p>
+      <p><strong>Purpose:</strong> Clear, traceable, and accountable workflow</p>
+      <p><strong>Availability:</strong> Employee and administrator access</p>
     </section>
 
     <section class="overview-section">
       <div class="overview-copy">
         <p class="section-label">Overview</p>
-        <h3>A formal service page designed around the main task.</h3>
+        <h3>A simpler service page focused on the main task.</h3>
         <p>
-          This portal is focused on one core public-service action: helping employees submit leave requests and helping
-          administrators process them quickly with less friction.
+          This portal is designed to help employees file leave requests and help administrators process them with a
+          straightforward and formal digital workflow.
         </p>
       </div>
 
       <div class="overview-grid">
         <article class="overview-card">
           <span>01</span>
-          <h4>Direct Access</h4>
-          <p>The main service action is placed prominently so users do not search through unrelated content first.</p>
+          <h4>Direct Login</h4>
+          <p>The login form is placed immediately on the main page for faster and clearer access.</p>
         </article>
 
         <article class="overview-card">
           <span>02</span>
-          <h4>Clear Roles</h4>
-          <p>The interface separates employee and administrator sign-in while keeping both within one official portal.</p>
+          <h4>Formal Layout</h4>
+          <p>A restrained design language makes the portal look more official and easier to understand.</p>
         </article>
 
         <article class="overview-card">
           <span>03</span>
-          <h4>Formal Presentation</h4>
-          <p>Typography, spacing, and restrained colors support a more credible municipal look and feel.</p>
+          <h4>Single Workflow</h4>
+          <p>Employees and administrators use one portal with clearly separated access by role.</p>
         </article>
       </div>
-    </section>
-
-    <section class="service-section service-auth-section" id="service">
-      <section class="service-auth-card" aria-label="Login form">
-        <p class="section-label">Service</p>
-        <h2 class="service-auth-heading">Login Portal Access</h2>
-        <div class="status-banner" id="config-status"></div>
-
-        <div class="service-auth-role-wrap">
-          <div class="role-switch" aria-label="Select login role">
-            <button type="button" class="active" data-role-switch="employee">Employee</button>
-            <button type="button" data-role-switch="admin">Admin</button>
-          </div>
-
-          <form class="auth-form service-auth-form" id="login-form">
-            <h3 id="auth-title">Employee Sign In</h3>
-            <p class="muted" id="auth-subtitle">Use your employee email and password to open your leave dashboard.</p>
-
-            <div class="field-grid">
-              <div class="field field-full">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" placeholder="name@agdangan.gov.ph" required>
-              </div>
-
-              <div class="field field-full">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" placeholder="Enter your password" required>
-              </div>
-            </div>
-
-            <input id="selected-role" name="selectedRole" type="hidden" value="employee">
-
-            <div class="form-actions">
-              <button type="submit" class="button button-primary">Sign In</button>
-              <button type="button" class="button button-muted" id="demo-fill">Fill Demo Credentials</button>
-            </div>
-          </form>
-        </div>
-      </section>
     </section>
 
     <section class="closing-section">
       <p class="section-label">Official Portal</p>
       <h3>Agdangan e-Leave supports a simpler and more transparent leave process.</h3>
       <p>
-        The page is structured to present the service clearly, establish trust quickly, and keep the primary action
-        visible without unnecessary distractions.
+        The page now follows a cleaner service-first layout that keeps the login visible, reduces unnecessary elements,
+        and presents the portal with a more credible municipal style.
       </p>
     </section>
   </main>
