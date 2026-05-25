@@ -1412,8 +1412,8 @@
           }
           .leave-paper-topline {
             grid-template-columns: 1fr auto;
-            gap: 4mm;
-            padding: 3.5mm 4.5mm 1mm;
+            gap: 3mm;
+            padding: 2.4mm 3.6mm 0.5mm;
           }
           .leave-paper-form-series {
             display: grid;
@@ -1430,18 +1430,18 @@
           }
           .leave-paper-stamp {
             align-self: start;
-            min-width: 28mm;
-            padding: 2mm 2.5mm;
+            min-width: 24mm;
+            padding: 1.5mm 2mm;
             border: 1px solid #111;
             text-align: center;
-            font-size: 9px;
+            font-size: 8px;
           }
           .leave-paper-heading-grid {
             display: grid;
-            grid-template-columns: 18mm 1fr 18mm;
+            grid-template-columns: 15mm 1fr 15mm;
             align-items: start;
-            gap: 3mm;
-            padding: 0 4.5mm 3mm;
+            gap: 2.4mm;
+            padding: 0 3.6mm 2mm;
             border-bottom: 1px solid #111;
           }
           .leave-paper-seal-wrap {
@@ -1451,22 +1451,22 @@
             padding-left: 1.5mm;
           }
           .leave-paper-seal {
-            width: 14mm;
-            height: 14mm;
+            width: 12mm;
+            height: 12mm;
             object-fit: contain;
           }
           .leave-paper-heading {
             text-align: center;
           }
           .leave-paper-government {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 800;
             text-transform: uppercase;
             line-height: 1.15;
           }
           .leave-paper-heading h3 {
-            margin: 2.5mm 0 0;
-            font-size: 18px;
+            margin: 1.5mm 0 0;
+            font-size: 16px;
             font-weight: 900;
             text-transform: uppercase;
           }
@@ -1479,7 +1479,7 @@
           .leave-paper-cell,
           .leave-paper-panel {
             min-width: 0;
-            padding: 2.6mm 3mm;
+            padding: 1.8mm 2.2mm;
             border-right: 1px solid #111;
             border-bottom: 1px solid #111;
           }
@@ -1496,15 +1496,15 @@
           }
           .leave-paper-label {
             display: block;
-            font-size: 9px;
+            font-size: 8px;
             text-transform: uppercase;
           }
           .leave-paper-name-header {
             display: grid;
             grid-template-columns: auto 1fr;
             align-items: end;
-            gap: 3mm;
-            margin-bottom: 1mm;
+            gap: 2mm;
+            margin-bottom: 0.6mm;
           }
           .leave-paper-name-header .leave-paper-label {
             margin-bottom: 0;
@@ -1512,15 +1512,15 @@
           .leave-paper-inline-captions {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 2mm;
+            gap: 1.4mm;
             text-align: center;
-            font-size: 8px;
+            font-size: 7px;
           }
           .leave-paper-inline-fields,
           .leave-paper-date-range {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 2mm;
+            gap: 1.4mm;
           }
           .leave-paper-date-range {
             grid-template-columns: 1fr 1fr;
@@ -1528,9 +1528,9 @@
           .leave-paper-inline-line,
           .leave-paper-readonly,
           .leave-paper-line {
-            min-height: 7mm;
+            min-height: 5.2mm;
             border-bottom: 1px solid #111;
-            font-size: 10px;
+            font-size: 9px;
             color: #111;
           }
           .leave-paper-input,
@@ -1549,7 +1549,7 @@
           .leave-paper-input,
           .leave-paper-inline-input,
           .leave-paper-table-input {
-            padding: 1.2mm 0.5mm;
+            padding: 0.8mm 0.4mm;
           }
           .leave-paper-input-line {
             padding-left: 0;
@@ -1570,23 +1570,23 @@
             width: 30mm;
           }
           .leave-paper-action-textarea {
-            min-height: 16mm;
-            padding: 1mm 0;
+            min-height: 12mm;
+            padding: 0.8mm 0;
             resize: none;
           }
           .leave-paper-inline-line,
           .leave-paper-readonly {
-            padding-top: 2mm;
+            padding-top: 1.2mm;
           }
           .leave-paper-readonly-centered {
             text-align: center;
           }
           .leave-paper-section-title {
-            padding: 1.2mm 4mm;
+            padding: 0.8mm 3mm;
             border-top: 1px solid #111;
             border-bottom: 1px solid #111;
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 800;
             text-transform: uppercase;
           }
@@ -1602,8 +1602,8 @@
             border-left: 0;
           }
           .leave-paper-panel legend {
-            padding: 0 1mm;
-            font-size: 9px;
+            padding: 0 0.8mm;
+            font-size: 8px;
             font-weight: 800;
             text-transform: uppercase;
           }
@@ -1619,18 +1619,18 @@
           .leave-paper-other-line,
           .leave-paper-subgroup {
             display: grid;
-            gap: 1.4mm;
+            gap: 1mm;
           }
           .leave-option {
             display: flex;
             align-items: flex-start;
-            gap: 2mm;
-            font-size: 10px;
+            gap: 1.5mm;
+            font-size: 9px;
             line-height: 1.2;
           }
           .leave-option input {
-            width: 3.2mm;
-            height: 3.2mm;
+            width: 2.8mm;
+            height: 2.8mm;
             margin: 0.4mm 0 0;
           }
           .leave-paper-subgroup p,
@@ -1639,11 +1639,11 @@
           .leave-paper-authorized span,
           .leave-paper-credit-note {
             margin: 0;
-            font-size: 10px;
+            font-size: 9px;
           }
           .leave-paper-credit-note {
             text-align: center;
-            margin-bottom: 1.4mm;
+            margin-bottom: 1mm;
           }
           .leave-paper-credit-line {
             display: inline-block;
@@ -1655,13 +1655,13 @@
           .leave-paper-credit-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
-            margin-bottom: 3mm;
+            font-size: 8.5px;
+            margin-bottom: 2mm;
           }
           .leave-paper-credit-table th,
           .leave-paper-credit-table td {
             border: 1px solid #111;
-            padding: 1.2mm;
+            padding: 0.8mm;
             text-align: center;
             vertical-align: middle;
           }
@@ -1671,20 +1671,20 @@
           }
           .leave-paper-inline-blank {
             display: inline-block;
-            min-width: 18mm;
+            min-width: 14mm;
             border-bottom: 1px solid #111;
-            font-size: 10px;
+            font-size: 9px;
           }
           .leave-paper-signature,
           .leave-paper-officer,
           .leave-paper-authorized {
             text-align: center;
-            margin-top: 3mm;
+            margin-top: 2mm;
           }
           .leave-paper-action-line {
-            min-height: 5mm;
+            min-height: 4mm;
             border-bottom: 1px solid #111;
-            font-size: 10px;
+            font-size: 9px;
           }
           @media print {
             body {
