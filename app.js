@@ -916,194 +916,256 @@
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
+    const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
 
     return `
-      <section class="admin-request-paper">
-        <div class="admin-paper-header">
-          <div class="admin-paper-title-wrap">
-            <div class="admin-paper-seal-wrap">
-              <img src="OIP (1).webp" alt="Agdangan seal" class="admin-paper-seal">
-            </div>
-            <div>
-              <div class="admin-paper-eyebrow">Republic of the Philippines</div>
-              <h4>Application for Leave</h4>
-            </div>
+      <section class="leave-paper admin-request-paper leave-paper-static">
+        <div class="leave-paper-topline">
+          <div class="leave-paper-form-series">
+            <p class="leave-paper-note">Civil Service Form No. 6</p>
+            <p class="leave-paper-note">Revised 2020</p>
           </div>
-          <div class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</div>
+          <div class="leave-paper-stamp">Status: ${escapeHtml(capitalize(request.status))}</div>
         </div>
 
-        <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-field">
-            <span class="admin-paper-label">1. Office / Department</span>
-            <div class="admin-paper-value">${escapeHtml(request.office_department || "-")}</div>
+        <div class="leave-paper-heading-grid">
+          <div class="leave-paper-seal-wrap">
+            <img src="OIP (1).webp" alt="Agdangan seal" class="leave-paper-seal">
           </div>
-          <div class="admin-paper-field">
-            <span class="admin-paper-label">2. Applicant</span>
-            <div class="admin-paper-value">${escapeHtml(getApplicantFullName(request) || "-")}</div>
+          <div class="leave-paper-heading">
+            <p class="leave-paper-government">Republic of the Philippines</p>
+            <p class="leave-paper-government">MGO Agdangan</p>
+            <p class="leave-paper-government">Agdangan, Quezon</p>
+            <h3>Application for Leave</h3>
           </div>
+          <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
         </div>
 
-        <div class="admin-paper-grid admin-paper-grid-three">
-          <div class="admin-paper-field">
-            <span class="admin-paper-label">3. Date of Filing</span>
-            <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.filing_date))}</div>
-          </div>
-          <div class="admin-paper-field">
-            <span class="admin-paper-label">4. Position</span>
-            <div class="admin-paper-value">${escapeHtml(request.position_title || "-")}</div>
-          </div>
-          <div class="admin-paper-field">
-            <span class="admin-paper-label">5. Salary</span>
-            <div class="admin-paper-value">${escapeHtml(request.salary_display || "N/A")}</div>
-          </div>
-        </div>
-
-        <div class="admin-paper-section-title">6. Details of Application</div>
-
-        <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">6.A Type of Leave to Be Availed Of</span>
-            <div class="admin-paper-option-list">
-              ${renderAdminOptionRow("Vacation Leave", leaveType === "vacation")}
-              ${renderAdminOptionRow("Mandatory/Forced Leave", leaveType === "mandatory-forced")}
-              ${renderAdminOptionRow("Sick Leave", leaveType === "sick")}
-              ${renderAdminOptionRow("Maternity Leave", leaveType === "maternity")}
-              ${renderAdminOptionRow("Paternity Leave", leaveType === "paternity")}
-              ${renderAdminOptionRow("Special Privilege Leave", leaveType === "special-privilege")}
-              ${renderAdminOptionRow("Wellness Leave", leaveType === "wellness")}
-              ${renderAdminOptionRow("Solo Parent Leave", leaveType === "solo-parent")}
-              ${renderAdminOptionRow("Study Leave", leaveType === "study")}
-              ${renderAdminOptionRow("10-Day VAWC Leave", leaveType === "vawc")}
-              ${renderAdminOptionRow("Rehabilitation Privilege", leaveType === "rehabilitation-privilege")}
-              ${renderAdminOptionRow("Special Leave Benefits for Women", leaveType === "special-benefits-women")}
-              ${renderAdminOptionRow("Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity")}
-              ${renderAdminOptionRow("Adoption Leave", leaveType === "adoption")}
-              ${renderAdminOptionRow("Others", leaveType === "others")}
+        <div class="leave-paper-form">
+          <div class="leave-paper-row">
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">1. Office / Department</span>
+              <div class="leave-paper-readonly">${escapeHtml(request.office_department || "")}</div>
             </div>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Others</span>
-              <div class="admin-paper-value">${escapeHtml(request.other_leave_details || "-")}</div>
+            <div class="leave-paper-cell">
+              <div class="leave-paper-name-header">
+                <span class="leave-paper-label">2. Name:</span>
+                <div class="leave-paper-inline-captions" aria-hidden="true">
+                  <span>(Last)</span>
+                  <span>(First)</span>
+                  <span>(Middle)</span>
+                </div>
+              </div>
+              <div class="leave-paper-inline-fields">
+                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_last_name || "")}</div>
+                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_first_name || "")}</div>
+                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_middle_name || "")}</div>
+              </div>
             </div>
           </div>
 
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">6.B Details of Leave</span>
-            <div class="admin-paper-subsection">
-              <strong>Vacation / Special Privilege Leave</strong>
-              ${renderAdminOptionRow("Within the Philippines", vacationLocations.includes("within-ph"))}
-              ${renderAdminOptionRow("Abroad (Specify)", vacationLocations.includes("abroad"))}
+          <div class="leave-paper-row leave-paper-row-compact">
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">3. Date of Filing</span>
+              <div class="leave-paper-readonly">${escapeHtml(formatDateDisplay(request.filing_date))}</div>
             </div>
-            <div class="admin-paper-subsection">
-              <strong>Sick Leave</strong>
-              ${renderAdminOptionRow("In Hospital (Specify Illness)", sickDetails.includes("in-hospital"))}
-              ${renderAdminOptionRow("Out Patient (Specify Illness)", sickDetails.includes("out-patient"))}
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">4. Position</span>
+              <div class="leave-paper-readonly">${escapeHtml(request.position_title || "")}</div>
             </div>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Specify Purpose / Reason</span>
-              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.reason || "-")}</div>
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">5. Salary</span>
+              <div class="leave-paper-readonly">${escapeHtml(request.salary_display || "N/A")}</div>
             </div>
           </div>
-        </div>
 
-        <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">6.C Number of Working Days Applied For</span>
-            <div class="admin-paper-value">${escapeHtml(String(request.days_requested || "-"))}</div>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Inclusive Dates</span>
-              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(request.start_date))} to ${escapeHtml(formatDateDisplay(request.end_date))}</div>
-            </div>
-          </div>
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">6.D Commutation</span>
-            ${renderAdminOptionRow("Not Requested", request.commutation === "not-requested")}
-            ${renderAdminOptionRow("Requested", request.commutation === "requested")}
-          </div>
-        </div>
+          <div class="leave-paper-section-title">6. Details of Application</div>
 
-        <div class="admin-paper-section-title">7. Action on Application</div>
+          <div class="leave-paper-panel-grid">
+            <fieldset class="leave-paper-panel">
+              <legend>6.A Type of Leave to Be Availed Of</legend>
+              <div class="leave-type-grid">
+                ${renderLeavePaperOption("radio", "Vacation Leave", leaveType === "vacation")}
+                ${renderLeavePaperOption("radio", "Mandatory/Forced Leave", leaveType === "mandatory-forced")}
+                ${renderLeavePaperOption("radio", "Sick Leave", leaveType === "sick")}
+                ${renderLeavePaperOption("radio", "Maternity Leave", leaveType === "maternity")}
+                ${renderLeavePaperOption("radio", "Paternity Leave", leaveType === "paternity")}
+                ${renderLeavePaperOption("radio", "Special Privilege Leave", leaveType === "special-privilege")}
+                ${renderLeavePaperOption("radio", "Wellness Leave", leaveType === "wellness")}
+                ${renderLeavePaperOption("radio", "Solo Parent Leave", leaveType === "solo-parent")}
+                ${renderLeavePaperOption("radio", "Study Leave", leaveType === "study")}
+                ${renderLeavePaperOption("radio", "10-Day VAWC Leave", leaveType === "vawc")}
+                ${renderLeavePaperOption("radio", "Rehabilitation Privilege", leaveType === "rehabilitation-privilege")}
+                ${renderLeavePaperOption("radio", "Special Leave Benefits for Women", leaveType === "special-benefits-women")}
+                ${renderLeavePaperOption("radio", "Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity")}
+                ${renderLeavePaperOption("radio", "Adoption Leave", leaveType === "adoption")}
+                ${renderLeavePaperOption("radio", "Others", leaveType === "others")}
+              </div>
+              <div class="leave-paper-other-line">
+                <span>Others:</span>
+                <div class="leave-paper-readonly">${escapeHtml(request.other_leave_details || "")}</div>
+              </div>
+            </fieldset>
 
-        <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-panel admin-paper-panel-emphasis">
-            <span class="admin-paper-label">7.A Certification of Leave Credits</span>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">As of</span>
-              <div class="admin-paper-value">${escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf))}</div>
-            </div>
-            <table class="admin-paper-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Vacation Leave</th>
-                  <th>Sick Leave</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Current Credits</td>
-                  <td>${escapeHtml(creditCells.vacation.current)}</td>
-                  <td>${escapeHtml(creditCells.sick.current)}</td>
-                </tr>
-                <tr>
-                  <td>Less Requested Days</td>
-                  <td>${escapeHtml(creditCells.vacation.deduction)}</td>
-                  <td>${escapeHtml(creditCells.sick.deduction)}</td>
-                </tr>
-                <tr>
-                  <td>Projected Balance</td>
-                  <td>${escapeHtml(creditCells.vacation.balance)}</td>
-                  <td>${escapeHtml(creditCells.sick.balance)}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="admin-paper-credit-summary">
-              <div>Monthly credit gain: ${escapeHtml(formatNumberDisplay(creditSnapshot.monthlyGain))}</div>
-              <div>Commutation: ${escapeHtml(isCommutationRequested(request) ? "Requested" : "Not Requested")}</div>
-            </div>
-          </div>
-          <div class="admin-paper-panel admin-paper-panel-emphasis">
-            <span class="admin-paper-label">7.B Recommendation</span>
-            ${renderAdminOptionRow("For approval", request.recommendation === "approved" || request.status === "approved")}
-            ${renderAdminOptionRow("For disapproval", request.recommendation === "rejected" || request.status === "rejected")}
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Details</span>
-              <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`)}</div>
-            </div>
-          </div>
-        </div>
+            <fieldset class="leave-paper-panel">
+              <legend>6.B Details of Leave</legend>
+              <div class="leave-paper-subgroup">
+                <p>In case of Vacation / Special Privilege Leave:</p>
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOption("checkbox", "Within the Philippines", vacationLocations.includes("within-ph"))}
+                  ${renderLeavePaperOption("checkbox", "Abroad (Specify)", vacationLocations.includes("abroad"))}
+                </div>
+              </div>
 
-        <div class="admin-paper-grid admin-paper-grid-two">
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">7.C Approved For</span>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Days with pay</span>
-              <div class="admin-paper-value">${escapeHtml(formatIntegerDisplay(request.approved_with_pay_days))}</div>
+              <div class="leave-paper-subgroup">
+                <p>In case of Sick Leave:</p>
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOption("checkbox", "In Hospital (Specify Illness)", sickDetails.includes("in-hospital"))}
+                  ${renderLeavePaperOption("checkbox", "Out Patient (Specify Illness)", sickDetails.includes("out-patient"))}
+                </div>
+              </div>
+
+              <div class="field leave-paper-reason-field">
+                <label>Specify Purpose / Reason / Details</label>
+                <div class="leave-paper-readonly">${escapeHtml(request.reason || "")}</div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="leave-paper-row leave-paper-row-detail">
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">6.C Number of Working Days Applied For</span>
+              <div class="leave-paper-tight-field">
+                <div class="leave-paper-readonly">${escapeHtml(String(request.days_requested || ""))}</div>
+              </div>
+              <div class="leave-paper-subline-group">
+                <label>Inclusive Dates</label>
+                <div class="leave-paper-date-range">
+                  <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.start_date))}</div>
+                  <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.end_date))}</div>
+                </div>
+              </div>
             </div>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Days without pay</span>
-              <div class="admin-paper-value">${escapeHtml(formatIntegerDisplay(request.approved_without_pay_days))}</div>
-            </div>
-            <div class="admin-paper-field admin-paper-subfield">
-              <span class="admin-paper-label">Others</span>
-              <div class="admin-paper-value">${escapeHtml(request.approved_other_details || "-")}</div>
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">6.D Commutation</span>
+              <div class="leave-paper-bullets">
+                ${renderLeavePaperOption("radio", "Not Requested", request.commutation === "not-requested")}
+                ${renderLeavePaperOption("radio", "Requested", request.commutation === "requested")}
+              </div>
+              <div class="leave-paper-signature">
+                <div class="leave-paper-line">${escapeHtml(getApplicantFullName(request) || "")}</div>
+                <span>(Signature of Applicant)</span>
+              </div>
             </div>
           </div>
-          <div class="admin-paper-panel">
-            <span class="admin-paper-label">7.D Disapproved Due To</span>
-            <div class="admin-paper-value admin-paper-value-block">${escapeHtml(request.disapproval_details || "-")}</div>
+
+          <div class="leave-paper-section-title">7. Action on Application</div>
+
+          <div class="leave-paper-row leave-paper-row-action">
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">7.A Certification of Leave Credits</span>
+              <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line">${escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf))}</span></div>
+              <table class="leave-paper-credit-table" aria-label="Leave credits certification">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Vacation Leave</th>
+                    <th>Sick Leave</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Total Earned</td>
+                    <td>${escapeHtml(creditCells.vacation.current)}</td>
+                    <td>${escapeHtml(creditCells.sick.current)}</td>
+                  </tr>
+                  <tr>
+                    <td>Less this application</td>
+                    <td>${escapeHtml(creditCells.vacation.deduction)}</td>
+                    <td>${escapeHtml(creditCells.sick.deduction)}</td>
+                  </tr>
+                  <tr>
+                    <td>Balance</td>
+                    <td>${escapeHtml(creditCells.vacation.balance)}</td>
+                    <td>${escapeHtml(creditCells.sick.balance)}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="leave-paper-officer">
+                <div class="leave-paper-line">${escapeHtml(formatNumberDisplay(creditSnapshot.monthlyGain))} monthly credit gain</div>
+                <strong>Authorized Officer</strong>
+                <span>(Authorized Officer)</span>
+              </div>
+            </div>
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">7.B Recommendation</span>
+              <div class="leave-paper-action-box">
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOption("checkbox", "For approval", request.recommendation === "approved" || request.status === "approved")}
+                  ${renderLeavePaperOption("checkbox", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
+                </div>
+                <div class="leave-paper-action-writing">
+                  ${renderStaticWritingLines(recommendationDetails, 3)}
+                </div>
+              </div>
+              <div class="leave-paper-officer">
+                <div class="leave-paper-line">${escapeHtml(isCommutationRequested(request) ? "Commutation requested" : "Commutation not requested")}</div>
+                <strong>Authorized Officer</strong>
+                <span>(Authorized Officer)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="leave-paper-row leave-paper-row-bottom">
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">7.C Approved For</span>
+              <div class="leave-paper-approval-lines">
+                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_with_pay_days))}</span> days with pay</div>
+                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_without_pay_days))}</span> days without pay</div>
+                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(request.approved_other_details || "-")}</span> others (Specify)</div>
+              </div>
+            </div>
+            <div class="leave-paper-cell">
+              <span class="leave-paper-label">7.D Disapproved Due To</span>
+              <div class="leave-paper-action-box">
+                <div class="leave-paper-action-writing">
+                  ${renderStaticWritingLines(request.disapproval_details || "", 3)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="leave-paper-authorized">
+            <div class="leave-paper-line">${escapeHtml(getApplicantFullName(request) || "")}</div>
+            <strong>Authorized Official</strong>
+            <span>(Authorized Official)</span>
           </div>
         </div>
       </section>
     `;
   }
 
-  function renderAdminOptionRow(label, isChecked) {
+  function renderLeavePaperOption(type, label, isChecked) {
     return `
-      <div class="admin-paper-option">
-        <span class="admin-paper-check">${isChecked ? "X" : "&nbsp;"}</span>
+      <label class="leave-option">
+        <input type="${type}" ${isChecked ? "checked" : ""} disabled>
         <span>${escapeHtml(label)}</span>
-      </div>
+      </label>
     `;
+  }
+
+  function renderStaticWritingLines(content, lineCount) {
+    const text = String(content || "").trim();
+    if (!text) {
+      return Array.from({ length: lineCount }, () => '<div class="leave-paper-action-line"></div>').join("");
+    }
+
+    const lines = text.split(/\n+/).slice(0, lineCount);
+    while (lines.length < lineCount) {
+      lines.push("");
+    }
+
+    return lines.map((line) => `<div class="leave-paper-action-line">${escapeHtml(line)}</div>`).join("");
   }
 
   function printAdminLeaveRequest(request) {
@@ -1157,156 +1219,251 @@
             margin: 0 auto;
             box-sizing: border-box;
           }
-          .admin-request-paper {
+          .leave-paper {
             width: 100%;
             box-sizing: border-box;
             background: #fff;
             border: 2px solid #111;
-            padding: 8mm;
+            font-family: Arial, sans-serif;
+            color: #111;
           }
-          .status-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.2mm 2.5mm;
-            border: 0.3mm solid #111;
-            background: #fff;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: auto;
-          }
-          .admin-paper-header,
-          .admin-paper-grid {
+          .leave-paper-topline,
+          .leave-paper-row,
+          .leave-paper-panel-grid,
+          .leave-paper-form {
             display: grid;
-            gap: 3mm;
           }
-          .admin-paper-title-wrap {
-            display: grid;
-            grid-template-columns: 18mm 1fr;
-            align-items: center;
-            gap: 3mm;
-          }
-          .admin-paper-header {
+          .leave-paper-topline {
             grid-template-columns: 1fr auto;
-            align-items: start;
-            margin-bottom: 3mm;
+            gap: 4mm;
+            padding: 3.5mm 4.5mm 1mm;
           }
-          .admin-paper-seal-wrap {
-            display: flex;
+          .leave-paper-form-series {
+            display: grid;
+            gap: 0.4mm;
+          }
+          .leave-paper-note,
+          .leave-paper-government {
+            margin: 0;
+          }
+          .leave-paper-note {
+            font-size: 9px;
+            font-style: italic;
+            line-height: 1.2;
+          }
+          .leave-paper-stamp {
+            align-self: start;
+            min-width: 28mm;
+            padding: 2mm 2.5mm;
+            border: 1px solid #111;
+            text-align: center;
+            font-size: 9px;
+          }
+          .leave-paper-heading-grid {
+            display: grid;
+            grid-template-columns: 18mm 1fr 18mm;
             align-items: center;
+            gap: 3mm;
+            padding: 0 4.5mm 3mm;
+            border-bottom: 1px solid #111;
+          }
+          .leave-paper-seal-wrap {
+            display: flex;
             justify-content: center;
           }
-          .admin-paper-seal {
+          .leave-paper-seal {
             width: 14mm;
             height: 14mm;
             object-fit: contain;
           }
-          .admin-paper-eyebrow {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
+          .leave-paper-heading {
+            text-align: center;
           }
-          .admin-paper-header h4 {
-            margin: 2mm 0 0;
+          .leave-paper-government {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.15;
+          }
+          .leave-paper-heading h3 {
+            margin: 2.5mm 0 0;
             font-size: 22px;
             font-weight: 900;
             text-transform: uppercase;
           }
-          .admin-paper-grid-two {
-            grid-template-columns: 1fr 1fr;
+          .leave-paper-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
-          .admin-paper-grid-three {
-            grid-template-columns: 1fr 1fr 1fr;
+          .leave-paper-row-compact {
+            grid-template-columns: 1.08fr 1fr 0.72fr;
           }
-          .admin-paper-panel,
-          .admin-paper-field {
+          .leave-paper-cell,
+          .leave-paper-panel {
             min-width: 0;
-            border: 1px solid #111;
-            padding: 2.5mm;
+            padding: 2.6mm 3mm;
+            border-right: 1px solid #111;
+            border-bottom: 1px solid #111;
           }
-          .admin-paper-panel-emphasis {
-            padding: 3mm;
-            border-width: 1.1px;
+          .leave-paper-row > .leave-paper-cell:last-child,
+          .leave-paper-panel:last-child {
+            border-right: 0;
           }
-          .admin-paper-label {
+          .leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:first-child,
+          .leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:nth-child(2),
+          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:first-child,
+          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(2),
+          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(3) {
+            border-right: 0;
+          }
+          .leave-paper-label {
             display: block;
-            margin-bottom: 1.2mm;
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
           }
-          .admin-paper-value {
-            min-height: 6mm;
+          .leave-paper-name-header {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: end;
+            gap: 3mm;
+            margin-bottom: 1mm;
+          }
+          .leave-paper-name-header .leave-paper-label {
+            margin-bottom: 0;
+          }
+          .leave-paper-inline-captions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2mm;
+            text-align: center;
+            font-size: 8px;
+          }
+          .leave-paper-inline-fields,
+          .leave-paper-date-range {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2mm;
+          }
+          .leave-paper-date-range {
+            grid-template-columns: 1fr 1fr;
+          }
+          .leave-paper-inline-line,
+          .leave-paper-readonly,
+          .leave-paper-line {
+            min-height: 7mm;
             border-bottom: 1px solid #111;
-            padding-bottom: 1mm;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            color: #111;
           }
-          .admin-paper-value-block {
-            min-height: 16mm;
-            white-space: pre-wrap;
+          .leave-paper-inline-line,
+          .leave-paper-readonly {
+            padding-top: 2mm;
           }
-          .admin-paper-section-title {
-            margin: 3mm 0;
-            padding: 1.5mm;
+          .leave-paper-readonly-centered {
+            text-align: center;
+          }
+          .leave-paper-section-title {
+            padding: 1.2mm 4mm;
             border-top: 1px solid #111;
             border-bottom: 1px solid #111;
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
           }
-          .admin-paper-option-list,
-          .admin-paper-subsection {
+          .leave-paper-panel-grid,
+          .leave-paper-row-detail,
+          .leave-paper-row-action,
+          .leave-paper-row-bottom {
+            grid-template-columns: 1fr 1fr;
+          }
+          .leave-paper-panel {
+            margin: 0;
+            border-top: 0;
+            border-left: 0;
+          }
+          .leave-paper-panel legend {
+            padding: 0 1mm;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          .leave-type-grid,
+          .leave-paper-bullets,
+          .leave-paper-action-writing,
+          .leave-paper-approval-lines,
+          .leave-paper-officer,
+          .leave-paper-authorized,
+          .leave-paper-subline-group,
+          .leave-paper-form-series,
+          .leave-paper-action-box,
+          .leave-paper-other-line,
+          .leave-paper-subgroup {
             display: grid;
             gap: 1.4mm;
           }
-          .admin-paper-subsection {
-            margin-top: 2mm;
-          }
-          .admin-paper-option {
+          .leave-option {
             display: flex;
             align-items: flex-start;
             gap: 2mm;
             font-size: 10px;
             line-height: 1.2;
           }
-          .admin-paper-check {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+          .leave-option input {
             width: 3.2mm;
             height: 3.2mm;
-            border: 1px solid #111;
-            font-size: 9px;
-            font-weight: 800;
-            flex-shrink: 0;
+            margin: 0.4mm 0 0;
           }
-          .admin-paper-subfield {
-            margin-top: 2mm;
-          }
-          .admin-paper-table {
-            width: 100%;
-            margin-top: 2mm;
-            border-collapse: collapse;
+          .leave-paper-subgroup p,
+          .leave-paper-signature span,
+          .leave-paper-officer span,
+          .leave-paper-authorized span,
+          .leave-paper-credit-note {
+            margin: 0;
             font-size: 10px;
           }
-          .admin-paper-table th,
-          .admin-paper-table td {
+          .leave-paper-credit-note {
+            text-align: center;
+            margin-bottom: 1.4mm;
+          }
+          .leave-paper-credit-line {
+            display: inline-block;
+            min-width: 30mm;
+            margin-left: 1.5mm;
+            border-bottom: 1px solid #111;
+            vertical-align: middle;
+          }
+          .leave-paper-credit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-bottom: 3mm;
+          }
+          .leave-paper-credit-table th,
+          .leave-paper-credit-table td {
             border: 1px solid #111;
             padding: 1.2mm;
             text-align: center;
+            vertical-align: middle;
           }
-          .admin-paper-table th:first-child,
-          .admin-paper-table td:first-child {
+          .leave-paper-credit-table th:first-child,
+          .leave-paper-credit-table td:first-child {
             text-align: left;
           }
-          .admin-paper-credit-summary {
-            display: grid;
-            gap: 1.2mm;
-            margin-top: 2mm;
-            padding-top: 1.6mm;
-            border-top: 1px solid #111;
+          .leave-paper-inline-blank {
+            display: inline-block;
+            min-width: 18mm;
+            border-bottom: 1px solid #111;
+            font-size: 10px;
+          }
+          .leave-paper-signature,
+          .leave-paper-officer,
+          .leave-paper-authorized {
+            text-align: center;
+            margin-top: 3mm;
+          }
+          .leave-paper-action-line {
+            min-height: 5mm;
+            border-bottom: 1px solid #111;
             font-size: 10px;
           }
           @media print {
@@ -1321,7 +1478,6 @@
       </head>
       <body>
         <div class="print-shell">
-          <div class="status-pill">${escapeHtml(capitalize(request.status))}</div>
           ${buildAdminRequestPaperMarkup(request)}
         </div>
         ${autoPrint}

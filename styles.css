@@ -828,13 +828,28 @@ textarea {
   color: #111;
 }
 
+.leave-paper-name-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.leave-paper-name-header .leave-paper-label {
+  margin-bottom: 0;
+}
+
 .leave-paper-inline-captions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
-  margin-bottom: 0.2rem;
   text-align: center;
   font-size: 0.63rem;
+}
+
+.leave-paper-name-header .leave-paper-inline-captions {
+  margin-bottom: 0;
 }
 
 .leave-paper-line {
@@ -964,6 +979,35 @@ textarea {
 .leave-paper-row input {
   padding: 0.42rem 0.45rem;
   font-size: 0.78rem;
+}
+
+.leave-paper-readonly {
+  min-height: 1.95rem;
+  padding: 0.42rem 0;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.78);
+  font-size: 0.78rem;
+  color: #111;
+}
+
+.leave-paper-readonly-centered {
+  text-align: center;
+}
+
+.leave-paper-static textarea,
+.leave-paper-static input,
+.leave-paper-static select,
+.leave-paper-static button {
+  pointer-events: none;
+}
+
+.leave-paper-static .leave-paper-bullets input,
+.leave-paper-static .leave-option input {
+  accent-color: #111;
+}
+
+.leave-paper-static .leave-paper-other-line .leave-paper-readonly,
+.leave-paper-static .leave-paper-subline-group .leave-paper-readonly {
+  min-height: 1.6rem;
 }
 
 .leave-paper-other-line {
