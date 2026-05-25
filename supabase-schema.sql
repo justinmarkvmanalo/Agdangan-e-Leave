@@ -61,6 +61,7 @@ create table if not exists public.leave_requests (
   sick_leave_details text[] not null default '{}'::text[],
   sick_leave_notes jsonb not null default '{}'::jsonb,
   leave_purpose_details text[] not null default '{}'::text[],
+  leave_purpose_notes jsonb not null default '{}'::jsonb,
   commutation text,
   reason text not null,
   credit_as_of date,
@@ -94,6 +95,7 @@ alter table public.leave_requests add column if not exists vacation_location_not
 alter table public.leave_requests add column if not exists sick_leave_details text[] not null default '{}'::text[];
 alter table public.leave_requests add column if not exists sick_leave_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists leave_purpose_details text[] not null default '{}'::text[];
+alter table public.leave_requests add column if not exists leave_purpose_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists commutation text;
 alter table public.leave_requests add column if not exists credit_as_of date;
 alter table public.leave_requests add column if not exists credit_earned_vacation numeric(10,2);
@@ -363,6 +365,7 @@ create or replace function public.create_leave_request(
   p_sick_leave_details text[],
   p_sick_leave_notes jsonb,
   p_leave_purpose_details text[],
+  p_leave_purpose_notes jsonb,
   p_commutation text,
   p_reason text
 )
@@ -393,6 +396,7 @@ begin
     sick_leave_details,
     sick_leave_notes,
     leave_purpose_details,
+    leave_purpose_notes,
     commutation,
     reason
   )
@@ -415,6 +419,7 @@ begin
     coalesce(p_sick_leave_details, '{}'::text[]),
     coalesce(p_sick_leave_notes, '{}'::jsonb),
     coalesce(p_leave_purpose_details, '{}'::text[]),
+    coalesce(p_leave_purpose_notes, '{}'::jsonb),
     nullif(trim(coalesce(p_commutation, '')), ''),
     trim(p_reason)
   )
@@ -444,6 +449,7 @@ create or replace function public.update_leave_request_details(
   p_sick_leave_details text[],
   p_sick_leave_notes jsonb,
   p_leave_purpose_details text[],
+  p_leave_purpose_notes jsonb,
   p_commutation text,
   p_reason text,
   p_credit_as_of date,
@@ -485,6 +491,7 @@ begin
     sick_leave_details = coalesce(p_sick_leave_details, '{}'::text[]),
     sick_leave_notes = coalesce(p_sick_leave_notes, '{}'::jsonb),
     leave_purpose_details = coalesce(p_leave_purpose_details, '{}'::text[]),
+    leave_purpose_notes = coalesce(p_leave_purpose_notes, '{}'::jsonb),
     commutation = nullif(trim(coalesce(p_commutation, '')), ''),
     reason = trim(coalesce(p_reason, '')),
     credit_as_of = p_credit_as_of,

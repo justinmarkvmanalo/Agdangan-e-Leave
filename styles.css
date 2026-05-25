@@ -1132,6 +1132,10 @@ textarea {
   align-items: center;
 }
 
+.leave-paper-detail-option-static {
+  display: flex;
+}
+
 .leave-paper-detail-line {
   flex: 1 1 auto;
   min-width: 4rem;

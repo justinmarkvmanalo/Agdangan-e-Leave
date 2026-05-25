@@ -318,7 +318,7 @@
     const groupedDetailInputs = {
       vacation: Array.from(form.querySelectorAll('input[name="leaveLocation"]')),
       sick: Array.from(form.querySelectorAll('input[name="sickDetail"]')),
-      women: Array.from(form.querySelectorAll('input[name="leavePurpose"][value="women-illness"]')),
+      women: Array.from(form.querySelectorAll('input[name="womenIllnessNote"]')),
       study: Array.from(form.querySelectorAll('input[name="leavePurpose"][value="masters-completion"], input[name="leavePurpose"][value="bar-review"]')),
       "other-purpose": Array.from(form.querySelectorAll('input[name="leavePurpose"][value="monetization"], input[name="leavePurpose"][value="terminal"]'))
     };
@@ -408,6 +408,9 @@
         "in-hospital": String(formData.get("sickDetailHospitalNote") || "").trim(),
         "out-patient": String(formData.get("sickDetailOutpatientNote") || "").trim()
       };
+      const leavePurposeNotes = {
+        "women-illness": String(formData.get("womenIllnessNote") || "").trim()
+      };
 
       const payload = {
         employee_id: profile.id,
@@ -428,6 +431,7 @@
         sick_leave_details: sickLeaveDetails,
         sick_leave_notes: sickLeaveNotes,
         leave_purpose_details: leavePurposeDetails,
+        leave_purpose_notes: leavePurposeNotes,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
       };
@@ -456,6 +460,7 @@
         p_sick_leave_details: payload.sick_leave_details,
         p_sick_leave_notes: payload.sick_leave_notes,
         p_leave_purpose_details: payload.leave_purpose_details,
+        p_leave_purpose_notes: payload.leave_purpose_notes,
         p_commutation: payload.commutation,
         p_reason: payload.reason
       });
@@ -1049,6 +1054,7 @@
     const leavePurposeDetails = Array.isArray(request.leave_purpose_details) ? request.leave_purpose_details : [];
     const vacationLocationNotes = request.vacation_location_notes && typeof request.vacation_location_notes === "object" ? request.vacation_location_notes : {};
     const sickLeaveNotes = request.sick_leave_notes && typeof request.sick_leave_notes === "object" ? request.sick_leave_notes : {};
+    const leavePurposeNotes = request.leave_purpose_notes && typeof request.leave_purpose_notes === "object" ? request.leave_purpose_notes : {};
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
     const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
@@ -1163,7 +1169,10 @@
               <div class="leave-paper-subgroup">
                 <p>In case of Special Leave Benefits for Women:</p>
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "women-illness", "(Specify Illness)", leavePurposeDetails.includes("women-illness"), true)}
+                  <div class="leave-paper-detail-option leave-paper-detail-option-static">
+                    <span>(Specify Illness)</span>
+                    <span class="leave-paper-detail-line leave-paper-detail-line-readonly">${escapeHtml(leavePurposeNotes["women-illness"] || "")}</span>
+                  </div>
                 </div>
               </div>
 
