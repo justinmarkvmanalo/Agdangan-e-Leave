@@ -58,6 +58,7 @@ create table if not exists public.leave_requests (
   other_leave_details text,
   vacation_location text[] not null default '{}'::text[],
   sick_leave_details text[] not null default '{}'::text[],
+  leave_purpose_details text[] not null default '{}'::text[],
   commutation text,
   reason text not null,
   credit_as_of date,
@@ -88,6 +89,7 @@ alter table public.leave_requests add column if not exists salary_display text;
 alter table public.leave_requests add column if not exists other_leave_details text;
 alter table public.leave_requests add column if not exists vacation_location text[] not null default '{}'::text[];
 alter table public.leave_requests add column if not exists sick_leave_details text[] not null default '{}'::text[];
+alter table public.leave_requests add column if not exists leave_purpose_details text[] not null default '{}'::text[];
 alter table public.leave_requests add column if not exists commutation text;
 alter table public.leave_requests add column if not exists credit_as_of date;
 alter table public.leave_requests add column if not exists credit_earned_vacation numeric(10,2);
@@ -354,6 +356,7 @@ create or replace function public.create_leave_request(
   p_other_leave_details text,
   p_vacation_location text[],
   p_sick_leave_details text[],
+  p_leave_purpose_details text[],
   p_commutation text,
   p_reason text
 )
@@ -381,6 +384,7 @@ begin
     other_leave_details,
     vacation_location,
     sick_leave_details,
+    leave_purpose_details,
     commutation,
     reason
   )
@@ -400,12 +404,95 @@ begin
     nullif(trim(coalesce(p_other_leave_details, '')), ''),
     coalesce(p_vacation_location, '{}'::text[]),
     coalesce(p_sick_leave_details, '{}'::text[]),
+    coalesce(p_leave_purpose_details, '{}'::text[]),
     nullif(trim(coalesce(p_commutation, '')), ''),
     trim(p_reason)
   )
   returning * into new_request;
 
   return new_request;
+end;
+$$;
+
+create or replace function public.update_leave_request_details(
+  p_admin_id bigint,
+  p_request_id bigint,
+  p_leave_type text,
+  p_office_department text,
+  p_applicant_last_name text,
+  p_applicant_first_name text,
+  p_applicant_middle_name text,
+  p_filing_date date,
+  p_position_title text,
+  p_salary_display text,
+  p_start_date date,
+  p_end_date date,
+  p_days_requested integer,
+  p_other_leave_details text,
+  p_vacation_location text[],
+  p_sick_leave_details text[],
+  p_leave_purpose_details text[],
+  p_commutation text,
+  p_reason text,
+  p_credit_as_of date,
+  p_credit_earned_vacation numeric,
+  p_credit_earned_sick numeric,
+  p_credit_balance_vacation numeric,
+  p_credit_balance_sick numeric,
+  p_recommendation text,
+  p_recommendation_details text,
+  p_approved_with_pay_days integer,
+  p_approved_without_pay_days integer,
+  p_approved_other_details text,
+  p_disapproval_details text
+)
+returns public.leave_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_request public.leave_requests;
+begin
+  update public.leave_requests lr
+  set
+    leave_type = trim(p_leave_type),
+    office_department = nullif(trim(coalesce(p_office_department, '')), ''),
+    applicant_last_name = nullif(trim(coalesce(p_applicant_last_name, '')), ''),
+    applicant_first_name = nullif(trim(coalesce(p_applicant_first_name, '')), ''),
+    applicant_middle_name = nullif(trim(coalesce(p_applicant_middle_name, '')), ''),
+    filing_date = p_filing_date,
+    position_title = nullif(trim(coalesce(p_position_title, '')), ''),
+    salary_display = nullif(trim(coalesce(p_salary_display, '')), ''),
+    start_date = p_start_date,
+    end_date = p_end_date,
+    days_requested = p_days_requested,
+    other_leave_details = nullif(trim(coalesce(p_other_leave_details, '')), ''),
+    vacation_location = coalesce(p_vacation_location, '{}'::text[]),
+    sick_leave_details = coalesce(p_sick_leave_details, '{}'::text[]),
+    leave_purpose_details = coalesce(p_leave_purpose_details, '{}'::text[]),
+    commutation = nullif(trim(coalesce(p_commutation, '')), ''),
+    reason = trim(coalesce(p_reason, '')),
+    credit_as_of = p_credit_as_of,
+    credit_earned_vacation = p_credit_earned_vacation,
+    credit_earned_sick = p_credit_earned_sick,
+    credit_balance_vacation = p_credit_balance_vacation,
+    credit_balance_sick = p_credit_balance_sick,
+    recommendation = nullif(trim(coalesce(p_recommendation, '')), ''),
+    recommendation_details = nullif(trim(coalesce(p_recommendation_details, '')), ''),
+    approved_with_pay_days = p_approved_with_pay_days,
+    approved_without_pay_days = p_approved_without_pay_days,
+    approved_other_details = nullif(trim(coalesce(p_approved_other_details, '')), ''),
+    disapproval_details = nullif(trim(coalesce(p_disapproval_details, '')), ''),
+    reviewed_by_admin_id = p_admin_id,
+    reviewed_at = now()
+  from public.employees e
+  where lr.id = p_request_id
+    and e.id = lr.employee_id
+    and e.admin_id = p_admin_id
+  returning lr.* into updated_request;
+
+  return updated_request;
 end;
 $$;
 

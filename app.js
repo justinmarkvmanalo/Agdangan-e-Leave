@@ -399,6 +399,7 @@
       const formData = new FormData(form);
       const vacationLocation = formData.getAll("leaveLocation").map((value) => String(value));
       const sickLeaveDetails = formData.getAll("sickDetail").map((value) => String(value));
+      const leavePurposeDetails = formData.getAll("leavePurpose").map((value) => String(value));
 
       const payload = {
         employee_id: profile.id,
@@ -416,6 +417,7 @@
         other_leave_details: String(document.getElementById("leave-other")?.value || "").trim(),
         vacation_location: vacationLocation,
         sick_leave_details: sickLeaveDetails,
+        leave_purpose_details: leavePurposeDetails,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
       };
@@ -441,6 +443,7 @@
         p_other_leave_details: payload.other_leave_details,
         p_vacation_location: payload.vacation_location,
         p_sick_leave_details: payload.sick_leave_details,
+        p_leave_purpose_details: payload.leave_purpose_details,
         p_commutation: payload.commutation,
         p_reason: payload.reason
       });
@@ -862,11 +865,29 @@
       downloadAdminLeaveRequestWord(request);
     });
 
+    const adminRequestForm = container.querySelector("#admin-request-form");
+    adminRequestForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await saveAdminRequestDetails(request.id, adminRequestForm);
+    });
+
     container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async () => {
+      if (adminRequestForm) {
+        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { reload: false, silent: true });
+        if (!saved) {
+          return;
+        }
+      }
       await updateLeaveStatus(request.id, "approved");
     });
 
     container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async () => {
+      if (adminRequestForm) {
+        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { reload: false, silent: true });
+        if (!saved) {
+          return;
+        }
+      }
       await updateLeaveStatus(request.id, "rejected");
     });
   }
@@ -892,6 +913,123 @@
     await loadAdminRequests();
   }
 
+  async function saveAdminRequestDetails(requestId, form, options = {}) {
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "login.html";
+      return false;
+    }
+
+    if (!form) {
+      return false;
+    }
+
+    const reload = options.reload !== false;
+    const silent = options.silent === true;
+    const formData = new FormData(form);
+    const daysRequested = Number.parseInt(String(formData.get("daysRequested") || "0"), 10);
+
+    if (!Number.isInteger(daysRequested) || daysRequested <= 0) {
+      window.alert("Working days must be a whole number greater than zero.");
+      return false;
+    }
+
+    const parseOptionalNumber = (value, integerOnly = false) => {
+      const text = String(value || "").trim();
+      if (!text) {
+        return null;
+      }
+
+      const parsed = integerOnly ? Number.parseInt(text, 10) : Number(text);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const payload = {
+      p_admin_id: session.userId,
+      p_request_id: requestId,
+      p_leave_type: String(formData.get("leaveType") || "").trim(),
+      p_office_department: String(formData.get("officeDepartment") || "").trim(),
+      p_applicant_last_name: String(formData.get("applicantLastName") || "").trim(),
+      p_applicant_first_name: String(formData.get("applicantFirstName") || "").trim(),
+      p_applicant_middle_name: String(formData.get("applicantMiddleName") || "").trim(),
+      p_filing_date: String(formData.get("filingDate") || "") || null,
+      p_position_title: String(formData.get("positionTitle") || "").trim(),
+      p_salary_display: String(formData.get("salaryDisplay") || "").trim(),
+      p_start_date: String(formData.get("startDate") || "") || null,
+      p_end_date: String(formData.get("endDate") || "") || null,
+      p_days_requested: daysRequested,
+      p_other_leave_details: String(formData.get("otherLeaveDetails") || "").trim(),
+      p_vacation_location: formData.getAll("leaveLocation").map((value) => String(value)),
+      p_sick_leave_details: formData.getAll("sickDetail").map((value) => String(value)),
+      p_leave_purpose_details: formData.getAll("leavePurpose").map((value) => String(value)),
+      p_commutation: String(formData.get("commutation") || "").trim(),
+      p_reason: String(formData.get("reason") || "").trim(),
+      p_credit_as_of: String(formData.get("creditAsOf") || "") || null,
+      p_credit_earned_vacation: parseOptionalNumber(formData.get("creditEarnedVacation")),
+      p_credit_earned_sick: parseOptionalNumber(formData.get("creditEarnedSick")),
+      p_credit_balance_vacation: parseOptionalNumber(formData.get("creditBalanceVacation")),
+      p_credit_balance_sick: parseOptionalNumber(formData.get("creditBalanceSick")),
+      p_recommendation: String(formData.get("recommendation") || "").trim() || null,
+      p_recommendation_details: String(formData.get("recommendationDetails") || "").trim(),
+      p_approved_with_pay_days: parseOptionalNumber(formData.get("approvedWithPayDays"), true),
+      p_approved_without_pay_days: parseOptionalNumber(formData.get("approvedWithoutPayDays"), true),
+      p_approved_other_details: String(formData.get("approvedOtherDetails") || "").trim(),
+      p_disapproval_details: String(formData.get("disapprovalDetails") || "").trim()
+    };
+
+    const { error } = await db.rpc("update_leave_request_details", payload);
+
+    if (error) {
+      window.alert(error.message);
+      return false;
+    }
+
+    if (reload) {
+      selectedAdminRequestId = requestId;
+      await loadAdminRequests();
+    } else {
+      const updatedRequest = adminLeaveRequests.find((item) => item.id === requestId);
+      if (updatedRequest) {
+        Object.assign(updatedRequest, {
+          leave_type: payload.p_leave_type,
+          office_department: payload.p_office_department,
+          applicant_last_name: payload.p_applicant_last_name,
+          applicant_first_name: payload.p_applicant_first_name,
+          applicant_middle_name: payload.p_applicant_middle_name,
+          filing_date: payload.p_filing_date,
+          position_title: payload.p_position_title,
+          salary_display: payload.p_salary_display,
+          start_date: payload.p_start_date,
+          end_date: payload.p_end_date,
+          days_requested: payload.p_days_requested,
+          other_leave_details: payload.p_other_leave_details,
+          vacation_location: payload.p_vacation_location,
+          sick_leave_details: payload.p_sick_leave_details,
+          leave_purpose_details: payload.p_leave_purpose_details,
+          commutation: payload.p_commutation,
+          reason: payload.p_reason,
+          credit_as_of: payload.p_credit_as_of,
+          credit_earned_vacation: payload.p_credit_earned_vacation,
+          credit_earned_sick: payload.p_credit_earned_sick,
+          credit_balance_vacation: payload.p_credit_balance_vacation,
+          credit_balance_sick: payload.p_credit_balance_sick,
+          recommendation: payload.p_recommendation,
+          recommendation_details: payload.p_recommendation_details,
+          approved_with_pay_days: payload.p_approved_with_pay_days,
+          approved_without_pay_days: payload.p_approved_without_pay_days,
+          approved_other_details: payload.p_approved_other_details,
+          disapproval_details: payload.p_disapproval_details
+        });
+      }
+    }
+
+    if (!silent) {
+      window.alert("Leave form changes saved.");
+    }
+
+    return true;
+  }
+
   function buildAdminRequestPreviewMarkup(request) {
     return `
       <div class="admin-request-toolbar">
@@ -900,6 +1038,7 @@
           <div class="muted">Request #${escapeHtml(String(request.id))} | ${escapeHtml(capitalize(request.status))}</div>
         </div>
         <div class="table-actions">
+          <button type="submit" form="admin-request-form" class="button button-primary" data-admin-save-request>Save Form</button>
           <button type="button" class="button button-muted" data-admin-print-request>Print / Save PDF</button>
           <button type="button" class="button button-muted" data-admin-download-word>Download Word</button>
           <button type="button" class="button button-success" data-admin-approve-request>Approve</button>
@@ -914,12 +1053,13 @@
     const leaveType = String(request.leave_type || "").toLowerCase();
     const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
+    const leavePurposeDetails = Array.isArray(request.leave_purpose_details) ? request.leave_purpose_details : [];
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
     const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
 
     return `
-      <section class="leave-paper admin-request-paper leave-paper-static">
+      <section class="leave-paper admin-request-paper">
         <div class="leave-paper-topline">
           <div class="leave-paper-form-series">
             <p class="leave-paper-note">Civil Service Form No. 6</p>
@@ -941,11 +1081,11 @@
           <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
         </div>
 
-        <div class="leave-paper-form">
+        <form class="leave-paper-form" id="admin-request-form">
           <div class="leave-paper-row">
             <div class="leave-paper-cell">
-              <span class="leave-paper-label">1. Office / Department</span>
-              <div class="leave-paper-readonly">${escapeHtml(request.office_department || "")}</div>
+              <label class="leave-paper-label" for="admin-office-department">1. Office / Department</label>
+              <input id="admin-office-department" class="leave-paper-input leave-paper-input-line" type="text" name="officeDepartment" value="${escapeAttribute(request.office_department || "")}">
             </div>
             <div class="leave-paper-cell">
               <div class="leave-paper-name-header">
@@ -957,25 +1097,25 @@
                 </div>
               </div>
               <div class="leave-paper-inline-fields">
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_last_name || "")}</div>
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_first_name || "")}</div>
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_middle_name || "")}</div>
+                <input class="leave-paper-input leave-paper-input-line" type="text" name="applicantLastName" value="${escapeAttribute(request.applicant_last_name || "")}">
+                <input class="leave-paper-input leave-paper-input-line" type="text" name="applicantFirstName" value="${escapeAttribute(request.applicant_first_name || "")}">
+                <input class="leave-paper-input leave-paper-input-line" type="text" name="applicantMiddleName" value="${escapeAttribute(request.applicant_middle_name || "")}">
               </div>
             </div>
           </div>
 
           <div class="leave-paper-row leave-paper-row-compact">
             <div class="leave-paper-cell">
-              <span class="leave-paper-label">3. Date of Filing</span>
-              <div class="leave-paper-readonly">${escapeHtml(formatDateDisplay(request.filing_date))}</div>
+              <label class="leave-paper-label" for="admin-filing-date">3. Date of Filing</label>
+              <input id="admin-filing-date" class="leave-paper-input" type="date" name="filingDate" value="${escapeAttribute(request.filing_date || "")}">
             </div>
             <div class="leave-paper-cell">
-              <span class="leave-paper-label">4. Position</span>
-              <div class="leave-paper-readonly">${escapeHtml(request.position_title || "")}</div>
+              <label class="leave-paper-label" for="admin-position-title">4. Position</label>
+              <input id="admin-position-title" class="leave-paper-input leave-paper-input-line" type="text" name="positionTitle" value="${escapeAttribute(request.position_title || "")}">
             </div>
             <div class="leave-paper-cell">
-              <span class="leave-paper-label">5. Salary</span>
-              <div class="leave-paper-readonly">${escapeHtml(request.salary_display || "N/A")}</div>
+              <label class="leave-paper-label" for="admin-salary-display">5. Salary</label>
+              <input id="admin-salary-display" class="leave-paper-input leave-paper-input-line" type="text" name="salaryDisplay" value="${escapeAttribute(request.salary_display || "N/A")}">
             </div>
           </div>
 
@@ -985,25 +1125,25 @@
             <fieldset class="leave-paper-panel">
               <legend>6.A Type of Leave to Be Availed Of</legend>
               <div class="leave-type-grid">
-                ${renderLeavePaperOption("radio", "Vacation Leave", leaveType === "vacation")}
-                ${renderLeavePaperOption("radio", "Mandatory/Forced Leave", leaveType === "mandatory-forced")}
-                ${renderLeavePaperOption("radio", "Sick Leave", leaveType === "sick")}
-                ${renderLeavePaperOption("radio", "Maternity Leave", leaveType === "maternity")}
-                ${renderLeavePaperOption("radio", "Paternity Leave", leaveType === "paternity")}
-                ${renderLeavePaperOption("radio", "Special Privilege Leave", leaveType === "special-privilege")}
-                ${renderLeavePaperOption("radio", "Wellness Leave", leaveType === "wellness")}
-                ${renderLeavePaperOption("radio", "Solo Parent Leave", leaveType === "solo-parent")}
-                ${renderLeavePaperOption("radio", "Study Leave", leaveType === "study")}
-                ${renderLeavePaperOption("radio", "10-Day VAWC Leave", leaveType === "vawc")}
-                ${renderLeavePaperOption("radio", "Rehabilitation Privilege", leaveType === "rehabilitation-privilege")}
-                ${renderLeavePaperOption("radio", "Special Leave Benefits for Women", leaveType === "special-benefits-women")}
-                ${renderLeavePaperOption("radio", "Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity")}
-                ${renderLeavePaperOption("radio", "Adoption Leave", leaveType === "adoption")}
-                ${renderLeavePaperOption("radio", "Others", leaveType === "others")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "vacation", "Vacation Leave", leaveType === "vacation")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "mandatory-forced", "Mandatory/Forced Leave", leaveType === "mandatory-forced")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "sick", "Sick Leave", leaveType === "sick")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "maternity", "Maternity Leave", leaveType === "maternity")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "paternity", "Paternity Leave", leaveType === "paternity")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "special-privilege", "Special Privilege Leave", leaveType === "special-privilege")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "wellness", "Wellness Leave", leaveType === "wellness")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "solo-parent", "Solo Parent Leave", leaveType === "solo-parent")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "study", "Study Leave", leaveType === "study")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "vawc", "10-Day VAWC Leave", leaveType === "vawc")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "rehabilitation-privilege", "Rehabilitation Privilege", leaveType === "rehabilitation-privilege")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "special-benefits-women", "Special Leave Benefits for Women", leaveType === "special-benefits-women")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "special-emergency-calamity", "Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "adoption", "Adoption Leave", leaveType === "adoption")}
+                ${renderLeavePaperOptionInput("radio", "leaveType", "others", "Others", leaveType === "others")}
               </div>
               <div class="leave-paper-other-line">
-                <span>Others:</span>
-                <div class="leave-paper-readonly">${escapeHtml(request.other_leave_details || "")}</div>
+                <label for="admin-other-leave-details">Others:</label>
+                <input id="admin-other-leave-details" class="leave-paper-input leave-paper-input-line" type="text" name="otherLeaveDetails" value="${escapeAttribute(request.other_leave_details || "")}">
               </div>
             </fieldset>
 
@@ -1012,45 +1152,68 @@
               <div class="leave-paper-subgroup">
                 <p>In case of Vacation / Special Privilege Leave:</p>
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOption("checkbox", "Within the Philippines", vacationLocations.includes("within-ph"))}
-                  ${renderLeavePaperOption("checkbox", "Abroad (Specify)", vacationLocations.includes("abroad"))}
+                  ${renderLeavePaperOptionInput("checkbox", "leaveLocation", "within-ph", "Within the Philippines", vacationLocations.includes("within-ph"))}
+                  ${renderLeavePaperOptionInput("checkbox", "leaveLocation", "abroad", "Abroad (Specify)", vacationLocations.includes("abroad"))}
                 </div>
               </div>
 
               <div class="leave-paper-subgroup">
                 <p>In case of Sick Leave:</p>
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOption("checkbox", "In Hospital (Specify Illness)", sickDetails.includes("in-hospital"))}
-                  ${renderLeavePaperOption("checkbox", "Out Patient (Specify Illness)", sickDetails.includes("out-patient"))}
+                  ${renderLeavePaperOptionInput("checkbox", "sickDetail", "in-hospital", "In Hospital (Specify Illness)", sickDetails.includes("in-hospital"))}
+                  ${renderLeavePaperOptionInput("checkbox", "sickDetail", "out-patient", "Out Patient (Specify Illness)", sickDetails.includes("out-patient"))}
+                </div>
+              </div>
+
+              <div class="leave-paper-subgroup">
+                <p>In case of Special Leave Benefits for Women:</p>
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "women-illness", "(Specify Illness)", leavePurposeDetails.includes("women-illness"))}
+                </div>
+              </div>
+
+              <div class="leave-paper-subgroup">
+                <p>In case of Study Leave:</p>
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "masters-completion", "Completion of Master's Degree", leavePurposeDetails.includes("masters-completion"))}
+                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "bar-review", "BAR/Board Examination Review", leavePurposeDetails.includes("bar-review"))}
+                </div>
+              </div>
+
+              <div class="leave-paper-subgroup">
+                <p>Other purpose:</p>
+                <div class="leave-paper-bullets">
+                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "monetization", "Monetization of Leave Credits", leavePurposeDetails.includes("monetization"))}
+                  ${renderLeavePaperOptionInput("checkbox", "leavePurpose", "terminal", "Terminal Leave", leavePurposeDetails.includes("terminal"))}
                 </div>
               </div>
 
               <div class="field leave-paper-reason-field">
-                <label>Specify Purpose / Reason / Details</label>
-                <div class="leave-paper-readonly">${escapeHtml(request.reason || "")}</div>
+                <label for="admin-reason">Specify Purpose / Reason / Details</label>
+                <textarea id="admin-reason" name="reason">${escapeHtml(request.reason || "")}</textarea>
               </div>
             </fieldset>
           </div>
 
           <div class="leave-paper-row leave-paper-row-detail">
             <div class="leave-paper-cell">
-              <span class="leave-paper-label">6.C Number of Working Days Applied For</span>
+              <label class="leave-paper-label" for="admin-days-requested">6.C Number of Working Days Applied For</label>
               <div class="leave-paper-tight-field">
-                <div class="leave-paper-readonly">${escapeHtml(String(request.days_requested || ""))}</div>
+                <input id="admin-days-requested" class="leave-paper-input" name="daysRequested" type="number" min="1" step="1" inputmode="numeric" value="${escapeAttribute(String(request.days_requested || ""))}">
               </div>
               <div class="leave-paper-subline-group">
-                <label>Inclusive Dates</label>
+                <label for="admin-start-date">Inclusive Dates</label>
                 <div class="leave-paper-date-range">
-                  <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.start_date))}</div>
-                  <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.end_date))}</div>
+                  <input id="admin-start-date" class="leave-paper-input leave-paper-input-line" name="startDate" type="date" value="${escapeAttribute(request.start_date || "")}">
+                  <input class="leave-paper-input leave-paper-input-line" name="endDate" type="date" value="${escapeAttribute(request.end_date || "")}">
                 </div>
               </div>
             </div>
             <div class="leave-paper-cell">
               <span class="leave-paper-label">6.D Commutation</span>
               <div class="leave-paper-bullets">
-                ${renderLeavePaperOption("radio", "Not Requested", request.commutation === "not-requested")}
-                ${renderLeavePaperOption("radio", "Requested", request.commutation === "requested")}
+                ${renderLeavePaperOptionInput("radio", "commutation", "not-requested", "Not Requested", request.commutation === "not-requested")}
+                ${renderLeavePaperOptionInput("radio", "commutation", "requested", "Requested", request.commutation === "requested")}
               </div>
               <div class="leave-paper-signature">
                 <div class="leave-paper-line">${escapeHtml(getApplicantFullName(request) || "")}</div>
@@ -1064,7 +1227,7 @@
           <div class="leave-paper-row leave-paper-row-action">
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.A Certification of Leave Credits</span>
-              <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line">${escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf))}</span></div>
+              <div class="leave-paper-credit-note">As of <input class="leave-paper-inline-input leave-paper-credit-input" type="date" name="creditAsOf" value="${escapeAttribute(creditSnapshot.creditAsOf || "")}"></div>
               <table class="leave-paper-credit-table" aria-label="Leave credits certification">
                 <thead>
                   <tr>
@@ -1076,8 +1239,8 @@
                 <tbody>
                   <tr>
                     <td>Total Earned</td>
-                    <td>${escapeHtml(creditCells.vacation.current)}</td>
-                    <td>${escapeHtml(creditCells.sick.current)}</td>
+                    <td><input class="leave-paper-table-input" type="number" step="0.01" name="creditEarnedVacation" value="${escapeAttribute(normalizeFormNumber(creditCells.vacation.current))}"></td>
+                    <td><input class="leave-paper-table-input" type="number" step="0.01" name="creditEarnedSick" value="${escapeAttribute(normalizeFormNumber(creditCells.sick.current))}"></td>
                   </tr>
                   <tr>
                     <td>Less this application</td>
@@ -1086,8 +1249,8 @@
                   </tr>
                   <tr>
                     <td>Balance</td>
-                    <td>${escapeHtml(creditCells.vacation.balance)}</td>
-                    <td>${escapeHtml(creditCells.sick.balance)}</td>
+                    <td><input class="leave-paper-table-input" type="number" step="0.01" name="creditBalanceVacation" value="${escapeAttribute(normalizeFormNumber(creditCells.vacation.balance))}"></td>
+                    <td><input class="leave-paper-table-input" type="number" step="0.01" name="creditBalanceSick" value="${escapeAttribute(normalizeFormNumber(creditCells.sick.balance))}"></td>
                   </tr>
                 </tbody>
               </table>
@@ -1101,11 +1264,11 @@
               <span class="leave-paper-label">7.B Recommendation</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOption("checkbox", "For approval", request.recommendation === "approved" || request.status === "approved")}
-                  ${renderLeavePaperOption("checkbox", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
+                  ${renderLeavePaperOptionInput("radio", "recommendation", "approved", "For approval", request.recommendation === "approved" || request.status === "approved")}
+                  ${renderLeavePaperOptionInput("radio", "recommendation", "rejected", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
                 </div>
                 <div class="leave-paper-action-writing">
-                  ${renderStaticWritingLines(recommendationDetails, 3)}
+                  <textarea class="leave-paper-action-textarea" name="recommendationDetails">${escapeHtml(recommendationDetails)}</textarea>
                 </div>
               </div>
               <div class="leave-paper-officer">
@@ -1120,16 +1283,16 @@
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.C Approved For</span>
               <div class="leave-paper-approval-lines">
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_with_pay_days))}</span> days with pay</div>
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_without_pay_days))}</span> days without pay</div>
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(request.approved_other_details || "-")}</span> others (Specify)</div>
+                <div class="leave-paper-approval-item"><input class="leave-paper-inline-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" value="${escapeAttribute(normalizeFormNumber(formatIntegerDisplay(request.approved_with_pay_days)))}"> days with pay</div>
+                <div class="leave-paper-approval-item"><input class="leave-paper-inline-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(formatIntegerDisplay(request.approved_without_pay_days)))}"> days without pay</div>
+                <div class="leave-paper-approval-item"><input class="leave-paper-inline-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(request.approved_other_details || "")}"> others (Specify)</div>
               </div>
             </div>
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.D Disapproved Due To</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-action-writing">
-                  ${renderStaticWritingLines(request.disapproval_details || "", 3)}
+                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails">${escapeHtml(request.disapproval_details || "")}</textarea>
                 </div>
               </div>
             </div>
@@ -1140,32 +1303,18 @@
             <strong>Authorized Official</strong>
             <span>(Authorized Official)</span>
           </div>
-        </div>
+        </form>
       </section>
     `;
   }
 
-  function renderLeavePaperOption(type, label, isChecked) {
+  function renderLeavePaperOptionInput(type, name, value, label, isChecked) {
     return `
       <label class="leave-option">
-        <input type="${type}" ${isChecked ? "checked" : ""} disabled>
+        <input type="${type}" name="${escapeAttribute(name)}" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""}>
         <span>${escapeHtml(label)}</span>
       </label>
     `;
-  }
-
-  function renderStaticWritingLines(content, lineCount) {
-    const text = String(content || "").trim();
-    if (!text) {
-      return Array.from({ length: lineCount }, () => '<div class="leave-paper-action-line"></div>').join("");
-    }
-
-    const lines = text.split(/\n+/).slice(0, lineCount);
-    while (lines.length < lineCount) {
-      lines.push("");
-    }
-
-    return lines.map((line) => `<div class="leave-paper-action-line">${escapeHtml(line)}</div>`).join("");
   }
 
   function printAdminLeaveRequest(request) {
@@ -1262,7 +1411,7 @@
           .leave-paper-heading-grid {
             display: grid;
             grid-template-columns: 18mm 1fr 18mm;
-            align-items: center;
+            align-items: start;
             gap: 3mm;
             padding: 0 4.5mm 3mm;
             border-bottom: 1px solid #111;
@@ -1270,6 +1419,7 @@
           .leave-paper-seal-wrap {
             display: flex;
             justify-content: center;
+            padding-top: 0.5mm;
           }
           .leave-paper-seal {
             width: 14mm;
@@ -1353,6 +1503,47 @@
             border-bottom: 1px solid #111;
             font-size: 10px;
             color: #111;
+          }
+          .leave-paper-input,
+          .leave-paper-inline-input,
+          .leave-paper-table-input,
+          .leave-paper-action-textarea {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid #111;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            color: #111;
+            font: inherit;
+          }
+          .leave-paper-input,
+          .leave-paper-inline-input,
+          .leave-paper-table-input {
+            padding: 1.2mm 0.5mm;
+          }
+          .leave-paper-input-line {
+            padding-left: 0;
+            padding-right: 0;
+          }
+          .leave-paper-table-input {
+            text-align: center;
+          }
+          .leave-paper-credit-input {
+            display: inline-block;
+            width: 30mm;
+            margin-left: 1.5mm;
+          }
+          .leave-paper-approval-input {
+            width: 18mm;
+          }
+          .leave-paper-approval-wide {
+            width: 30mm;
+          }
+          .leave-paper-action-textarea {
+            min-height: 16mm;
+            padding: 1mm 0;
+            resize: none;
           }
           .leave-paper-inline-line,
           .leave-paper-readonly {
@@ -1760,6 +1951,18 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(String(value ?? ""));
+  }
+
+  function normalizeFormNumber(value) {
+    if (value === null || value === undefined || value === "" || value === "-") {
+      return "";
+    }
+
+    return String(value);
   }
 
   function getApplicantFullName(request) {
