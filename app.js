@@ -1086,15 +1086,15 @@
           </div>
 
           <div class="leave-paper-row leave-paper-row-compact">
-            <div class="leave-paper-cell">
+            <div class="leave-paper-cell leave-paper-cell-inline">
               <span class="leave-paper-label">3. Date of Filing</span>
               <div class="leave-paper-readonly">${escapeHtml(formatDateDisplay(request.filing_date))}</div>
             </div>
-            <div class="leave-paper-cell">
+            <div class="leave-paper-cell leave-paper-cell-inline">
               <span class="leave-paper-label">4. Position</span>
               <div class="leave-paper-readonly">${escapeHtml(request.position_title || "")}</div>
             </div>
-            <div class="leave-paper-cell">
+            <div class="leave-paper-cell leave-paper-cell-inline">
               <span class="leave-paper-label">5. Salary</span>
               <div class="leave-paper-readonly">${escapeHtml(request.salary_display || "N/A")}</div>
             </div>

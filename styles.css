@@ -829,6 +829,23 @@ textarea {
   color: #111;
 }
 
+.leave-paper-cell-inline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.leave-paper-cell-inline .leave-paper-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.leave-paper-cell-inline .leave-paper-input,
+.leave-paper-cell-inline .leave-paper-readonly {
+  min-width: 0;
+}
+
 .leave-paper-name-header {
   display: grid;
   grid-template-columns: auto 1fr;
