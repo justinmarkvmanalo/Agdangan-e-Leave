@@ -37,36 +37,66 @@
           separate admin and employee access.
         </p>
         <div class="hero-actions">
-          <a href="login.html" class="button button-primary">Open Login Portal</a>
-          <a href="#home-login" class="button button-secondary">Choose Login Role</a>
+          <a href="#home-login" class="button button-primary">Sign In Below</a>
+          <a href="#service" class="button button-secondary">Explore Service</a>
         </div>
       </div>
     </section>
 
-    <section class="home-login-section" id="home-login">
-      <div class="home-login-copy">
-        <p class="section-label">Login Access</p>
-        <h3>Select the correct portal under Home.</h3>
-        <p>
-          Continue as an employee to file and track leave requests, or enter the administrator portal to review,
-          approve, and manage records.
-        </p>
-      </div>
+    <section class="home-auth-section" id="home-login">
+      <div class="home-auth-shell">
+        <section class="auth-copy">
+          <p class="section-label">Secure Access</p>
+          <h2>Sign in directly from the home page.</h2>
+          <p>
+            Choose the correct role below, then enter your Agdangan e-Leave account email and password without leaving
+            the main page.
+          </p>
 
-      <div class="home-login-grid">
-        <a href="login.html?role=employee" class="login-entry-card">
-          <span class="login-entry-tag">Employee</span>
-          <strong>Employee Login</strong>
-          <p>Open leave filing, request history, and personal status tracking.</p>
-          <span class="login-entry-link">Proceed to employee sign in</span>
-        </a>
+          <div class="auth-grid">
+            <div class="mini-card">
+              <strong>Employee Login</strong>
+              <span>File leave requests, track status, and view your request history.</span>
+            </div>
+            <div class="mini-card">
+              <strong>Admin Login</strong>
+              <span>Review requests, approve leave, and manage employee records.</span>
+            </div>
+          </div>
 
-        <a href="login.html?role=admin" class="login-entry-card login-entry-card-admin">
-          <span class="login-entry-tag">Administrator</span>
-          <strong>Admin Login</strong>
-          <p>Open approval tools, employee account controls, and records monitoring.</p>
-          <span class="login-entry-link">Proceed to admin sign in</span>
-        </a>
+          <div class="status-banner" id="config-status"></div>
+        </section>
+
+        <section class="home-auth-form-wrap" aria-label="Login form">
+          <div class="role-switch" aria-label="Select login role">
+            <button type="button" class="active" data-role-switch="employee">Employee</button>
+            <button type="button" data-role-switch="admin">Admin</button>
+          </div>
+
+          <form class="auth-form home-auth-form" id="login-form">
+            <h3 id="auth-title">Employee Sign In</h3>
+            <p class="muted" id="auth-subtitle">Use your employee email and password to open your leave dashboard.</p>
+
+            <div class="field-grid">
+              <div class="field field-full">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="name@agdangan.gov.ph" required>
+              </div>
+
+              <div class="field field-full">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Enter your password" required>
+              </div>
+            </div>
+
+            <input id="selected-role" name="selectedRole" type="hidden" value="employee">
+
+            <div class="form-actions">
+              <button type="submit" class="button button-primary">Sign In</button>
+              <button type="button" class="button button-muted" id="demo-fill">Fill Demo Credentials</button>
+            </div>
+          </form>
+        </section>
       </div>
     </section>
 
@@ -104,14 +134,14 @@
         <p class="section-label">Service</p>
         <h3>Login Portal Access</h3>
         <p>
-          The home page now places both login paths first, so users can immediately continue to the correct portal.
+          Users can sign in directly from the home section, then continue straight to the correct dashboard.
         </p>
         <div class="service-links">
-          <a href="login.html?role=employee" class="mini-card">
+          <a href="#home-login" class="mini-card">
             <strong>Employee Login</strong>
             <span>Access leave filing, request status, and employee service records.</span>
           </a>
-          <a href="login.html?role=admin" class="mini-card">
+          <a href="#home-login" class="mini-card">
             <strong>Admin Login</strong>
             <span>Access approval tools, monitoring, and administrator service records.</span>
           </a>
@@ -119,5 +149,9 @@
       </div>
     </section>
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

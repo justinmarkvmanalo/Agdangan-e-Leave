@@ -38,7 +38,7 @@
   const pageName = window.location.pathname.split("/").pop() || "index.html";
 
   document.addEventListener("DOMContentLoaded", () => {
-    if (pageName === "login.html") {
+    if (document.getElementById("login-form")) {
       initLoginPage();
       return;
     }
