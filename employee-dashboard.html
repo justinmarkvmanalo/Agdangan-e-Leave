@@ -86,7 +86,7 @@
             <div class="leave-paper-row">
               <div class="leave-paper-cell">
                 <label class="leave-paper-label" for="office-department">1. Office / Department</label>
-                <input id="office-department" class="leave-paper-input leave-paper-input-line" type="text" name="officeDepartment">
+                <input id="office-department" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="officeDepartment">
               </div>
               <div class="leave-paper-cell">
                 <div class="leave-paper-name-header">
@@ -98,9 +98,9 @@
                   </div>
                 </div>
                 <div class="leave-paper-inline-fields">
-                  <input id="applicant-last" class="leave-paper-input leave-paper-input-line" type="text" name="applicantLastName" placeholder="Last">
-                  <input id="applicant-first" class="leave-paper-input leave-paper-input-line" type="text" name="applicantFirstName" placeholder="First">
-                  <input id="applicant-middle" class="leave-paper-input leave-paper-input-line" type="text" name="applicantMiddleName" placeholder="Middle">
+                  <input id="applicant-last" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantLastName" placeholder="Last">
+                  <input id="applicant-first" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantFirstName" placeholder="First">
+                  <input id="applicant-middle" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantMiddleName" placeholder="Middle">
                 </div>
               </div>
             </div>
@@ -198,16 +198,32 @@
                 <div class="leave-paper-subgroup" data-detail-group="vacation">
                   <p>In case of Vacation / Special Privilege Leave:</p>
                   <div class="leave-paper-bullets">
-                    <label><input type="checkbox" name="leaveLocation" value="within-ph"> <span>Within the Philippines</span></label>
-                    <label><input type="checkbox" name="leaveLocation" value="abroad"> <span>Abroad (Specify)</span></label>
+                    <label class="leave-paper-detail-option">
+                      <input type="checkbox" name="leaveLocation" value="within-ph">
+                      <span>Within the Philippines</span>
+                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationWithinNote" placeholder="Specify">
+                    </label>
+                    <label class="leave-paper-detail-option">
+                      <input type="checkbox" name="leaveLocation" value="abroad">
+                      <span>Abroad (Specify)</span>
+                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationAbroadNote" placeholder="Specify">
+                    </label>
                   </div>
                 </div>
 
                 <div class="leave-paper-subgroup" data-detail-group="sick">
                   <p>In case of Sick Leave:</p>
                   <div class="leave-paper-bullets">
-                    <label><input type="checkbox" name="sickDetail" value="in-hospital"> <span>In Hospital (Specify Illness)</span></label>
-                    <label><input type="checkbox" name="sickDetail" value="out-patient"> <span>Out Patient (Specify Illness)</span></label>
+                    <label class="leave-paper-detail-option">
+                      <input type="checkbox" name="sickDetail" value="in-hospital">
+                      <span>In Hospital (Specify Illness)</span>
+                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailHospitalNote" placeholder="Specify illness">
+                    </label>
+                    <label class="leave-paper-detail-option">
+                      <input type="checkbox" name="sickDetail" value="out-patient">
+                      <span>Out Patient (Specify Illness)</span>
+                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailOutpatientNote" placeholder="Specify illness">
+                    </label>
                   </div>
                 </div>
 

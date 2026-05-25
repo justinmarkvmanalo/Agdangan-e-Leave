@@ -57,7 +57,9 @@ create table if not exists public.leave_requests (
   days_requested integer not null check (days_requested > 0),
   other_leave_details text,
   vacation_location text[] not null default '{}'::text[],
+  vacation_location_notes jsonb not null default '{}'::jsonb,
   sick_leave_details text[] not null default '{}'::text[],
+  sick_leave_notes jsonb not null default '{}'::jsonb,
   leave_purpose_details text[] not null default '{}'::text[],
   commutation text,
   reason text not null,
@@ -88,7 +90,9 @@ alter table public.leave_requests add column if not exists position_title text;
 alter table public.leave_requests add column if not exists salary_display text;
 alter table public.leave_requests add column if not exists other_leave_details text;
 alter table public.leave_requests add column if not exists vacation_location text[] not null default '{}'::text[];
+alter table public.leave_requests add column if not exists vacation_location_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists sick_leave_details text[] not null default '{}'::text[];
+alter table public.leave_requests add column if not exists sick_leave_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists leave_purpose_details text[] not null default '{}'::text[];
 alter table public.leave_requests add column if not exists commutation text;
 alter table public.leave_requests add column if not exists credit_as_of date;
@@ -355,7 +359,9 @@ create or replace function public.create_leave_request(
   p_days_requested integer,
   p_other_leave_details text,
   p_vacation_location text[],
+  p_vacation_location_notes jsonb,
   p_sick_leave_details text[],
+  p_sick_leave_notes jsonb,
   p_leave_purpose_details text[],
   p_commutation text,
   p_reason text
@@ -383,7 +389,9 @@ begin
     days_requested,
     other_leave_details,
     vacation_location,
+    vacation_location_notes,
     sick_leave_details,
+    sick_leave_notes,
     leave_purpose_details,
     commutation,
     reason
@@ -403,7 +411,9 @@ begin
     p_days_requested,
     nullif(trim(coalesce(p_other_leave_details, '')), ''),
     coalesce(p_vacation_location, '{}'::text[]),
+    coalesce(p_vacation_location_notes, '{}'::jsonb),
     coalesce(p_sick_leave_details, '{}'::text[]),
+    coalesce(p_sick_leave_notes, '{}'::jsonb),
     coalesce(p_leave_purpose_details, '{}'::text[]),
     nullif(trim(coalesce(p_commutation, '')), ''),
     trim(p_reason)
@@ -430,7 +440,9 @@ create or replace function public.update_leave_request_details(
   p_days_requested integer,
   p_other_leave_details text,
   p_vacation_location text[],
+  p_vacation_location_notes jsonb,
   p_sick_leave_details text[],
+  p_sick_leave_notes jsonb,
   p_leave_purpose_details text[],
   p_commutation text,
   p_reason text,
@@ -469,7 +481,9 @@ begin
     days_requested = p_days_requested,
     other_leave_details = nullif(trim(coalesce(p_other_leave_details, '')), ''),
     vacation_location = coalesce(p_vacation_location, '{}'::text[]),
+    vacation_location_notes = coalesce(p_vacation_location_notes, '{}'::jsonb),
     sick_leave_details = coalesce(p_sick_leave_details, '{}'::text[]),
+    sick_leave_notes = coalesce(p_sick_leave_notes, '{}'::jsonb),
     leave_purpose_details = coalesce(p_leave_purpose_details, '{}'::text[]),
     commutation = nullif(trim(coalesce(p_commutation, '')), ''),
     reason = trim(coalesce(p_reason, '')),

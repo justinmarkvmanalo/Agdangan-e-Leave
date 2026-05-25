@@ -400,6 +400,14 @@
       const vacationLocation = formData.getAll("leaveLocation").map((value) => String(value));
       const sickLeaveDetails = formData.getAll("sickDetail").map((value) => String(value));
       const leavePurposeDetails = formData.getAll("leavePurpose").map((value) => String(value));
+      const vacationLocationNotes = {
+        "within-ph": String(formData.get("leaveLocationWithinNote") || "").trim(),
+        abroad: String(formData.get("leaveLocationAbroadNote") || "").trim()
+      };
+      const sickLeaveNotes = {
+        "in-hospital": String(formData.get("sickDetailHospitalNote") || "").trim(),
+        "out-patient": String(formData.get("sickDetailOutpatientNote") || "").trim()
+      };
 
       const payload = {
         employee_id: profile.id,
@@ -416,7 +424,9 @@
         days_requested: Number.parseInt(String(formData.get("daysRequested") || "0"), 10),
         other_leave_details: String(document.getElementById("leave-other")?.value || "").trim(),
         vacation_location: vacationLocation,
+        vacation_location_notes: vacationLocationNotes,
         sick_leave_details: sickLeaveDetails,
+        sick_leave_notes: sickLeaveNotes,
         leave_purpose_details: leavePurposeDetails,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
@@ -442,7 +452,9 @@
         p_days_requested: payload.days_requested,
         p_other_leave_details: payload.other_leave_details,
         p_vacation_location: payload.vacation_location,
+        p_vacation_location_notes: payload.vacation_location_notes,
         p_sick_leave_details: payload.sick_leave_details,
+        p_sick_leave_notes: payload.sick_leave_notes,
         p_leave_purpose_details: payload.leave_purpose_details,
         p_commutation: payload.commutation,
         p_reason: payload.reason
@@ -1035,6 +1047,8 @@
     const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
     const leavePurposeDetails = Array.isArray(request.leave_purpose_details) ? request.leave_purpose_details : [];
+    const vacationLocationNotes = request.vacation_location_notes && typeof request.vacation_location_notes === "object" ? request.vacation_location_notes : {};
+    const sickLeaveNotes = request.sick_leave_notes && typeof request.sick_leave_notes === "object" ? request.sick_leave_notes : {};
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
     const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
@@ -1066,7 +1080,7 @@
           <div class="leave-paper-row">
             <div class="leave-paper-cell">
               <span class="leave-paper-label">1. Office / Department</span>
-              <div class="leave-paper-readonly">${escapeHtml(request.office_department || "")}</div>
+              <div class="leave-paper-readonly leave-paper-readonly-single-line">${escapeHtml(request.office_department || "")}</div>
             </div>
             <div class="leave-paper-cell">
               <div class="leave-paper-name-header">
@@ -1078,9 +1092,9 @@
                 </div>
               </div>
               <div class="leave-paper-inline-fields">
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_last_name || "")}</div>
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_first_name || "")}</div>
-                <div class="leave-paper-inline-line">${escapeHtml(request.applicant_middle_name || "")}</div>
+                <div class="leave-paper-inline-line leave-paper-inline-line-single">${escapeHtml(request.applicant_last_name || "")}</div>
+                <div class="leave-paper-inline-line leave-paper-inline-line-single">${escapeHtml(request.applicant_first_name || "")}</div>
+                <div class="leave-paper-inline-line leave-paper-inline-line-single">${escapeHtml(request.applicant_middle_name || "")}</div>
               </div>
             </div>
           </div>
@@ -1133,16 +1147,16 @@
               <div class="leave-paper-subgroup">
                 <p>In case of Vacation / Special Privilege Leave:</p>
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOptionInput("checkbox", "leaveLocation", "within-ph", "Within the Philippines", vacationLocations.includes("within-ph"), true)}
-                  ${renderLeavePaperOptionInput("checkbox", "leaveLocation", "abroad", "Abroad (Specify)", vacationLocations.includes("abroad"), true)}
+                  ${renderLeavePaperOptionDisplay("Within the Philippines", vacationLocations.includes("within-ph"), vacationLocationNotes["within-ph"])}
+                  ${renderLeavePaperOptionDisplay("Abroad (Specify)", vacationLocations.includes("abroad"), vacationLocationNotes.abroad)}
                 </div>
               </div>
 
               <div class="leave-paper-subgroup">
                 <p>In case of Sick Leave:</p>
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOptionInput("checkbox", "sickDetail", "in-hospital", "In Hospital (Specify Illness)", sickDetails.includes("in-hospital"), true)}
-                  ${renderLeavePaperOptionInput("checkbox", "sickDetail", "out-patient", "Out Patient (Specify Illness)", sickDetails.includes("out-patient"), true)}
+                  ${renderLeavePaperOptionDisplay("In Hospital (Specify Illness)", sickDetails.includes("in-hospital"), sickLeaveNotes["in-hospital"])}
+                  ${renderLeavePaperOptionDisplay("Out Patient (Specify Illness)", sickDetails.includes("out-patient"), sickLeaveNotes["out-patient"])}
                 </div>
               </div>
 
@@ -1294,6 +1308,16 @@
       <label class="leave-option">
         <input type="${type}" name="${escapeAttribute(name)}" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
         <span>${escapeHtml(label)}</span>
+      </label>
+    `;
+  }
+
+  function renderLeavePaperOptionDisplay(label, isChecked, note) {
+    return `
+      <label class="leave-option leave-paper-detail-option">
+        <input type="checkbox" ${isChecked ? "checked" : ""} disabled>
+        <span>${escapeHtml(label)}</span>
+        <span class="leave-paper-detail-line leave-paper-detail-line-readonly">${escapeHtml(note || "")}</span>
       </label>
     `;
   }
