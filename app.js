@@ -13,6 +13,7 @@
   let adminEmployeeProfiles = [];
   let adminLeaveRequests = [];
   let selectedAdminRequestId = null;
+  let adminRequestModalOpen = false;
   const monthlyCreditGain = 1.25;
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
@@ -795,44 +796,33 @@
     }
 
     container.innerHTML = `
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Leave Type</th>
-            <th>Dates</th>
-            <th>Days</th>
-            <th>Status</th>
-            <th>Reason</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map((request) => `
-            <tr>
-              <td>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</td>
-              <td>${escapeHtml(formatLeaveType(request.leave_type))}</td>
-              <td>${escapeHtml(request.start_date)}<br>${escapeHtml(request.end_date)}</td>
-              <td>${escapeHtml(String(request.days_requested))}</td>
-              <td><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></td>
-              <td>${escapeHtml(request.reason)}</td>
-              <td>
-                <div class="table-actions">
-                  <button type="button" class="button button-muted" data-view-request="${request.id}">View Form</button>
-                  <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
-                  <button type="button" class="button button-danger" data-update-request="${request.id}" data-status="rejected">Reject</button>
-                </div>
-              </td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
+      <div class="admin-request-card-grid">
+        ${data.map((request) => `
+          <article class="admin-request-card">
+            <div class="admin-request-card-top">
+              <span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span>
+              <span class="admin-request-card-id">Request #${escapeHtml(String(request.id))}</span>
+            </div>
+            <h4>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</h4>
+            <div class="admin-request-card-meta">${escapeHtml(formatLeaveType(request.leave_type))}</div>
+            <div class="admin-request-card-meta">${escapeHtml(formatDateDisplay(request.start_date))} to ${escapeHtml(formatDateDisplay(request.end_date))}</div>
+            <div class="admin-request-card-meta">${escapeHtml(String(request.days_requested))} day(s)</div>
+            <p>${escapeHtml(request.reason)}</p>
+            <div class="table-actions">
+              <button type="button" class="button button-muted" data-view-request="${request.id}">View</button>
+              <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
+              <button type="button" class="button button-danger" data-update-request="${request.id}" data-status="rejected">Reject</button>
+            </div>
+          </article>
+        `).join("")}
+      </div>
     `;
 
     Array.from(container.querySelectorAll("[data-view-request]")).forEach((button) => {
       button.addEventListener("click", () => {
         const requestId = Number(button.getAttribute("data-view-request"));
         selectedAdminRequestId = requestId;
+        openAdminRequestModal();
         renderSelectedAdminRequest();
       });
     });
@@ -850,16 +840,19 @@
   function syncSelectedAdminRequest() {
     if (!adminLeaveRequests.length) {
       selectedAdminRequestId = null;
+      closeAdminRequestModal();
       renderSelectedAdminRequest();
       return;
     }
 
     const selectedRequestExists = adminLeaveRequests.some((request) => request.id === selectedAdminRequestId);
-    if (!selectedRequestExists) {
+    if (selectedAdminRequestId !== null && !selectedRequestExists) {
       selectedAdminRequestId = adminLeaveRequests[0].id;
     }
 
-    renderSelectedAdminRequest();
+    if (adminRequestModalOpen) {
+      renderSelectedAdminRequest();
+    }
   }
 
   function renderSelectedAdminRequest() {
@@ -891,6 +884,34 @@
     container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async () => {
       await updateLeaveStatus(request.id, "rejected");
     });
+  }
+
+  function openAdminRequestModal() {
+    const modal = document.getElementById("admin-request-modal");
+    if (!modal) {
+      return;
+    }
+
+    adminRequestModalOpen = true;
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+
+    Array.from(modal.querySelectorAll("[data-close-admin-modal]")).forEach((element) => {
+      element.onclick = () => closeAdminRequestModal();
+    });
+  }
+
+  function closeAdminRequestModal() {
+    const modal = document.getElementById("admin-request-modal");
+    if (!modal) {
+      return;
+    }
+
+    adminRequestModalOpen = false;
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
   }
 
   async function updateLeaveStatus(requestId, status) {
@@ -1886,67 +1907,25 @@
     const table = document.getElementById("admin-requests-table");
     if (table) {
       table.innerHTML = `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Leave Type</th>
-              <th>Dates</th>
-              <th>Days</th>
-              <th>Status</th>
-              <th>Reason</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Juan Dela Cruz</td>
-              <td>Vacation</td>
-              <td>2026-05-28<br>2026-05-30</td>
-              <td>3</td>
-              <td><span class="badge pending">Pending</span></td>
-              <td>Family travel</td>
-              <td><div class="table-actions"><button type="button" class="button button-muted">View Form</button><button type="button" class="button button-success">Approve</button><button type="button" class="button button-danger">Reject</button></div></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="admin-request-card-grid">
+          <article class="admin-request-card">
+            <div class="admin-request-card-top">
+              <span class="badge pending">Pending</span>
+              <span class="admin-request-card-id">Request #1</span>
+            </div>
+            <h4>Juan Dela Cruz</h4>
+            <div class="admin-request-card-meta">Vacation</div>
+            <div class="admin-request-card-meta">May 28, 2026 to May 30, 2026</div>
+            <div class="admin-request-card-meta">3 day(s)</div>
+            <p>Family travel</p>
+            <div class="table-actions">
+              <button type="button" class="button button-muted">View</button>
+              <button type="button" class="button button-success">Approve</button>
+              <button type="button" class="button button-danger">Reject</button>
+            </div>
+          </article>
+        </div>
       `;
-    }
-
-    const preview = document.getElementById("admin-request-preview");
-    if (preview) {
-      preview.innerHTML = buildAdminRequestPreviewMarkup({
-        id: 1,
-        employee_id: 1,
-        status: "pending",
-        leave_type: "vacation",
-        office_department: "Treasury",
-        applicant_last_name: "Dela Cruz",
-        applicant_first_name: "Juan",
-        applicant_middle_name: "S.",
-        filing_date: "2026-05-21",
-        position_title: "Administrative Aide",
-        salary_display: "N/A",
-        start_date: "2026-05-28",
-        end_date: "2026-05-30",
-        days_requested: 3,
-        other_leave_details: "",
-        vacation_location: ["within-ph"],
-        sick_leave_details: [],
-        commutation: "not-requested",
-        reason: "Family travel",
-        credit_as_of: null,
-        credit_earned_vacation: null,
-        credit_earned_sick: null,
-        credit_balance_vacation: null,
-        credit_balance_sick: null,
-        recommendation: null,
-        recommendation_details: "",
-        approved_with_pay_days: null,
-        approved_without_pay_days: null,
-        approved_other_details: "",
-        disapproval_details: ""
-      });
     }
   }
 

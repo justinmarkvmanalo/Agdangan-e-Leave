@@ -1462,6 +1462,47 @@ button:focus {
   gap: 0.55rem;
 }
 
+.admin-request-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-request-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.2rem;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 241, 255, 0.92));
+  border: 1px solid rgba(102, 79, 178, 0.08);
+  box-shadow: 0 14px 28px rgba(54, 36, 120, 0.08);
+}
+
+.admin-request-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-request-card-id,
+.admin-request-card-meta {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.admin-request-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.admin-request-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
 .admin-request-toolbar {
   display: flex;
   align-items: flex-start;
@@ -1478,6 +1519,60 @@ button:focus {
   border: 2px solid rgba(20, 20, 20, 0.78);
   background: #fff;
   box-shadow: 0 12px 24px rgba(54, 36, 120, 0.08);
+}
+
+.modal-open {
+  overflow: hidden;
+}
+
+.admin-request-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.admin-request-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 20, 36, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.admin-request-modal-dialog {
+  position: relative;
+  width: min(100%, 1100px);
+  max-height: calc(100vh - 3rem);
+  border-radius: 28px;
+  background: rgba(249, 250, 255, 0.98);
+  box-shadow: 0 26px 70px rgba(24, 20, 66, 0.26);
+  overflow: hidden;
+}
+
+.admin-request-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem 1rem;
+  border-bottom: 1px solid rgba(102, 79, 178, 0.08);
+}
+
+.admin-request-modal-header h3 {
+  margin: 0.4rem 0 0;
+  color: var(--ink);
+}
+
+.admin-request-modal-content {
+  max-height: calc(100vh - 11rem);
+  overflow: auto;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.admin-request-modal-close {
+  flex-shrink: 0;
 }
 
 .admin-paper-header,
@@ -1657,6 +1752,10 @@ button:focus {
 
   .admin-paper-grid-two,
   .admin-paper-grid-three {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-request-card-grid {
     grid-template-columns: 1fr;
   }
 }

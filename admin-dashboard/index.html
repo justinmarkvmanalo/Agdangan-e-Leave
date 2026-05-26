@@ -131,19 +131,11 @@
         </form>
       </article>
 
-      <article class="dashboard-card">
+      <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Approval Queue</p>
         <h3>Leave Requests</h3>
         <div id="admin-requests-table">
           <p class="empty-state">No leave requests loaded yet.</p>
-        </div>
-      </article>
-
-      <article class="dashboard-card dashboard-card-wide">
-        <p class="card-label">Leave Form Preview</p>
-        <h3>Submitted Application</h3>
-        <div id="admin-request-preview">
-          <p class="empty-state">Select a leave request to view the full application form.</p>
         </div>
       </article>
 
@@ -164,6 +156,22 @@
       </article>
     </section>
   </main>
+
+  <div class="admin-request-modal hidden" id="admin-request-modal" aria-hidden="true">
+    <div class="admin-request-modal-backdrop" data-close-admin-modal></div>
+    <div class="admin-request-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-request-modal-title">
+      <div class="admin-request-modal-header">
+        <div>
+          <p class="card-label">Leave Request</p>
+          <h3 id="admin-request-modal-title">Submitted Application</h3>
+        </div>
+        <button type="button" class="button button-muted admin-request-modal-close" data-close-admin-modal>Close</button>
+      </div>
+      <div class="admin-request-modal-content" id="admin-request-preview">
+        <p class="empty-state">Select a leave request to view the full application form.</p>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
