@@ -264,7 +264,6 @@ declare
   employee_record public.employees;
   processing_anchor date;
   next_month_end date;
-  queued_deduction numeric(10,2);
 begin
   select *
   into employee_record
@@ -288,31 +287,12 @@ begin
   end if;
 
   while next_month_end <= current_date loop
-    select coalesce(sum(lr.days_requested), 0)::numeric(10,2)
-    into queued_deduction
-    from public.leave_requests lr
-    where lr.employee_id = p_employee_id
-      and lr.status = 'approved'
-      and lr.credit_deduction_processed_at is null
-      and lr.reviewed_at is not null
-      and lr.reviewed_at::date <= next_month_end;
-
     update public.employees
     set
-      leave_credits = round(greatest((coalesce(leave_credits, 0) + 1.25::numeric) - queued_deduction, 0)::numeric, 2),
+      leave_credits = round((coalesce(leave_credits, 0) + 1.25::numeric)::numeric, 2),
       last_credit_accrual_date = next_month_end
     where id = p_employee_id
     returning * into employee_record;
-
-    if queued_deduction > 0 then
-      update public.leave_requests
-      set credit_deduction_processed_at = next_month_end
-      where employee_id = p_employee_id
-        and status = 'approved'
-        and credit_deduction_processed_at is null
-        and reviewed_at is not null
-        and reviewed_at::date <= next_month_end;
-    end if;
 
     next_month_end := (date_trunc('month', next_month_end + interval '1 day')::date + interval '1 month - 1 day')::date;
   end loop;
@@ -710,8 +690,7 @@ begin
   employee_record := public.apply_employee_monthly_leave_credit(request_record.employee_id);
 
   if request_record.status = 'approved'
-    and p_status <> 'approved'
-    and request_record.credit_deduction_processed_at is not null then
+    and p_status <> 'approved' then
     update public.employees
     set leave_credits = round((coalesce(leave_credits, 0) + request_record.days_requested)::numeric, 2)
     where id = request_record.employee_id
@@ -724,7 +703,14 @@ begin
   approved_without_pay := null;
 
   if p_status = 'approved' then
-    credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
+    if request_record.status <> 'approved' then
+      credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
+
+      update public.employees
+      set leave_credits = round(credits_after_deduction::numeric, 2)
+      where id = request_record.employee_id
+      returning * into employee_record;
+    end if;
 
     approved_with_pay := least(floor(credits_before_deduction)::integer, request_record.days_requested);
     approved_without_pay := greatest(request_record.days_requested - approved_with_pay, 0);
@@ -740,19 +726,16 @@ begin
     credit_earned_sick = credits_before_deduction,
     credit_balance_vacation = credits_after_deduction,
     credit_balance_sick = credits_after_deduction,
-    credit_deduction_processed_at = case
-      when p_status <> 'approved' then null
-      else request_record.credit_deduction_processed_at
-    end,
+    credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
     recommendation_details = case
-      when p_status = 'approved' then concat('Month-end accrual rate: 1.25 credit. Approved absent days are deducted at month-end. Queued deduction: ', request_record.days_requested, ' day(s). With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
+      when p_status = 'approved' then concat('Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately. With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
       else 'Request disapproved.'
     end,
     approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
     approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
     approved_other_details = case
-      when p_status = 'approved' then 'Approved absent days will be deducted during month-end processing.'
+      when p_status = 'approved' then 'Approved absent days were deducted immediately from the current balance.'
       else null
     end,
     disapproval_details = case when p_status = 'rejected' then 'Rejected by administrator.' else null end

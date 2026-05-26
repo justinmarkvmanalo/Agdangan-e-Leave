@@ -1460,7 +1460,7 @@
                 </div>
               </div>
               <div class="leave-paper-officer">
-                <div class="leave-paper-line">${escapeHtml(`${formatIntegerDisplay(request.days_requested)} approved day(s) queued for month-end deduction`)}</div>
+                <div class="leave-paper-line">${escapeHtml(`${formatIntegerDisplay(request.days_requested)} approved day(s) deducted on approval`)}</div>
                 <strong>Authorized Officer</strong>
                 <span>(Authorized Officer)</span>
               </div>
@@ -1980,27 +1980,19 @@
 
     const nextMonthEnd = getMonthEndIsoDate();
     const rows = adminEmployeeProfiles.map((profile) => {
-      const queuedRequests = adminLeaveRequests.filter((request) =>
-        Number(request.employee_id) === Number(profile.id)
-        && request.status === "approved"
-        && !request.credit_deduction_processed_at
-      );
-      const queuedDeduction = queuedRequests.reduce((total, request) => total + Number(request.days_requested || 0), 0);
       const currentCredits = Number(profile.leave_credits || 0);
-      const projectedBalance = Math.max(currentCredits + monthlyCreditGain - queuedDeduction, 0);
+      const projectedBalance = currentCredits + monthlyCreditGain;
 
       return {
         profile,
-        queuedRequests,
-        queuedDeduction,
         currentCredits,
         projectedBalance
       };
     });
 
-    const queuedEmployees = rows.filter((row) => row.queuedRequests.length).length;
+    const currentTotal = rows.reduce((total, row) => total + row.currentCredits, 0);
     setText("credit-stat-employees", String(rows.length));
-    setText("credit-stat-pending-deductions", String(queuedEmployees));
+    setText("credit-stat-current-total", formatNumberDisplay(currentTotal));
     setText("credit-stat-next-run", formatDateShort(nextMonthEnd) || "-");
 
     if (!rows.length) {
@@ -2014,14 +2006,13 @@
           <tr>
             <th>Employee</th>
             <th>Current Credits</th>
-            <th>Queued Deduction</th>
             <th>Month-End Gain</th>
             <th>Projected Balance</th>
-            <th>Queued Requests</th>
+            <th>Latest Approved Leave</th>
           </tr>
         </thead>
         <tbody>
-          ${rows.map(({ profile, queuedRequests, queuedDeduction, currentCredits, projectedBalance }) => `
+          ${rows.map(({ profile, currentCredits, projectedBalance }) => `
             <tr>
               <td>
                 <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
@@ -2029,16 +2020,9 @@
                 ${escapeHtml(profile.department || "-")}
               </td>
               <td>${escapeHtml(formatNumberDisplay(currentCredits))}</td>
-              <td>${escapeHtml(formatNumberDisplay(queuedDeduction))}</td>
               <td>${escapeHtml(formatNumberDisplay(monthlyCreditGain))}</td>
               <td>${escapeHtml(formatNumberDisplay(projectedBalance))}</td>
-              <td>${queuedRequests.length ? queuedRequests.map((request) => `
-                <div class="credit-request-chip">
-                  <strong>${escapeHtml(formatLeaveType(request.leave_type))}</strong>
-                  <span>${escapeHtml(String(request.days_requested || 0))} day(s)</span>
-                  <span>approved ${escapeHtml(formatDateShort(getReviewedAtDate(request)))}</span>
-                </div>
-              `).join("") : '<span class="muted">No queued deduction</span>'}</td>
+              <td>${buildLatestApprovedLeaveMarkup(profile.id)}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -2231,6 +2215,28 @@
 
   function escapeAttribute(value) {
     return escapeHtml(String(value ?? ""));
+  }
+
+  function buildLatestApprovedLeaveMarkup(employeeId) {
+    const latestApprovedRequest = adminLeaveRequests
+      .filter((request) => Number(request.employee_id) === Number(employeeId) && request.status === "approved")
+      .sort((left, right) => {
+        const leftValue = String(left.reviewed_at || left.created_at || "");
+        const rightValue = String(right.reviewed_at || right.created_at || "");
+        return rightValue.localeCompare(leftValue);
+      })[0];
+
+    if (!latestApprovedRequest) {
+      return '<span class="muted">No approved leave yet</span>';
+    }
+
+    return `
+      <div class="credit-request-chip">
+        <strong>${escapeHtml(formatLeaveType(latestApprovedRequest.leave_type))}</strong>
+        <span>${escapeHtml(String(latestApprovedRequest.days_requested || 0))} day(s) deducted</span>
+        <span>approved ${escapeHtml(formatDateShort(getReviewedAtDate(latestApprovedRequest)))}</span>
+      </div>
+    `;
   }
 
   function normalizeFormNumber(value) {

@@ -46,8 +46,8 @@
         <strong id="credit-stat-employees">0</strong>
       </article>
       <article class="stat-card">
-        <span class="stat-label">Waiting Deduction</span>
-        <strong id="credit-stat-pending-deductions">0</strong>
+        <span class="stat-label">Current Balance</span>
+        <strong id="credit-stat-current-total">0.00</strong>
       </article>
       <article class="stat-card">
         <span class="stat-label">Next Month-End</span>
@@ -70,22 +70,22 @@
           </div>
           <div class="credit-logic-panel">
             <strong>Deduction</strong>
-            <p>Approved leave is deducted based on the approved absent days, but the deduction happens only during month-end processing.</p>
+            <p>Approved leave is deducted immediately based on the approved absent days.</p>
           </div>
           <div class="credit-logic-panel">
             <strong>No Fixed 0.8 Value</strong>
-            <p>The system does not use a fixed <code>0.8</code> factor. It deducts the full approved absent days scheduled for month-end.</p>
+            <p>The system does not use a fixed <code>0.8</code> factor. It deducts the full approved absent days from the current balance.</p>
           </div>
         </div>
         <div class="credit-formula">
           <span>Next month-end balance</span>
-          <strong>current stored credits + 1.25 - total approved absent days waiting for deduction</strong>
+          <strong>current stored credits + 1.25</strong>
         </div>
       </article>
 
       <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Employee Queue</p>
-        <h3>Projected Month-End Balances</h3>
+        <h3>Current and Projected Month-End Balances</h3>
         <div id="credit-computation-table">
           <p class="empty-state">No computation data loaded yet.</p>
         </div>
