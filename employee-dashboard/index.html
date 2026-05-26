@@ -267,10 +267,25 @@
                   <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="1" step="1" inputmode="numeric" required>
                 </div>
                 <div class="leave-paper-subline-group">
-                  <label for="start-date">Inclusive Dates</label>
-                  <div class="leave-paper-date-range">
+                  <label>Inclusive Dates</label>
+                  <div class="leave-paper-bullets leave-paper-date-mode">
+                    <label><input type="radio" name="dateMode" value="range" checked> <span>Consecutive Date Range</span></label>
+                    <label><input type="radio" name="dateMode" value="selected"> <span>Selected Separate Dates</span></label>
+                  </div>
+                  <div class="leave-paper-date-range" data-date-mode-panel="range">
                     <input id="start-date" class="leave-paper-input leave-paper-input-line" name="startDate" type="date" required>
                     <input id="end-date" class="leave-paper-input leave-paper-input-line" name="endDate" type="date" required>
+                  </div>
+                  <div class="leave-paper-date-picker hidden" data-date-mode-panel="selected">
+                    <div class="leave-paper-date-picker-controls">
+                      <input id="selected-date-input" class="leave-paper-input leave-paper-input-line" type="date">
+                      <button type="button" class="button button-muted" id="add-selected-date">Add Date</button>
+                      <button type="button" class="button button-muted" id="clear-selected-dates">Clear</button>
+                    </div>
+                    <div class="leave-paper-date-picker-note">Use this for non-consecutive dates like May 1, May 3, and May 5.</div>
+                    <div class="leave-paper-date-chip-list" id="selected-date-list">
+                      <span class="muted">No dates selected yet.</span>
+                    </div>
                   </div>
                 </div>
               </div>

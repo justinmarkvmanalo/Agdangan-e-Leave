@@ -1271,6 +1271,54 @@ button:focus {
   gap: 0.38rem;
 }
 
+.leave-paper-date-mode {
+  margin-bottom: 0.55rem;
+}
+
+.leave-paper-date-picker {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.leave-paper-date-picker-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.leave-paper-date-picker-note {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.leave-paper-date-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.leave-paper-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  background: rgba(240, 235, 255, 0.92);
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.leave-paper-date-chip button {
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
 .leave-paper-signature {
   display: grid;
   gap: 0.25rem;
@@ -1737,6 +1785,77 @@ button:focus {
   color: #111;
 }
 
+.credit-logic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.credit-logic-panel {
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(102, 79, 178, 0.12);
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(240, 235, 255, 0.68));
+}
+
+.credit-logic-panel strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--navy);
+}
+
+.credit-logic-panel p {
+  margin: 0;
+}
+
+.credit-formula {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(75, 35, 184, 0.96), rgba(78, 166, 245, 0.84));
+  color: #fff;
+}
+
+.credit-formula span {
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.credit-formula strong {
+  font-size: 1rem;
+}
+
+.credit-computation-table td:last-child {
+  min-width: 15rem;
+}
+
+.credit-request-chip {
+  display: grid;
+  gap: 0.12rem;
+  margin-bottom: 0.55rem;
+  padding: 0.62rem 0.7rem;
+  border-radius: 16px;
+  background: rgba(240, 235, 255, 0.74);
+}
+
+.credit-request-chip:last-child {
+  margin-bottom: 0;
+}
+
+.credit-request-chip strong {
+  color: var(--navy);
+}
+
+.credit-request-chip span {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
 @media (max-width: 1180px) {
   .hero-shell,
   .overview-section,
@@ -1752,6 +1871,10 @@ button:focus {
 
   .admin-paper-grid-two,
   .admin-paper-grid-three {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-logic-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1857,6 +1980,10 @@ button:focus {
   .leave-paper-inline-fields {
     grid-template-columns: 1fr;
     gap: 0.3rem;
+  }
+
+  .leave-paper-date-picker-controls {
+    grid-template-columns: 1fr;
   }
 
   .leave-paper-footer {

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Computation | Agdangan e-Leave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="app-shell dashboard-page credit-page">
+  <header class="site-header">
+    <a class="brand" href="/">
+      <img src="/assets/images/agdangan-eleave-logo.png" alt="Agdangan e-Leave official logo" class="brand-logo">
+      <div class="brand-copy">
+        <span class="eyebrow">Admin Portal</span>
+        <h1>Agdangan e-Leave</h1>
+        <p>Month-end leave credit computation and deduction monitoring.</p>
+      </div>
+    </a>
+
+    <nav class="utility-nav" aria-label="Credit computation navigation">
+      <a href="/admin-dashboard">Admin Dashboard</a>
+      <a href="#credit-computation">Credit Computation</a>
+      <button type="button" id="sign-out-button">Sign Out</button>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <section class="dashboard-header" id="credit-computation">
+      <div class="dashboard-title">
+        <p class="section-label">Credit Computation</p>
+        <h2 id="credit-page-title">Month-End Leave Credit Logic</h2>
+        <p id="credit-page-meta">This page explains and monitors the month-end leave credit formula for all employees.</p>
+      </div>
+
+      <div class="dashboard-meta">
+        <strong class="badge approved">Admin</strong>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span class="stat-label">Employees</span>
+        <strong id="credit-stat-employees">0</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Waiting Deduction</span>
+        <strong id="credit-stat-pending-deductions">0</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Next Month-End</span>
+        <strong id="credit-stat-next-run">-</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Monthly Gain</span>
+        <strong>1.25</strong>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card dashboard-card-wide">
+        <p class="card-label">Formula</p>
+        <h3>Month-End Credit Rules</h3>
+        <div class="credit-logic-grid">
+          <div class="credit-logic-panel">
+            <strong>Accrual</strong>
+            <p>The system adds exactly <strong>1.25</strong> leave credits only on the last day of the month.</p>
+          </div>
+          <div class="credit-logic-panel">
+            <strong>Deduction</strong>
+            <p>Approved leave is deducted based on the approved absent days, but the deduction happens only during month-end processing.</p>
+          </div>
+          <div class="credit-logic-panel">
+            <strong>No Fixed 0.8 Value</strong>
+            <p>The system does not use a fixed <code>0.8</code> factor. It deducts the full approved absent days scheduled for month-end.</p>
+          </div>
+        </div>
+        <div class="credit-formula">
+          <span>Next month-end balance</span>
+          <strong>current stored credits + 1.25 - total approved absent days waiting for deduction</strong>
+        </div>
+      </article>
+
+      <article class="dashboard-card dashboard-card-wide">
+        <p class="card-label">Employee Queue</p>
+        <h3>Projected Month-End Balances</h3>
+        <div id="credit-computation-table">
+          <p class="empty-state">No computation data loaded yet.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

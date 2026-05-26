@@ -41,6 +41,7 @@
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const isEmployeeDashboardPage = /^\/employee-dashboard(?:\/index\.html)?$/.test(normalizedPath);
   const isAdminDashboardPage = /^\/admin-dashboard(?:\/index\.html)?$/.test(normalizedPath);
+  const isCreditComputationPage = /^\/credit-computation(?:\/index\.html)?$/.test(normalizedPath);
 
   document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("login-form")) {
@@ -55,6 +56,11 @@
 
     if (isAdminDashboardPage) {
       initAdminDashboard();
+      return;
+    }
+
+    if (isCreditComputationPage) {
+      initCreditComputationPage();
     }
   });
 
@@ -211,6 +217,33 @@
     await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
   }
 
+  async function initCreditComputationPage() {
+    bindSignOut();
+
+    if (!db) {
+      renderCreditComputationDemo();
+      return;
+    }
+
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "/login";
+      return;
+    }
+
+    const profile = await fetchAdminProfile(session.userId);
+    if (!profile) {
+      window.alert("Unable to load the admin profile after login. Check Supabase table access and RLS settings.");
+      return;
+    }
+
+    setText("credit-page-title", `Month-End Leave Credit Logic for ${profile.department}`);
+    setText("credit-page-meta", `${profile.first_name} ${profile.last_name} | ${profile.position_title}`);
+
+    await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
+    renderCreditComputationPage();
+  }
+
   async function fetchAdminProfile(adminId) {
     const { data, error } = await db.rpc("get_admin_profile", {
       p_admin_id: adminId
@@ -300,7 +333,7 @@
     list.innerHTML = data.map((request) => `
       <li>
         <strong>${escapeHtml(formatLeaveType(request.leave_type))}</strong>
-        <div>${escapeHtml(request.start_date)} to ${escapeHtml(request.end_date)}</div>
+        <div>${escapeHtml(formatLeaveDateSummary(request))}</div>
         <div>${escapeHtml(request.days_requested)} day(s)</div>
         <div><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></div>
       </li>
@@ -313,9 +346,17 @@
       return;
     }
 
+    let selectedLeaveDates = [];
     const startDateInput = form.querySelector("#start-date");
     const endDateInput = form.querySelector("#end-date");
     const daysRequestedInput = form.querySelector("#days-requested");
+    const dateModeInputs = Array.from(form.querySelectorAll('input[name="dateMode"]'));
+    const rangePanel = form.querySelector('[data-date-mode-panel="range"]');
+    const selectedPanel = form.querySelector('[data-date-mode-panel="selected"]');
+    const selectedDateInput = form.querySelector("#selected-date-input");
+    const addSelectedDateButton = form.querySelector("#add-selected-date");
+    const clearSelectedDatesButton = form.querySelector("#clear-selected-dates");
+    const selectedDateList = form.querySelector("#selected-date-list");
     const leaveOtherInput = form.querySelector("#leave-other");
     const leaveTypeInputs = Array.from(form.querySelectorAll('input[name="leaveType"]'));
     const groupedDetailInputs = {
@@ -360,25 +401,91 @@
       }
     };
 
+    const getSelectedDateMode = () => dateModeInputs.find((input) => input.checked)?.value || "range";
+
+    const renderSelectedLeaveDates = () => {
+      if (!selectedDateList) {
+        return;
+      }
+
+      if (!selectedLeaveDates.length) {
+        selectedDateList.innerHTML = '<span class="muted">No dates selected yet.</span>';
+        return;
+      }
+
+      selectedDateList.innerHTML = selectedLeaveDates.map((value) => `
+        <span class="leave-paper-date-chip">
+          <span>${escapeHtml(formatDateDisplay(value))}</span>
+          <button type="button" data-remove-selected-date="${escapeAttribute(value)}" aria-label="Remove ${escapeAttribute(value)}">x</button>
+        </span>
+      `).join("");
+
+      Array.from(selectedDateList.querySelectorAll("[data-remove-selected-date]")).forEach((button) => {
+        button.addEventListener("click", () => {
+          const dateValue = button.getAttribute("data-remove-selected-date");
+          selectedLeaveDates = selectedLeaveDates.filter((item) => item !== dateValue);
+          syncDaysRequested();
+          renderSelectedLeaveDates();
+        });
+      });
+    };
+
+    const syncDateModeState = () => {
+      const isRangeMode = getSelectedDateMode() === "range";
+
+      rangePanel?.classList.toggle("hidden", !isRangeMode);
+      selectedPanel?.classList.toggle("hidden", isRangeMode);
+
+      if (startDateInput) {
+        startDateInput.disabled = !isRangeMode;
+        startDateInput.required = isRangeMode;
+      }
+
+      if (endDateInput) {
+        endDateInput.disabled = !isRangeMode;
+        endDateInput.required = isRangeMode;
+      }
+
+      if (selectedDateInput) {
+        selectedDateInput.disabled = isRangeMode;
+      }
+
+      addSelectedDateButton?.toggleAttribute("disabled", isRangeMode);
+      clearSelectedDatesButton?.toggleAttribute("disabled", isRangeMode);
+
+      syncDaysRequested();
+      renderSelectedLeaveDates();
+    };
+
     const syncDaysRequested = () => {
-      if (!startDateInput || !endDateInput || !daysRequestedInput) {
+      if (!daysRequestedInput) {
+        return;
+      }
+
+      if (getSelectedDateMode() === "selected") {
+        daysRequestedInput.value = selectedLeaveDates.length ? String(selectedLeaveDates.length) : "";
+        return;
+      }
+
+      if (!startDateInput || !endDateInput) {
         return;
       }
 
       const startDateValue = startDateInput.value;
       const endDateValue = endDateInput.value;
       if (!startDateValue || !endDateValue) {
+        daysRequestedInput.value = "";
         return;
       }
 
       const startDate = new Date(`${startDateValue}T00:00:00`);
       const endDate = new Date(`${endDateValue}T00:00:00`);
       if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) {
+        daysRequestedInput.value = "";
         return;
       }
 
-      const millisecondsPerDay = 24 * 60 * 60 * 1000;
-      const computedDays = Math.floor((endDate - startDate) / millisecondsPerDay) + 1;
+      const computedDays = countWorkingDaysInRange(startDateValue, endDateValue);
       daysRequestedInput.value = String(computedDays);
     };
 
@@ -391,15 +498,43 @@
       daysRequestedInput.value = digitsOnly;
     };
 
+    const addSelectedLeaveDate = () => {
+      const dateValue = String(selectedDateInput?.value || "").trim();
+      if (!dateValue) {
+        return;
+      }
+
+      if (!selectedLeaveDates.includes(dateValue)) {
+        selectedLeaveDates = [...selectedLeaveDates, dateValue].sort();
+      }
+
+      if (selectedDateInput) {
+        selectedDateInput.value = "";
+      }
+
+      syncDaysRequested();
+      renderSelectedLeaveDates();
+    };
+
     leaveTypeInputs.forEach((input) => input.addEventListener("change", syncLeaveTypeState));
+    dateModeInputs.forEach((input) => input.addEventListener("change", syncDateModeState));
     startDateInput?.addEventListener("change", syncDaysRequested);
     endDateInput?.addEventListener("change", syncDaysRequested);
     daysRequestedInput?.addEventListener("input", sanitizeDaysRequested);
+    addSelectedDateButton?.addEventListener("click", addSelectedLeaveDate);
+    selectedDateInput?.addEventListener("change", addSelectedLeaveDate);
+    clearSelectedDatesButton?.addEventListener("click", () => {
+      selectedLeaveDates = [];
+      syncDaysRequested();
+      renderSelectedLeaveDates();
+    });
     syncLeaveTypeState();
+    syncDateModeState();
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(form);
+      const dateMode = getSelectedDateMode();
       const vacationLocation = formData.getAll("leaveLocation").map((value) => String(value));
       const sickLeaveDetails = formData.getAll("sickDetail").map((value) => String(value));
       const leavePurposeDetails = formData.getAll("leavePurpose").map((value) => String(value));
@@ -414,6 +549,11 @@
       const leavePurposeNotes = {
         "women-illness": String(formData.get("womenIllnessNote") || "").trim()
       };
+      const rangeStartDate = String(formData.get("startDate") || "");
+      const rangeEndDate = String(formData.get("endDate") || "");
+      const normalizedSelectedDates = selectedLeaveDates.slice().sort();
+      const resolvedStartDate = dateMode === "selected" ? (normalizedSelectedDates[0] || "") : rangeStartDate;
+      const resolvedEndDate = dateMode === "selected" ? (normalizedSelectedDates[normalizedSelectedDates.length - 1] || "") : rangeEndDate;
 
       const payload = {
         employee_id: profile.id,
@@ -425,8 +565,9 @@
         filing_date: String(document.getElementById("filing-date")?.value || ""),
         position_title: String(document.getElementById("position-title")?.value || profile.position_title || ""),
         salary_display: String(document.getElementById("salary-display")?.value || "N/A"),
-        start_date: String(formData.get("startDate") || ""),
-        end_date: String(formData.get("endDate") || ""),
+        start_date: resolvedStartDate,
+        end_date: resolvedEndDate,
+        selected_leave_dates: normalizedSelectedDates,
         days_requested: Number.parseInt(String(formData.get("daysRequested") || "0"), 10),
         other_leave_details: String(document.getElementById("leave-other")?.value || "").trim(),
         vacation_location: vacationLocation,
@@ -438,6 +579,16 @@
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || "")
       };
+
+      if (dateMode === "selected" && !payload.selected_leave_dates.length) {
+        window.alert("Add at least one selected leave date.");
+        return;
+      }
+
+      if (!payload.start_date || !payload.end_date) {
+        window.alert("Provide the leave dates before submitting.");
+        return;
+      }
 
       if (!Number.isInteger(payload.days_requested) || payload.days_requested <= 0) {
         window.alert("Working days must be a whole number greater than zero.");
@@ -456,6 +607,7 @@
         p_salary_display: payload.salary_display,
         p_start_date: payload.start_date,
         p_end_date: payload.end_date,
+        p_selected_leave_dates: payload.selected_leave_dates,
         p_days_requested: payload.days_requested,
         p_other_leave_details: payload.other_leave_details,
         p_vacation_location: payload.vacation_location,
@@ -474,8 +626,10 @@
       }
 
       form.reset();
+      selectedLeaveDates = [];
       populateLeaveApplicationProfile(profile);
       syncLeaveTypeState();
+      syncDateModeState();
       await loadEmployeeRequests(profile.id);
       window.alert("Leave request submitted.");
     });
@@ -805,7 +959,7 @@
             </div>
             <h4>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</h4>
             <div class="admin-request-card-meta">${escapeHtml(formatLeaveType(request.leave_type))}</div>
-            <div class="admin-request-card-meta">${escapeHtml(formatDateDisplay(request.start_date))} to ${escapeHtml(formatDateDisplay(request.end_date))}</div>
+            <div class="admin-request-card-meta">${escapeHtml(formatLeaveDateSummary(request))}</div>
             <div class="admin-request-card-meta">${escapeHtml(String(request.days_requested))} day(s)</div>
             <p>${escapeHtml(request.reason)}</p>
             <div class="table-actions">
@@ -966,6 +1120,9 @@
       return Number.isFinite(parsed) ? parsed : null;
     };
 
+    const existingRequest = adminLeaveRequests.find((item) => item.id === requestId);
+    const selectedLeaveDates = Array.isArray(existingRequest?.selected_leave_dates) ? existingRequest.selected_leave_dates : [];
+
     const payload = {
       p_admin_id: session.userId,
       p_request_id: requestId,
@@ -979,6 +1136,7 @@
       p_salary_display: String(formData.get("salaryDisplay") || "").trim(),
       p_start_date: String(formData.get("startDate") || "") || null,
       p_end_date: String(formData.get("endDate") || "") || null,
+      p_selected_leave_dates: selectedLeaveDates,
       p_days_requested: daysRequested,
       p_other_leave_details: String(formData.get("otherLeaveDetails") || "").trim(),
       p_vacation_location: formData.getAll("leaveLocation").map((value) => String(value)),
@@ -1023,6 +1181,7 @@
           salary_display: payload.p_salary_display,
           start_date: payload.p_start_date,
           end_date: payload.p_end_date,
+          selected_leave_dates: payload.p_selected_leave_dates,
           days_requested: payload.p_days_requested,
           other_leave_details: payload.p_other_leave_details,
           vacation_location: payload.p_vacation_location,
@@ -1075,6 +1234,7 @@
     const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
     const leavePurposeDetails = Array.isArray(request.leave_purpose_details) ? request.leave_purpose_details : [];
+    const selectedLeaveDates = getSelectedLeaveDates(request);
     const vacationLocationNotes = request.vacation_location_notes && typeof request.vacation_location_notes === "object" ? request.vacation_location_notes : {};
     const sickLeaveNotes = request.sick_leave_notes && typeof request.sick_leave_notes === "object" ? request.sick_leave_notes : {};
     const leavePurposeNotes = request.leave_purpose_notes && typeof request.leave_purpose_notes === "object" ? request.leave_purpose_notes : {};
@@ -1234,6 +1394,7 @@
                   <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.start_date))}</div>
                   <div class="leave-paper-readonly leave-paper-readonly-centered">${escapeHtml(formatDateDisplay(request.end_date))}</div>
                 </div>
+                ${selectedLeaveDates.length ? `<div class="leave-paper-readonly">${escapeHtml(formatSelectedLeaveDates(selectedLeaveDates))}</div>` : ""}
               </div>
             </div>
             <div class="leave-paper-cell">
@@ -1299,7 +1460,7 @@
                 </div>
               </div>
               <div class="leave-paper-officer">
-                <div class="leave-paper-line">${escapeHtml(isCommutationRequested(request) ? "Commutation requested" : "Commutation not requested")}</div>
+                <div class="leave-paper-line">${escapeHtml(`${formatIntegerDisplay(request.days_requested)} approved day(s) queued for month-end deduction`)}</div>
                 <strong>Authorized Officer</strong>
                 <span>(Authorized Officer)</span>
               </div>
@@ -1763,10 +1924,6 @@
     return adminEmployeeProfiles.find((profile) => Number(profile.id) === Number(employeeId)) || null;
   }
 
-  function isCommutationRequested(request) {
-    return String(request?.commutation || "").toLowerCase() === "requested";
-  }
-
   function buildLeaveCreditSnapshot(request) {
     const employee = getAdminEmployeeProfileById(request.employee_id);
     const currentCredits = Number(employee?.leave_credits || 0);
@@ -1776,7 +1933,7 @@
     const creditsBeforeDeduction = Number.isFinite(storedCreditsBeforeDeduction)
       ? storedCreditsBeforeDeduction
       : currentCredits;
-    const deduction = isCommutationRequested(request) ? daysRequested : 0;
+    const deduction = daysRequested;
     const projectedBalance = Number.isFinite(storedBalanceAfterDeduction)
       ? storedBalanceAfterDeduction
       : Math.max(creditsBeforeDeduction - deduction, 0);
@@ -1813,6 +1970,80 @@
         balance: useSickColumn ? formatNumberDisplay(snapshot.projectedBalance) : "-"
       }
     };
+  }
+
+  function renderCreditComputationPage() {
+    const container = document.getElementById("credit-computation-table");
+    if (!container) {
+      return;
+    }
+
+    const nextMonthEnd = getMonthEndIsoDate();
+    const rows = adminEmployeeProfiles.map((profile) => {
+      const queuedRequests = adminLeaveRequests.filter((request) =>
+        Number(request.employee_id) === Number(profile.id)
+        && request.status === "approved"
+        && !request.credit_deduction_processed_at
+      );
+      const queuedDeduction = queuedRequests.reduce((total, request) => total + Number(request.days_requested || 0), 0);
+      const currentCredits = Number(profile.leave_credits || 0);
+      const projectedBalance = Math.max(currentCredits + monthlyCreditGain - queuedDeduction, 0);
+
+      return {
+        profile,
+        queuedRequests,
+        queuedDeduction,
+        currentCredits,
+        projectedBalance
+      };
+    });
+
+    const queuedEmployees = rows.filter((row) => row.queuedRequests.length).length;
+    setText("credit-stat-employees", String(rows.length));
+    setText("credit-stat-pending-deductions", String(queuedEmployees));
+    setText("credit-stat-next-run", formatDateShort(nextMonthEnd) || "-");
+
+    if (!rows.length) {
+      container.innerHTML = '<p class="empty-state">No employee credit records found.</p>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="data-table credit-computation-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Current Credits</th>
+            <th>Queued Deduction</th>
+            <th>Month-End Gain</th>
+            <th>Projected Balance</th>
+            <th>Queued Requests</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(({ profile, queuedRequests, queuedDeduction, currentCredits, projectedBalance }) => `
+            <tr>
+              <td>
+                <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
+                ${escapeHtml(profile.employee_no || "No employee number")}<br>
+                ${escapeHtml(profile.department || "-")}
+              </td>
+              <td>${escapeHtml(formatNumberDisplay(currentCredits))}</td>
+              <td>${escapeHtml(formatNumberDisplay(queuedDeduction))}</td>
+              <td>${escapeHtml(formatNumberDisplay(monthlyCreditGain))}</td>
+              <td>${escapeHtml(formatNumberDisplay(projectedBalance))}</td>
+              <td>${queuedRequests.length ? queuedRequests.map((request) => `
+                <div class="credit-request-chip">
+                  <strong>${escapeHtml(formatLeaveType(request.leave_type))}</strong>
+                  <span>${escapeHtml(String(request.days_requested || 0))} day(s)</span>
+                  <span>approved ${escapeHtml(formatDateShort(getReviewedAtDate(request)))}</span>
+                </div>
+              `).join("") : '<span class="muted">No queued deduction</span>'}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
   }
 
   function renderEmployeeDemo() {
@@ -1929,6 +2160,41 @@
     }
   }
 
+  function renderCreditComputationDemo() {
+    adminEmployeeProfiles = [
+      {
+        id: 1,
+        first_name: "Juan",
+        last_name: "Dela Cruz",
+        employee_no: "EMP-0001",
+        department: "Treasury",
+        leave_credits: 12.5
+      },
+      {
+        id: 2,
+        first_name: "Maria",
+        last_name: "Santos",
+        employee_no: "EMP-0002",
+        department: "Accounting",
+        leave_credits: 9.75
+      }
+    ];
+
+    adminLeaveRequests = [
+      {
+        employee_id: 1,
+        leave_type: "vacation",
+        days_requested: 2,
+        status: "approved",
+        commutation: "requested",
+        reviewed_at: "2026-05-25T08:00:00Z",
+        credit_deduction_processed_at: null
+      }
+    ];
+
+    renderCreditComputationPage();
+  }
+
   function setText(id, value) {
     const element = document.getElementById(id);
     if (element) {
@@ -2000,6 +2266,33 @@
     });
   }
 
+  function getSelectedLeaveDates(request) {
+    return Array.isArray(request?.selected_leave_dates)
+      ? request.selected_leave_dates.filter(Boolean).map((value) => String(value)).sort()
+      : [];
+  }
+
+  function formatSelectedLeaveDates(values) {
+    return values.map((value) => formatDateDisplay(value)).join(", ");
+  }
+
+  function formatLeaveDateSummary(request) {
+    const selectedLeaveDates = getSelectedLeaveDates(request);
+    if (selectedLeaveDates.length > 1) {
+      return formatSelectedLeaveDates(selectedLeaveDates);
+    }
+
+    if (request?.start_date && request?.end_date) {
+      return `${formatDateDisplay(request.start_date)} to ${formatDateDisplay(request.end_date)}`;
+    }
+
+    if (request?.start_date) {
+      return formatDateDisplay(request.start_date);
+    }
+
+    return "-";
+  }
+
   function formatDateLong(value) {
     if (!value) {
       return "";
@@ -2051,8 +2344,48 @@
     return String(value);
   }
 
+  function countWorkingDaysInRange(startValue, endValue) {
+    if (!startValue || !endValue) {
+      return 0;
+    }
+
+    const currentDate = new Date(`${startValue}T00:00:00`);
+    const endDate = new Date(`${endValue}T00:00:00`);
+    if (Number.isNaN(currentDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < currentDate) {
+      return 0;
+    }
+
+    let workingDays = 0;
+
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        workingDays += 1;
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return workingDays;
+  }
+
   function formatLeaveType(value) {
     const key = String(value || "").trim().toLowerCase();
     return leaveTypeLabels[key] || capitalize(key);
+  }
+
+  function getReviewedAtDate(request) {
+    const reviewedAt = String(request?.reviewed_at || "").trim();
+    return reviewedAt ? reviewedAt.slice(0, 10) : "";
+  }
+
+  function getMonthEndIsoDate(referenceDate = new Date()) {
+    const year = referenceDate.getFullYear();
+    const month = referenceDate.getMonth();
+    const monthEnd = new Date(year, month + 1, 0);
+    const monthEndYear = monthEnd.getFullYear();
+    const monthEndMonth = String(monthEnd.getMonth() + 1).padStart(2, "0");
+    const monthEndDay = String(monthEnd.getDate()).padStart(2, "0");
+    return `${monthEndYear}-${monthEndMonth}-${monthEndDay}`;
   }
 })();

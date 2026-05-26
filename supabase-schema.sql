@@ -54,6 +54,7 @@ create table if not exists public.leave_requests (
   salary_display text,
   start_date date not null,
   end_date date not null,
+  selected_leave_dates date[] not null default '{}'::date[],
   days_requested integer not null check (days_requested > 0),
   other_leave_details text,
   vacation_location text[] not null default '{}'::text[],
@@ -69,6 +70,7 @@ create table if not exists public.leave_requests (
   credit_earned_sick numeric(10,2),
   credit_balance_vacation numeric(10,2),
   credit_balance_sick numeric(10,2),
+  credit_deduction_processed_at date,
   recommendation text,
   recommendation_details text,
   approved_with_pay_days integer,
@@ -90,6 +92,7 @@ alter table public.leave_requests add column if not exists filing_date date;
 alter table public.leave_requests add column if not exists position_title text;
 alter table public.leave_requests add column if not exists salary_display text;
 alter table public.leave_requests add column if not exists other_leave_details text;
+alter table public.leave_requests add column if not exists selected_leave_dates date[] not null default '{}'::date[];
 alter table public.leave_requests add column if not exists vacation_location text[] not null default '{}'::text[];
 alter table public.leave_requests add column if not exists vacation_location_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists sick_leave_details text[] not null default '{}'::text[];
@@ -102,6 +105,7 @@ alter table public.leave_requests add column if not exists credit_earned_vacatio
 alter table public.leave_requests add column if not exists credit_earned_sick numeric(10,2);
 alter table public.leave_requests add column if not exists credit_balance_vacation numeric(10,2);
 alter table public.leave_requests add column if not exists credit_balance_sick numeric(10,2);
+alter table public.leave_requests add column if not exists credit_deduction_processed_at date;
 alter table public.leave_requests add column if not exists recommendation text;
 alter table public.leave_requests add column if not exists recommendation_details text;
 alter table public.leave_requests add column if not exists approved_with_pay_days integer;
@@ -258,8 +262,9 @@ set search_path = public
 as $$
 declare
   employee_record public.employees;
-  anchor_date date;
-  months_to_add integer;
+  processing_anchor date;
+  next_month_end date;
+  queued_deduction numeric(10,2);
 begin
   select *
   into employee_record
@@ -271,20 +276,46 @@ begin
     return null;
   end if;
 
-  anchor_date := coalesce(employee_record.last_credit_accrual_date, current_date);
-  months_to_add := (
-    extract(year from age(current_date, anchor_date))::integer * 12
-    + extract(month from age(current_date, anchor_date))::integer
-  );
+  processing_anchor := coalesce(employee_record.last_credit_accrual_date, current_date);
 
-  if months_to_add > 0 then
+  if processing_anchor > current_date then
+    return employee_record;
+  end if;
+
+  next_month_end := (date_trunc('month', processing_anchor)::date + interval '1 month - 1 day')::date;
+  if processing_anchor = next_month_end then
+    next_month_end := (date_trunc('month', processing_anchor)::date + interval '2 month - 1 day')::date;
+  end if;
+
+  while next_month_end <= current_date loop
+    select coalesce(sum(lr.days_requested), 0)::numeric(10,2)
+    into queued_deduction
+    from public.leave_requests lr
+    where lr.employee_id = p_employee_id
+      and lr.status = 'approved'
+      and lr.credit_deduction_processed_at is null
+      and lr.reviewed_at is not null
+      and lr.reviewed_at::date <= next_month_end;
+
     update public.employees
     set
-      leave_credits = round((leave_credits + (months_to_add * 1.25::numeric))::numeric, 2),
-      last_credit_accrual_date = (anchor_date + make_interval(months => months_to_add))::date
+      leave_credits = round(greatest((coalesce(leave_credits, 0) + 1.25::numeric) - queued_deduction, 0)::numeric, 2),
+      last_credit_accrual_date = next_month_end
     where id = p_employee_id
     returning * into employee_record;
-  end if;
+
+    if queued_deduction > 0 then
+      update public.leave_requests
+      set credit_deduction_processed_at = next_month_end
+      where employee_id = p_employee_id
+        and status = 'approved'
+        and credit_deduction_processed_at is null
+        and reviewed_at is not null
+        and reviewed_at::date <= next_month_end;
+    end if;
+
+    next_month_end := (date_trunc('month', next_month_end + interval '1 day')::date + interval '1 month - 1 day')::date;
+  end loop;
 
   return employee_record;
 end;
@@ -358,6 +389,7 @@ create or replace function public.create_leave_request(
   p_salary_display text,
   p_start_date date,
   p_end_date date,
+  p_selected_leave_dates date[],
   p_days_requested integer,
   p_other_leave_details text,
   p_vacation_location text[],
@@ -389,6 +421,7 @@ begin
     salary_display,
     start_date,
     end_date,
+    selected_leave_dates,
     days_requested,
     other_leave_details,
     vacation_location,
@@ -412,6 +445,7 @@ begin
     nullif(trim(coalesce(p_salary_display, '')), ''),
     p_start_date,
     p_end_date,
+    coalesce(p_selected_leave_dates, '{}'::date[]),
     p_days_requested,
     nullif(trim(coalesce(p_other_leave_details, '')), ''),
     coalesce(p_vacation_location, '{}'::text[]),
@@ -442,6 +476,7 @@ create or replace function public.update_leave_request_details(
   p_salary_display text,
   p_start_date date,
   p_end_date date,
+  p_selected_leave_dates date[],
   p_days_requested integer,
   p_other_leave_details text,
   p_vacation_location text[],
@@ -484,6 +519,7 @@ begin
     salary_display = nullif(trim(coalesce(p_salary_display, '')), ''),
     start_date = p_start_date,
     end_date = p_end_date,
+    selected_leave_dates = coalesce(p_selected_leave_dates, '{}'::date[]),
     days_requested = p_days_requested,
     other_leave_details = nullif(trim(coalesce(p_other_leave_details, '')), ''),
     vacation_location = coalesce(p_vacation_location, '{}'::text[]),
@@ -673,14 +709,11 @@ begin
 
   employee_record := public.apply_employee_monthly_leave_credit(request_record.employee_id);
 
-  if request_record.status = 'approved' and p_status <> 'approved' and request_record.commutation = 'requested' then
+  if request_record.status = 'approved'
+    and p_status <> 'approved'
+    and request_record.credit_deduction_processed_at is not null then
     update public.employees
-    set leave_credits = round((
-      leave_credits + greatest(
-        coalesce(request_record.credit_earned_vacation, 0) - coalesce(request_record.credit_balance_vacation, 0),
-        0
-      )
-    )::numeric, 2)
+    set leave_credits = round((coalesce(leave_credits, 0) + request_record.days_requested)::numeric, 2)
     where id = request_record.employee_id
     returning * into employee_record;
   end if;
@@ -691,14 +724,7 @@ begin
   approved_without_pay := null;
 
   if p_status = 'approved' then
-    if request_record.status <> 'approved' and request_record.commutation = 'requested' then
-      credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
-
-      update public.employees
-      set leave_credits = round(credits_after_deduction::numeric, 2)
-      where id = request_record.employee_id
-      returning * into employee_record;
-    end if;
+    credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
 
     approved_with_pay := least(floor(credits_before_deduction)::integer, request_record.days_requested);
     approved_without_pay := greatest(request_record.days_requested - approved_with_pay, 0);
@@ -714,16 +740,19 @@ begin
     credit_earned_sick = credits_before_deduction,
     credit_balance_vacation = credits_after_deduction,
     credit_balance_sick = credits_after_deduction,
+    credit_deduction_processed_at = case
+      when p_status <> 'approved' then null
+      else request_record.credit_deduction_processed_at
+    end,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
     recommendation_details = case
-      when p_status = 'approved' then concat('Monthly accrual rate: 1.25 credit per month. With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
+      when p_status = 'approved' then concat('Month-end accrual rate: 1.25 credit. Approved absent days are deducted at month-end. Queued deduction: ', request_record.days_requested, ' day(s). With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
       else 'Request disapproved.'
     end,
     approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
     approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
     approved_other_details = case
-      when p_status = 'approved' and request_record.commutation = 'requested' then 'Commutation requested and calculated against available leave credits.'
-      when p_status = 'approved' then 'Commutation not requested.'
+      when p_status = 'approved' then 'Approved absent days will be deducted during month-end processing.'
       else null
     end,
     disapproval_details = case when p_status = 'rejected' then 'Rejected by administrator.' else null end
