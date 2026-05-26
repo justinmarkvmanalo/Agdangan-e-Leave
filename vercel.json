@@ -1,0 +1,21 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/login.html",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/employee-dashboard.html",
+      "destination": "/employee-dashboard",
+      "permanent": true
+    },
+    {
+      "source": "/admin-dashboard.html",
+      "destination": "/admin-dashboard",
+      "permanent": true
+    }
+  ]
+}

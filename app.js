@@ -37,7 +37,9 @@
     db = supabase;
   }
 
-  const pageName = window.location.pathname.split("/").pop() || "index.html";
+  const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const isEmployeeDashboardPage = /^\/employee-dashboard(?:\/index\.html)?$/.test(normalizedPath);
+  const isAdminDashboardPage = /^\/admin-dashboard(?:\/index\.html)?$/.test(normalizedPath);
 
   document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("login-form")) {
@@ -45,12 +47,12 @@
       return;
     }
 
-    if (pageName === "employee-dashboard.html") {
+    if (isEmployeeDashboardPage) {
       initEmployeeDashboard();
       return;
     }
 
-    if (pageName === "admin-dashboard.html") {
+    if (isAdminDashboardPage) {
       initAdminDashboard();
     }
   });
@@ -145,7 +147,7 @@
         email: account.email
       });
 
-      window.location.href = account.role === "admin" ? "admin-dashboard.html" : "employee-dashboard.html";
+      window.location.href = account.role === "admin" ? "/admin-dashboard" : "/employee-dashboard";
     });
   }
 
@@ -159,7 +161,7 @@
 
     const session = getSession();
     if (!session || session.role !== "employee") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -185,7 +187,7 @@
 
     const session = getSession();
     if (!session || session.role !== "admin") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -481,7 +483,7 @@
   async function loadAdminProfiles() {
     const session = getSession();
     if (!session || session.role !== "admin") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -754,7 +756,7 @@
   async function loadAdminRequests() {
     const session = getSession();
     if (!session || session.role !== "admin") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -894,7 +896,7 @@
   async function updateLeaveStatus(requestId, status) {
     const session = getSession();
     if (!session || session.role !== "admin") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -915,7 +917,7 @@
   async function saveAdminRequestDetails(requestId, form, options = {}) {
     const session = getSession();
     if (!session || session.role !== "admin") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return false;
     }
 
@@ -1071,7 +1073,7 @@
 
         <div class="leave-paper-heading-grid">
           <div class="leave-paper-seal-wrap">
-            <img src="OIP (1).webp" alt="Agdangan seal" class="leave-paper-seal">
+            <img src="/assets/images/agdangan-seal.webp" alt="Agdangan seal" class="leave-paper-seal">
           </div>
           <div class="leave-paper-heading">
             <p class="leave-paper-government">Republic of the Philippines</p>
@@ -1714,7 +1716,7 @@
 
     button.addEventListener("click", async () => {
       clearSession();
-      window.location.href = "login.html";
+      window.location.href = "/login";
     });
   }
 
