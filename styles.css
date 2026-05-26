@@ -1063,6 +1063,25 @@ button:focus {
   height: 0.72rem;
   margin: 0;
   margin-top: 0.05rem;
+  appearance: none;
+  border: 1px solid rgba(20, 20, 20, 0.78);
+  border-radius: 0;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.leave-option input::before {
+  content: "";
+  font-size: 0.58rem;
+  line-height: 1;
+  color: #111;
+}
+
+.leave-option input:checked::before {
+  content: "✓";
 }
 
 .leave-paper-panel .field label {
@@ -1163,7 +1182,7 @@ button:focus {
 
 .leave-paper-static .leave-paper-bullets input,
 .leave-paper-static .leave-option input {
-  accent-color: #111;
+  border-color: rgba(20, 20, 20, 0.78);
 }
 
 .leave-paper-static .leave-paper-other-line .leave-paper-readonly,

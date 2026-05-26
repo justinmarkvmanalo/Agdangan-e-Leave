@@ -1031,11 +1031,41 @@
       downloadAdminLeaveRequestWord(request);
     });
 
+    const adminRequestForm = container.querySelector("[data-admin-request-form]");
+
+    container.querySelector("[data-admin-save-request]")?.addEventListener("click", async () => {
+      await saveAdminRequestDetails(request.id, adminRequestForm);
+    });
+
     container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async () => {
+      if (adminRequestForm) {
+        const recommendationApproved = adminRequestForm.querySelector('input[name="recommendation"][value="approved"]');
+        if (recommendationApproved) {
+          recommendationApproved.checked = true;
+        }
+
+        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
+        if (!saved) {
+          return;
+        }
+      }
+
       await updateLeaveStatus(request.id, "approved");
     });
 
     container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async () => {
+      if (adminRequestForm) {
+        const recommendationRejected = adminRequestForm.querySelector('input[name="recommendation"][value="rejected"]');
+        if (recommendationRejected) {
+          recommendationRejected.checked = true;
+        }
+
+        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
+        if (!saved) {
+          return;
+        }
+      }
+
       await updateLeaveStatus(request.id, "rejected");
     });
   }
@@ -1121,40 +1151,68 @@
     };
 
     const existingRequest = adminLeaveRequests.find((item) => item.id === requestId);
+    if (!existingRequest) {
+      return false;
+    }
+
+    const readTextField = (fieldName, fallback = "") => {
+      if (!formData.has(fieldName)) {
+        return String(fallback || "").trim();
+      }
+
+      return String(formData.get(fieldName) || "").trim();
+    };
+
+    const readDateField = (fieldName, fallback = null) => {
+      if (!formData.has(fieldName)) {
+        return fallback || null;
+      }
+
+      return String(formData.get(fieldName) || "") || null;
+    };
+
+    const readArrayField = (fieldName, fallback = []) => {
+      if (!formData.has(fieldName)) {
+        return Array.isArray(fallback) ? fallback : [];
+      }
+
+      return formData.getAll(fieldName).map((value) => String(value));
+    };
+
     const selectedLeaveDates = Array.isArray(existingRequest?.selected_leave_dates) ? existingRequest.selected_leave_dates : [];
 
     const payload = {
       p_admin_id: session.userId,
       p_request_id: requestId,
-      p_leave_type: String(formData.get("leaveType") || "").trim(),
-      p_office_department: String(formData.get("officeDepartment") || "").trim(),
-      p_applicant_last_name: String(formData.get("applicantLastName") || "").trim(),
-      p_applicant_first_name: String(formData.get("applicantFirstName") || "").trim(),
-      p_applicant_middle_name: String(formData.get("applicantMiddleName") || "").trim(),
-      p_filing_date: String(formData.get("filingDate") || "") || null,
-      p_position_title: String(formData.get("positionTitle") || "").trim(),
-      p_salary_display: String(formData.get("salaryDisplay") || "").trim(),
-      p_start_date: String(formData.get("startDate") || "") || null,
-      p_end_date: String(formData.get("endDate") || "") || null,
+      p_leave_type: readTextField("leaveType", existingRequest.leave_type),
+      p_office_department: readTextField("officeDepartment", existingRequest.office_department),
+      p_applicant_last_name: readTextField("applicantLastName", existingRequest.applicant_last_name),
+      p_applicant_first_name: readTextField("applicantFirstName", existingRequest.applicant_first_name),
+      p_applicant_middle_name: readTextField("applicantMiddleName", existingRequest.applicant_middle_name),
+      p_filing_date: readDateField("filingDate", existingRequest.filing_date),
+      p_position_title: readTextField("positionTitle", existingRequest.position_title),
+      p_salary_display: readTextField("salaryDisplay", existingRequest.salary_display),
+      p_start_date: readDateField("startDate", existingRequest.start_date),
+      p_end_date: readDateField("endDate", existingRequest.end_date),
       p_selected_leave_dates: selectedLeaveDates,
-      p_days_requested: daysRequested,
-      p_other_leave_details: String(formData.get("otherLeaveDetails") || "").trim(),
-      p_vacation_location: formData.getAll("leaveLocation").map((value) => String(value)),
-      p_sick_leave_details: formData.getAll("sickDetail").map((value) => String(value)),
-      p_leave_purpose_details: formData.getAll("leavePurpose").map((value) => String(value)),
-      p_commutation: String(formData.get("commutation") || "").trim(),
-      p_reason: String(formData.get("reason") || "").trim(),
-      p_credit_as_of: String(formData.get("creditAsOf") || "") || null,
-      p_credit_earned_vacation: parseOptionalNumber(formData.get("creditEarnedVacation")),
-      p_credit_earned_sick: parseOptionalNumber(formData.get("creditEarnedSick")),
-      p_credit_balance_vacation: parseOptionalNumber(formData.get("creditBalanceVacation")),
-      p_credit_balance_sick: parseOptionalNumber(formData.get("creditBalanceSick")),
-      p_recommendation: String(formData.get("recommendation") || "").trim() || null,
-      p_recommendation_details: String(formData.get("recommendationDetails") || "").trim(),
+      p_days_requested: daysRequested || Number(existingRequest.days_requested || 0),
+      p_other_leave_details: readTextField("otherLeaveDetails", existingRequest.other_leave_details),
+      p_vacation_location: readArrayField("leaveLocation", existingRequest.vacation_location),
+      p_sick_leave_details: readArrayField("sickDetail", existingRequest.sick_leave_details),
+      p_leave_purpose_details: readArrayField("leavePurpose", existingRequest.leave_purpose_details),
+      p_commutation: readTextField("commutation", existingRequest.commutation),
+      p_reason: readTextField("reason", existingRequest.reason),
+      p_credit_as_of: readDateField("creditAsOf", existingRequest.credit_as_of),
+      p_credit_earned_vacation: parseOptionalNumber(formData.get("creditEarnedVacation")) ?? existingRequest.credit_earned_vacation,
+      p_credit_earned_sick: parseOptionalNumber(formData.get("creditEarnedSick")) ?? existingRequest.credit_earned_sick,
+      p_credit_balance_vacation: parseOptionalNumber(formData.get("creditBalanceVacation")) ?? existingRequest.credit_balance_vacation,
+      p_credit_balance_sick: parseOptionalNumber(formData.get("creditBalanceSick")) ?? existingRequest.credit_balance_sick,
+      p_recommendation: readTextField("recommendation", existingRequest.recommendation) || null,
+      p_recommendation_details: readTextField("recommendationDetails", existingRequest.recommendation_details),
       p_approved_with_pay_days: parseOptionalNumber(formData.get("approvedWithPayDays"), true),
       p_approved_without_pay_days: parseOptionalNumber(formData.get("approvedWithoutPayDays"), true),
-      p_approved_other_details: String(formData.get("approvedOtherDetails") || "").trim(),
-      p_disapproval_details: String(formData.get("disapprovalDetails") || "").trim()
+      p_approved_other_details: readTextField("approvedOtherDetails", existingRequest.approved_other_details),
+      p_disapproval_details: readTextField("disapprovalDetails", existingRequest.disapproval_details)
     };
 
     const { error } = await db.rpc("update_leave_request_details", payload);
@@ -1221,6 +1279,7 @@
         <div class="table-actions">
           <button type="button" class="button button-muted" data-admin-print-request>Print / Save PDF</button>
           <button type="button" class="button button-muted" data-admin-download-word>Download Word</button>
+          <button type="button" class="button button-muted" data-admin-save-request>Save</button>
           <button type="button" class="button button-success" data-admin-approve-request>Approve</button>
           <button type="button" class="button button-danger" data-admin-reject-request>Reject</button>
         </div>
@@ -1243,7 +1302,7 @@
     const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
 
     return `
-      <section class="leave-paper admin-request-paper leave-paper-static">
+      <form class="leave-paper admin-request-paper" data-admin-request-form="${escapeAttribute(String(request.id))}">
         <div class="leave-paper-topline">
           <div class="leave-paper-form-series">
             <p class="leave-paper-note">Civil Service Form No. 6</p>
@@ -1452,11 +1511,11 @@
               <span class="leave-paper-label">7.B Recommendation</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-bullets">
-                  ${renderLeavePaperOptionInput("radio", "recommendation", "approved", "For approval", request.recommendation === "approved" || request.status === "approved", true)}
-                  ${renderLeavePaperOptionInput("radio", "recommendation", "rejected", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected", true)}
+                ${renderLeavePaperOptionInput("radio", "recommendation", "approved", "For approval", request.recommendation === "approved" || request.status === "approved")}
+                ${renderLeavePaperOptionInput("radio", "recommendation", "rejected", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
                 </div>
                 <div class="leave-paper-action-writing">
-                  ${renderStaticWritingLines(recommendationDetails, 3)}
+                  <textarea class="leave-paper-action-textarea" name="recommendationDetails" rows="3" placeholder="State the recommendation details.">${escapeHtml(recommendationDetails)}</textarea>
                 </div>
               </div>
               <div class="leave-paper-officer">
@@ -1471,16 +1530,16 @@
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.C Approved For</span>
               <div class="leave-paper-approval-lines">
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_with_pay_days))}</span> days with pay</div>
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(formatIntegerDisplay(request.approved_without_pay_days))}</span> days without pay</div>
-                <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank">${escapeHtml(request.approved_other_details || "-")}</span> others (Specify)</div>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_with_pay_days))}"> days with pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(request.approved_other_details || "")}" placeholder="Specify other approval details"> others (Specify)</label>
               </div>
             </div>
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.D Disapproved Due To</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-action-writing">
-                  ${renderStaticWritingLines(request.disapproval_details || "", 3)}
+                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3" placeholder="State the reason for disapproval.">${escapeHtml(request.disapproval_details || "")}</textarea>
                 </div>
               </div>
             </div>
@@ -1492,7 +1551,8 @@
             <span>(Authorized Official)</span>
           </div>
         </div>
-      </section>
+        <input type="hidden" name="daysRequested" value="${escapeAttribute(String(request.days_requested || ""))}">
+      </form>
     `;
   }
 
@@ -1816,6 +1876,22 @@
             width: 2.8mm;
             height: 2.8mm;
             margin: 0.4mm 0 0;
+            appearance: none;
+            border: 1px solid #111;
+            border-radius: 0;
+            background: #fff;
+            display: inline-grid;
+            place-items: center;
+            vertical-align: top;
+          }
+          .leave-option input::before {
+            content: "";
+            font-size: 8px;
+            line-height: 1;
+            color: #111;
+          }
+          .leave-option input:checked::before {
+            content: "✓";
           }
           .leave-paper-subgroup p,
           .leave-paper-signature span,
