@@ -827,29 +827,43 @@ button:focus {
 
 .leave-paper-heading-grid {
   display: grid;
-  grid-template-columns: 76px 1fr 76px;
-  align-items: start;
-  gap: 0.7rem;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  position: relative;
   padding: 0.05rem 0.85rem 0.45rem;
   border-bottom: 1px solid rgba(20, 20, 20, 0.78);
 }
 
-.leave-paper-seal-wrap {
+.leave-paper-row-bottom .leave-paper-cell {
+  min-height: 7.4rem;
   display: flex;
-  justify-content: center;
-  padding-top: 0.12rem;
-  padding-left: 0.45rem;
+  flex-direction: column;
+}
+
+.leave-paper-row-bottom .leave-paper-authorized {
+  margin-top: auto;
+}
+
+.leave-paper-seal-wrap {
+  position: absolute;
+  transform: translate(-4.8rem, 0.18rem);
+  padding: 0;
 }
 
 .leave-paper-seal {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
 .leave-paper-heading {
   padding: 0;
   text-align: center;
+  min-width: 15rem;
+}
+
+.leave-paper-heading-spacer {
+  display: none;
 }
 
 .leave-paper-government {

@@ -1645,20 +1645,19 @@
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
               </div>
+              <div class="leave-paper-authorized">
+                <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
+                <span>(Authorized Official)</span>
+              </div>
             </div>
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.D Disapproved Due To</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-action-writing">
-                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3" placeholder="State the reason for disapproval.">${escapeHtml(request.disapproval_details || "")}</textarea>
+                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3">${escapeHtml(request.disapproval_details || "")}</textarea>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="leave-paper-authorized">
-            <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
-            <span>(Authorized Official)</span>
           </div>
         </div>
         <input type="hidden" name="daysRequested" value="${escapeAttribute(String(request.days_requested || ""))}">
@@ -1806,25 +1805,28 @@
           }
           .leave-paper-heading-grid {
             display: grid;
-            grid-template-columns: 15mm 1fr 15mm;
-            align-items: start;
-            gap: 2.4mm;
+            grid-template-columns: 1fr;
+            justify-items: center;
+            position: relative;
             padding: 0 3.6mm 2mm;
             border-bottom: 1px solid #111;
           }
+          .leave-paper-heading-spacer {
+            display: none;
+          }
           .leave-paper-seal-wrap {
-            display: flex;
-            justify-content: flex-end;
-            padding-top: 0;
-            padding-left: 0;
+            position: absolute;
+            transform: translate(-33mm, 0.5mm);
+            padding: 0;
           }
           .leave-paper-seal {
-            width: 10mm;
-            height: 10mm;
+            width: 11mm;
+            height: 11mm;
             object-fit: contain;
           }
           .leave-paper-heading {
             text-align: center;
+            min-width: 62mm;
           }
           .leave-paper-government {
             font-size: 9px;
@@ -2020,6 +2022,7 @@
           }
           .leave-paper-approval-lines {
             gap: 0.35mm;
+            margin-top: 1mm;
           }
           .leave-paper-approval-item {
             display: flex;
@@ -2028,6 +2031,14 @@
             font-size: 9px;
             line-height: 1.1;
             white-space: nowrap;
+          }
+          .leave-paper-row-bottom .leave-paper-cell {
+            min-height: 31mm;
+            display: flex;
+            flex-direction: column;
+          }
+          .leave-paper-row-bottom .leave-paper-authorized {
+            margin-top: auto;
           }
           .leave-paper-credit-note {
             text-align: center;
