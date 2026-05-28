@@ -2124,12 +2124,10 @@
     const nextMonthEnd = getMonthEndIsoDate();
     const rows = adminEmployeeProfiles.map((profile) => {
       const currentCredits = Number(profile.leave_credits || 0);
-      const projectedBalance = currentCredits + monthlyCreditGain;
 
       return {
         profile,
-        currentCredits,
-        projectedBalance
+        currentCredits
       };
     });
 
@@ -2149,15 +2147,12 @@
           <tr>
             <th>Employee</th>
             <th>Current Credits</th>
-            <th>Late Minutes</th>
-            <th>Month-End Gain</th>
-            <th>Projected Balance</th>
             <th>Latest Approved Leave</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          ${rows.map(({ profile, currentCredits, projectedBalance }) => `
+          ${rows.map(({ profile, currentCredits }) => `
             <tr>
               <td>
                 <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
@@ -2165,12 +2160,6 @@
                 ${escapeHtml(profile.department || "-")}
               </td>
               <td>${escapeHtml(formatCreditAmount(currentCredits))}</td>
-              <td>
-                <span class="credit-minute-equivalent">1 min = ${escapeHtml(formatCreditAmount(calculateLateDeduction(1)))}</span><br>
-                <span class="muted">60 min = ${escapeHtml(formatCreditAmount(calculateLateDeduction(60)))}</span>
-              </td>
-              <td>${escapeHtml(formatNumberDisplay(monthlyCreditGain))}</td>
-              <td>${escapeHtml(formatCreditAmount(projectedBalance))}</td>
               <td>${buildLatestApprovedLeaveMarkup(profile.id)}</td>
               <td>
                 <div class="credit-action-stack">

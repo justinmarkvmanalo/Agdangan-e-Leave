@@ -1853,9 +1853,13 @@ button:focus {
   min-width: 10rem;
 }
 
-.credit-minute-equivalent {
-  font-weight: 700;
-  color: var(--navy);
+.credit-computation-table {
+  min-width: 720px;
+}
+
+#credit-computation-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .credit-action-stack {
@@ -1872,12 +1876,16 @@ button:focus {
 
 .credit-deduction-dialog {
   width: min(100%, 560px);
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
 }
 
 .credit-deduction-form {
   display: grid;
   gap: 1rem;
   padding: 1.25rem 1.5rem 1.5rem;
+  overflow: auto;
 }
 
 .credit-deduction-form label {
@@ -1974,9 +1982,38 @@ button:focus {
 }
 
 @media (max-width: 720px) {
+  .admin-request-modal.credit-deduction-modal {
+    padding: 0.75rem;
+    align-items: start;
+  }
+
+  .credit-deduction-dialog {
+    max-height: calc(100vh - 1.5rem);
+    border-radius: 20px;
+  }
+
+  .credit-deduction-dialog .admin-request-modal-header {
+    display: grid;
+    padding: 1rem;
+  }
+
+  .credit-deduction-form {
+    padding: 1rem;
+  }
+
   .credit-deduction-entry-row,
   .credit-deduction-entry {
     grid-template-columns: 1fr;
+  }
+
+  .credit-deduction-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-deduction-actions .button,
+  .credit-deduction-entry-row .button,
+  .admin-request-modal-close {
+    width: 100%;
   }
 }
 
