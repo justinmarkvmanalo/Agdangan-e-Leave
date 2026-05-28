@@ -1601,8 +1601,8 @@
                 </tbody>
               </table>
               <div class="leave-paper-officer">
-                <div class="leave-paper-line">${escapeHtml(formatNumberDisplay(creditSnapshot.monthlyGain))} monthly credit gain</div>
-                <strong>SHERIL Q. BRIONES, HRMO</strong>
+                <div class="leave-paper-line">SHERIL Q. BRIONES, HRMO</div>
+                <span>(Authorized Officer)</span>
               </div>
             </div>
             <div class="leave-paper-cell">
@@ -1643,8 +1643,8 @@
           </div>
 
           <div class="leave-paper-authorized">
-            <div class="leave-paper-line">${escapeHtml(getApplicantFullName(request) || "")}</div>
-            <strong>HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</strong>
+            <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
+            <span>(Authorized Official)</span>
           </div>
         </div>
         <input type="hidden" name="daysRequested" value="${escapeAttribute(String(request.days_requested || ""))}">
