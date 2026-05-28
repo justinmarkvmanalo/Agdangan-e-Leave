@@ -733,10 +733,7 @@ begin
     credit_balance_sick = credits_after_deduction,
     credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
-    recommendation_details = case
-      when p_status = 'approved' then concat('Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately. With pay: ', approved_with_pay, ' day(s). Without pay: ', approved_without_pay, ' day(s).')
-      else 'Request disapproved.'
-    end,
+    recommendation_details = case when p_status = 'rejected' then 'Request disapproved.' else null end,
     approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
     approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
     approved_other_details = case

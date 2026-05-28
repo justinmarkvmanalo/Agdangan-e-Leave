@@ -403,8 +403,21 @@
         <div>${escapeHtml(formatLeaveDateSummary(request))}</div>
         <div>${escapeHtml(request.days_requested)} day(s)</div>
         <div><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></div>
+        <div class="table-actions">
+          <button type="button" class="button button-muted" data-employee-print-request="${escapeAttribute(String(request.id))}">Print</button>
+        </div>
       </li>
     `).join("");
+
+    Array.from(list.querySelectorAll("[data-employee-print-request]")).forEach((button) => {
+      button.addEventListener("click", () => {
+        const requestId = Number(button.getAttribute("data-employee-print-request"));
+        const request = data.find((item) => Number(item.id) === requestId);
+        if (request) {
+          printAdminLeaveRequest(request);
+        }
+      });
+    });
   }
 
   function bindLeaveRequestForm(profile) {
@@ -1398,7 +1411,7 @@
     const leavePurposeNotes = request.leave_purpose_notes && typeof request.leave_purpose_notes === "object" ? request.leave_purpose_notes : {};
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
-    const recommendationDetails = request.recommendation_details || `With pay: ${creditSnapshot.paidDays} day(s); without pay: ${creditSnapshot.unpaidDays} day(s).`;
+    const recommendationDetails = getRecommendationDetailsDisplay(request.recommendation_details);
 
     return `
       <form class="leave-paper admin-request-paper" data-admin-request-form="${escapeAttribute(String(request.id))}">
@@ -1659,6 +1672,13 @@
         <span>${escapeHtml(label)}</span>
       </label>
     `;
+  }
+
+  function getRecommendationDetailsDisplay(value) {
+    const text = String(value || "").trim();
+    return text.startsWith("Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately.")
+      ? ""
+      : text;
   }
 
   function renderLeavePaperOptionDisplay(label, isChecked, note) {

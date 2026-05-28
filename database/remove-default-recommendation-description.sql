@@ -1,59 +1,3 @@
-alter table public.employees
-  alter column leave_credits type numeric(10,3);
-
-alter table public.leave_requests
-  alter column credit_earned_vacation type numeric(10,3),
-  alter column credit_earned_sick type numeric(10,3),
-  alter column credit_balance_vacation type numeric(10,3),
-  alter column credit_balance_sick type numeric(10,3);
-
-create or replace function public.apply_employee_monthly_leave_credit(p_employee_id bigint)
-returns public.employees
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  employee_record public.employees;
-  processing_anchor date;
-  next_month_end date;
-begin
-  select *
-  into employee_record
-  from public.employees
-  where id = p_employee_id
-  for update;
-
-  if not found then
-    return null;
-  end if;
-
-  processing_anchor := coalesce(employee_record.last_credit_accrual_date, current_date);
-
-  if processing_anchor > current_date then
-    return employee_record;
-  end if;
-
-  next_month_end := (date_trunc('month', processing_anchor)::date + interval '1 month - 1 day')::date;
-  if processing_anchor = next_month_end then
-    next_month_end := (date_trunc('month', processing_anchor)::date + interval '2 month - 1 day')::date;
-  end if;
-
-  while next_month_end <= current_date loop
-    update public.employees
-    set
-      leave_credits = round((coalesce(leave_credits, 0) + 1.25::numeric)::numeric, 3),
-      last_credit_accrual_date = next_month_end
-    where id = p_employee_id
-    returning * into employee_record;
-
-    next_month_end := (date_trunc('month', next_month_end + interval '1 day')::date + interval '1 month - 1 day')::date;
-  end loop;
-
-  return employee_record;
-end;
-$$;
-
 create or replace function public.update_leave_request_status(
   p_admin_id bigint,
   p_request_id bigint,
@@ -144,3 +88,7 @@ begin
   return updated_request;
 end;
 $$;
+
+update public.leave_requests
+set recommendation_details = null
+where recommendation_details like 'Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately.%';
