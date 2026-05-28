@@ -1412,6 +1412,7 @@
     const creditSnapshot = buildLeaveCreditSnapshot(request);
     const creditCells = buildCreditCellValues(request, creditSnapshot);
     const recommendationDetails = getRecommendationDetailsDisplay(request.recommendation_details);
+    const approvedOtherDetails = getApprovedOtherDetailsDisplay(request.approved_other_details);
 
     return `
       <form class="leave-paper admin-request-paper" data-admin-request-form="${escapeAttribute(String(request.id))}">
@@ -1626,11 +1627,11 @@
                 ${renderLeavePaperOptionInput("radio", "recommendation", "rejected", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
                 </div>
                 <div class="leave-paper-action-writing">
-                  <textarea class="leave-paper-action-textarea" name="recommendationDetails" rows="3" placeholder="State the recommendation details.">${escapeHtml(recommendationDetails)}</textarea>
+                  <textarea class="leave-paper-action-textarea" name="recommendationDetails" rows="3">${escapeHtml(recommendationDetails)}</textarea>
                 </div>
               </div>
               <div class="leave-paper-officer">
-                <div class="leave-paper-line">${escapeHtml(`${formatIntegerDisplay(request.days_requested)} approved day(s) deducted on approval`)}</div>
+                <div class="leave-paper-line"></div>
                 <span>(Authorized Officer)</span>
               </div>
             </div>
@@ -1642,7 +1643,7 @@
               <div class="leave-paper-approval-lines">
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_with_pay_days))}"> days with pay</label>
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(request.approved_other_details || "")}" placeholder="Specify other approval details"> others (Specify)</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
               </div>
             </div>
             <div class="leave-paper-cell">
@@ -1677,6 +1678,13 @@
   function getRecommendationDetailsDisplay(value) {
     const text = String(value || "").trim();
     return text.startsWith("Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately.")
+      ? ""
+      : text;
+  }
+
+  function getApprovedOtherDetailsDisplay(value) {
+    const text = String(value || "").trim();
+    return text === "Approved absent days were deducted immediately from the current balance."
       ? ""
       : text;
   }
@@ -1806,13 +1814,13 @@
           }
           .leave-paper-seal-wrap {
             display: flex;
-            justify-content: center;
-            padding-top: 0.5mm;
-            padding-left: 1.5mm;
+            justify-content: flex-end;
+            padding-top: 0;
+            padding-left: 0;
           }
           .leave-paper-seal {
-            width: 12mm;
-            height: 12mm;
+            width: 10mm;
+            height: 10mm;
             object-fit: contain;
           }
           .leave-paper-heading {
@@ -1845,13 +1853,6 @@
           }
           .leave-paper-row > .leave-paper-cell:last-child,
           .leave-paper-panel:last-child {
-            border-right: 0;
-          }
-          .leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:first-child,
-          .leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:nth-child(2),
-          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:first-child,
-          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(2),
-          .leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(3) {
             border-right: 0;
           }
           .leave-paper-label {
@@ -1924,10 +1925,10 @@
             margin-left: 1.5mm;
           }
           .leave-paper-approval-input {
-            width: 18mm;
+            width: 10mm;
           }
           .leave-paper-approval-wide {
-            width: 30mm;
+            width: 16mm;
           }
           .leave-paper-action-textarea {
             min-height: 12mm;
@@ -2016,6 +2017,17 @@
           .leave-paper-credit-note {
             margin: 0;
             font-size: 9px;
+          }
+          .leave-paper-approval-lines {
+            gap: 0.35mm;
+          }
+          .leave-paper-approval-item {
+            display: flex;
+            align-items: center;
+            gap: 1mm;
+            font-size: 9px;
+            line-height: 1.1;
+            white-space: nowrap;
           }
           .leave-paper-credit-note {
             text-align: center;

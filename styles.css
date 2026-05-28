@@ -895,14 +895,6 @@ button:focus {
   border-right: 0;
 }
 
-.leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:first-child,
-.leave-paper-form > .leave-paper-row:first-of-type > .leave-paper-cell:nth-child(2),
-.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:first-child,
-.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(2),
-.leave-paper-form > .leave-paper-row-compact > .leave-paper-cell:nth-child(3) {
-  border-right: 0;
-}
-
 .leave-paper-label {
   display: block;
   margin-bottom: 0.28rem;

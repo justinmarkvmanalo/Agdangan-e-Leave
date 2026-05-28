@@ -77,10 +77,7 @@ begin
     recommendation_details = case when p_status = 'rejected' then 'Request disapproved.' else null end,
     approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
     approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
-    approved_other_details = case
-      when p_status = 'approved' then 'Approved absent days were deducted immediately from the current balance.'
-      else null
-    end,
+    approved_other_details = null,
     disapproval_details = case when p_status = 'rejected' then 'Rejected by administrator.' else null end
   where id = p_request_id
   returning * into updated_request;
@@ -92,3 +89,7 @@ $$;
 update public.leave_requests
 set recommendation_details = null
 where recommendation_details like 'Month-end accrual rate: 1.25 credit. Approved leave is deducted immediately.%';
+
+update public.leave_requests
+set approved_other_details = null
+where approved_other_details = 'Approved absent days were deducted immediately from the current balance.';
