@@ -86,12 +86,48 @@
       <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Employee Queue</p>
         <h3>Employee Balances and Late Deductions</h3>
+        <p class="credit-deduction-status" id="credit-deduction-status" aria-live="polite"></p>
         <div id="credit-computation-table">
           <p class="empty-state">No computation data loaded yet.</p>
         </div>
       </article>
     </section>
   </main>
+
+  <div class="admin-request-modal credit-deduction-modal hidden" id="credit-deduction-modal" aria-hidden="true">
+    <div class="admin-request-modal-backdrop" data-close-credit-deduction-modal></div>
+    <section class="admin-request-modal-dialog credit-deduction-dialog" role="dialog" aria-modal="true" aria-labelledby="credit-deduction-title">
+      <header class="admin-request-modal-header">
+        <div>
+          <p class="card-label">Late Minute Deduction</p>
+          <h3 id="credit-deduction-title">Enter Minutes</h3>
+        </div>
+        <button type="button" class="button button-muted admin-request-modal-close" data-close-credit-deduction-modal>Close</button>
+      </header>
+      <form class="credit-deduction-form" id="credit-deduction-form">
+        <div class="credit-deduction-summary">
+          <span>Employee</span>
+          <strong id="credit-deduction-employee">-</strong>
+          <span>Current Credits</span>
+          <strong id="credit-deduction-current">0.000</strong>
+        </div>
+        <label>
+          Late minutes
+          <input type="number" id="credit-deduction-minutes" name="lateMinutes" min="1" step="1" inputmode="numeric" required>
+        </label>
+        <label>
+          Reason
+          <input type="text" name="deductionReason" placeholder="Late for work">
+        </label>
+        <p class="credit-deduction-preview" id="credit-deduction-preview">Enter minutes to preview the deduction.</p>
+        <p class="credit-deduction-error" id="credit-deduction-error" aria-live="polite"></p>
+        <div class="credit-deduction-actions">
+          <button type="button" class="button button-muted" data-close-credit-deduction-modal>Cancel</button>
+          <button type="submit" class="button button-primary">Apply Deduction</button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
