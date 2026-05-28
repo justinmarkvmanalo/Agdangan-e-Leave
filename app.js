@@ -917,8 +917,6 @@
     form.elements.employmentStatus.value = profile.employment_status || "active";
     form.elements.leaveCredits.value = Number(profile.leave_credits || 0);
     form.elements.password.value = "";
-    setText("employee-number-preview", profile.employee_no || "Auto-generated on create");
-
     setText("employee-submit-button", "Update Employee");
     openEmployeeManagementModal("Update Employee");
     document.getElementById("employee-email")?.focus();
@@ -934,7 +932,6 @@
     form.elements.employeeRecordId.value = "";
     form.elements.employmentStatus.value = "active";
     form.elements.leaveCredits.value = 0;
-    setText("employee-number-preview", "Auto-generated on create");
     setText("employee-submit-button", "Create Employee");
   }
 
@@ -1605,8 +1602,7 @@
               </table>
               <div class="leave-paper-officer">
                 <div class="leave-paper-line">${escapeHtml(formatNumberDisplay(creditSnapshot.monthlyGain))} monthly credit gain</div>
-                <strong>Authorized Officer</strong>
-                <span>(Authorized Officer)</span>
+                <strong>SHERIL Q. BRIONES, HRMO</strong>
               </div>
             </div>
             <div class="leave-paper-cell">
@@ -1622,7 +1618,6 @@
               </div>
               <div class="leave-paper-officer">
                 <div class="leave-paper-line">${escapeHtml(`${formatIntegerDisplay(request.days_requested)} approved day(s) deducted on approval`)}</div>
-                <strong>Authorized Officer</strong>
                 <span>(Authorized Officer)</span>
               </div>
             </div>
@@ -1649,8 +1644,7 @@
 
           <div class="leave-paper-authorized">
             <div class="leave-paper-line">${escapeHtml(getApplicantFullName(request) || "")}</div>
-            <strong>Authorized Official</strong>
-            <span>(Authorized Official)</span>
+            <strong>HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</strong>
           </div>
         </div>
         <input type="hidden" name="daysRequested" value="${escapeAttribute(String(request.days_requested || ""))}">
@@ -2609,7 +2603,6 @@
     setText("stat-admin-pending", "5");
     setText("stat-admin-approved", "16");
     setText("stat-admin-rejected", "2");
-    setText("employee-number-preview", "Auto-generated on create");
 
     const list = document.getElementById("admin-summary-list");
     if (list) {
