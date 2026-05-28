@@ -817,10 +817,21 @@
   function bindAdminEmployeeForm(adminId) {
     const form = document.getElementById("employee-management-form");
     const cancelButton = document.getElementById("employee-cancel-button");
+    const addButton = document.getElementById("add-employee-button");
+    const closeElements = Array.from(document.querySelectorAll("[data-close-employee-modal]"));
 
     if (!form) {
       return;
     }
+
+    addButton?.addEventListener("click", () => {
+      resetEmployeeForm();
+      openEmployeeManagementModal("Add Employee");
+    });
+
+    closeElements.forEach((element) => {
+      element.addEventListener("click", closeEmployeeManagementModal);
+    });
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -857,9 +868,34 @@
 
     if (cancelButton) {
       cancelButton.addEventListener("click", () => {
-        resetEmployeeForm();
+        closeEmployeeManagementModal();
       });
     }
+  }
+
+  function openEmployeeManagementModal(title) {
+    const modal = document.getElementById("employee-management-modal");
+    if (!modal) {
+      return;
+    }
+
+    setText("employee-modal-title", title || "Employee Management");
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    document.getElementById("employee-email")?.focus();
+  }
+
+  function closeEmployeeManagementModal() {
+    const modal = document.getElementById("employee-management-modal");
+    if (!modal) {
+      return;
+    }
+
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    resetEmployeeForm();
   }
 
   function populateEmployeeForm(profile) {
@@ -884,7 +920,7 @@
     setText("employee-number-preview", profile.employee_no || "Auto-generated on create");
 
     setText("employee-submit-button", "Update Employee");
-    document.getElementById("employee-cancel-button")?.classList.remove("hidden");
+    openEmployeeManagementModal("Update Employee");
     document.getElementById("employee-email")?.focus();
   }
 
@@ -900,7 +936,6 @@
     form.elements.leaveCredits.value = 0;
     setText("employee-number-preview", "Auto-generated on create");
     setText("employee-submit-button", "Create Employee");
-    document.getElementById("employee-cancel-button")?.classList.add("hidden");
   }
 
   async function createEmployeeAccount(payload) {
@@ -925,7 +960,7 @@
       return;
     }
 
-    resetEmployeeForm();
+    closeEmployeeManagementModal();
     await loadAdminProfiles();
     window.alert("Employee account created.");
   }
@@ -952,7 +987,7 @@
       return;
     }
 
-    resetEmployeeForm();
+    closeEmployeeManagementModal();
     await loadAdminProfiles();
     window.alert("Employee account updated.");
   }

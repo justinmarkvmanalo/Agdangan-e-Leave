@@ -63,7 +63,48 @@
       <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Employee Management</p>
         <h3>Create, Update, and Delete Employees</h3>
-        <form class="auth-form" id="employee-management-form">
+        <p class="empty-state">Add a new employee or use Edit in Employee Records to update an account.</p>
+        <button type="button" class="button button-primary" id="add-employee-button">Add Employee</button>
+      </article>
+
+      <article class="dashboard-card dashboard-card-wide">
+        <p class="card-label">Approval Queue</p>
+        <h3>Leave Requests</h3>
+        <div id="admin-requests-table">
+          <p class="empty-state">No leave requests loaded yet.</p>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <p class="card-label">Employee Records</p>
+        <h3>Manage Accounts</h3>
+        <div id="admin-employees-table">
+          <p class="empty-state">No employee account data loaded yet.</p>
+        </div>
+      </article>
+
+      <article class="dashboard-card">
+        <p class="card-label">Monitoring</p>
+        <h3>Account Summary</h3>
+        <ul class="request-list" id="admin-summary-list">
+          <li class="empty-state">No employee profile data loaded yet.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <div class="admin-request-modal employee-management-modal hidden" id="employee-management-modal" aria-hidden="true">
+    <div class="admin-request-modal-backdrop" data-close-employee-modal></div>
+    <section class="admin-request-modal-dialog employee-management-dialog" role="dialog" aria-modal="true" aria-labelledby="employee-modal-title">
+      <header class="admin-request-modal-header">
+        <div>
+          <p class="card-label">Employee Management</p>
+          <h3 id="employee-modal-title">Add Employee</h3>
+        </div>
+        <button type="button" class="button button-muted admin-request-modal-close" data-close-employee-modal>Close</button>
+      </header>
+      <div class="employee-management-modal-content">
+        <form class="auth-form employee-management-form" id="employee-management-form">
           <input type="hidden" id="employee-record-id" name="employeeRecordId">
           <div class="field-grid">
             <div class="field">
@@ -127,36 +168,12 @@
           </div>
           <div class="form-actions">
             <button type="submit" class="button button-primary" id="employee-submit-button">Create Employee</button>
-            <button type="button" class="button button-muted hidden" id="employee-cancel-button">Cancel Edit</button>
+            <button type="button" class="button button-muted" id="employee-cancel-button">Cancel</button>
           </div>
         </form>
-      </article>
-
-      <article class="dashboard-card dashboard-card-wide">
-        <p class="card-label">Approval Queue</p>
-        <h3>Leave Requests</h3>
-        <div id="admin-requests-table">
-          <p class="empty-state">No leave requests loaded yet.</p>
-        </div>
-      </article>
-
-      <article class="dashboard-card">
-        <p class="card-label">Employee Records</p>
-        <h3>Manage Accounts</h3>
-        <div id="admin-employees-table">
-          <p class="empty-state">No employee account data loaded yet.</p>
-        </div>
-      </article>
-
-      <article class="dashboard-card">
-        <p class="card-label">Monitoring</p>
-        <h3>Account Summary</h3>
-        <ul class="request-list" id="admin-summary-list">
-          <li class="empty-state">No employee profile data loaded yet.</li>
-        </ul>
-      </article>
+      </div>
     </section>
-  </main>
+  </div>
 
   <div class="admin-request-modal hidden" id="admin-request-modal" aria-hidden="true">
     <div class="admin-request-modal-backdrop" data-close-admin-modal></div>

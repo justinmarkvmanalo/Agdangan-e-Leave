@@ -1478,6 +1478,31 @@ button:focus {
   overflow-x: auto;
 }
 
+.employee-management-dialog {
+  width: min(100%, 920px);
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-management-modal-content {
+  overflow: auto;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.employee-management-form {
+  max-width: none;
+}
+
+.employee-management-form .form-actions {
+  position: sticky;
+  bottom: -1.5rem;
+  margin: 1rem -1.5rem -1.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(102, 79, 178, 0.08);
+  background: rgba(249, 250, 255, 0.96);
+}
+
 .data-table th,
 .data-table td {
   padding: 0.95rem 0.6rem;
@@ -1982,6 +2007,35 @@ button:focus {
 }
 
 @media (max-width: 720px) {
+  .admin-request-modal.employee-management-modal {
+    padding: 0.75rem;
+    align-items: start;
+  }
+
+  .employee-management-dialog {
+    max-height: calc(100vh - 1.5rem);
+    border-radius: 20px;
+  }
+
+  .employee-management-dialog .admin-request-modal-header {
+    display: grid;
+    padding: 1rem;
+  }
+
+  .employee-management-modal-content {
+    padding: 1rem;
+  }
+
+  .employee-management-form .form-actions {
+    bottom: -1rem;
+    margin: 1rem -1rem -1rem;
+    padding: 1rem;
+  }
+
+  .employee-management-form .form-actions .button {
+    width: 100%;
+  }
+
   .admin-request-modal.credit-deduction-modal {
     padding: 0.75rem;
     align-items: start;
