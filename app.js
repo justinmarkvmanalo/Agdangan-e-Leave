@@ -1645,10 +1645,6 @@
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
               </div>
-              <div class="leave-paper-authorized">
-                <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
-                <span>(Authorized Official)</span>
-              </div>
             </div>
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.D Disapproved Due To</span>
@@ -1657,6 +1653,10 @@
                   <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3">${escapeHtml(request.disapproval_details || "")}</textarea>
                 </div>
               </div>
+            </div>
+            <div class="leave-paper-authorized leave-paper-authorized-wide">
+              <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
+              <span>(Authorized Official)</span>
             </div>
           </div>
         </div>
@@ -2028,17 +2028,28 @@
             display: flex;
             align-items: center;
             gap: 1mm;
-            font-size: 9px;
+            font-size: 8px;
             line-height: 1.1;
             white-space: nowrap;
           }
           .leave-paper-row-bottom .leave-paper-cell {
-            min-height: 31mm;
-            display: flex;
-            flex-direction: column;
+            min-height: 17mm;
           }
-          .leave-paper-row-bottom .leave-paper-authorized {
-            margin-top: auto;
+          .leave-paper-authorized-wide {
+            grid-column: 1 / -1;
+            margin-top: 0;
+            padding: 2mm 2.2mm 1.2mm;
+          }
+          .leave-paper-authorized-wide .leave-paper-line {
+            width: 74mm;
+            margin: 0 auto;
+            font-size: 8px;
+            font-weight: 800;
+          }
+          .leave-paper-subgroup p,
+          .leave-paper-reason-field label {
+            font-size: 7px;
+            line-height: 1.1;
           }
           .leave-paper-credit-note {
             text-align: center;

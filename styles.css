@@ -835,13 +835,7 @@ button:focus {
 }
 
 .leave-paper-row-bottom .leave-paper-cell {
-  min-height: 7.4rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.leave-paper-row-bottom .leave-paper-authorized {
-  margin-top: auto;
+  min-height: 4.4rem;
 }
 
 .leave-paper-seal-wrap {
@@ -1454,6 +1448,24 @@ button:focus {
   gap: 0.22rem;
   padding: 0.75rem 0.85rem 0.35rem;
   text-align: center;
+}
+
+.leave-paper-authorized-wide {
+  grid-column: 1 / -1;
+  padding-top: 0.55rem;
+}
+
+.leave-paper-authorized-wide .leave-paper-line {
+  width: min(100%, 18rem);
+  margin: 0 auto;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.leave-paper-subgroup p,
+.leave-paper-reason-field label {
+  font-size: 0.58rem;
+  line-height: 1.1;
 }
 
 .leave-paper-footer {
