@@ -1816,7 +1816,7 @@
           }
           .leave-paper-seal-wrap {
             position: absolute;
-            transform: translate(-33mm, 0.5mm);
+            transform: translate(-36mm, 0.5mm);
             padding: 0;
           }
           .leave-paper-seal {
