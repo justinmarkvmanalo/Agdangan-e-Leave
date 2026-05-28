@@ -352,7 +352,7 @@
     }
 
     if (leaveCredits) {
-      leaveCredits.textContent = Number(profile.leave_credits || 0).toFixed(2);
+      leaveCredits.textContent = formatCreditAmount(profile.leave_credits);
     }
   }
 
@@ -770,7 +770,7 @@
               </td>
               <td>${escapeHtml(profile.department)}<br>${escapeHtml(profile.position_title)}</td>
               <td><span class="badge ${profile.employment_status === "active" ? "approved" : profile.employment_status === "inactive" ? "pending" : "rejected"}">${escapeHtml(capitalize(profile.employment_status || "active"))}</span></td>
-              <td>${escapeHtml(Number(profile.leave_credits || 0).toFixed(2))}</td>
+              <td>${escapeHtml(formatCreditAmount(profile.leave_credits))}</td>
               <td>
                 <div class="table-actions">
                   <button type="button" class="button button-muted" data-edit-employee="${profile.id}">Edit</button>
@@ -2253,6 +2253,7 @@
       afterCredits: updatedCredits,
       createdAt: new Date().toISOString()
     });
+    downloadEmployeeDeductionLog(profile);
 
     if (db) {
       await loadAdminProfiles();

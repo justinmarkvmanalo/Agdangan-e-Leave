@@ -34,7 +34,7 @@ create table if not exists public.employees (
   contact_no text,
   hire_date date,
   employment_status text not null default 'active' check (employment_status in ('active', 'inactive', 'suspended')),
-  leave_credits numeric(10,2) not null default 0,
+  leave_credits numeric(10,3) not null default 0,
   last_credit_accrual_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -66,10 +66,10 @@ create table if not exists public.leave_requests (
   commutation text,
   reason text not null,
   credit_as_of date,
-  credit_earned_vacation numeric(10,2),
-  credit_earned_sick numeric(10,2),
-  credit_balance_vacation numeric(10,2),
-  credit_balance_sick numeric(10,2),
+  credit_earned_vacation numeric(10,3),
+  credit_earned_sick numeric(10,3),
+  credit_balance_vacation numeric(10,3),
+  credit_balance_sick numeric(10,3),
   credit_deduction_processed_at date,
   recommendation text,
   recommendation_details text,
@@ -101,10 +101,15 @@ alter table public.leave_requests add column if not exists leave_purpose_details
 alter table public.leave_requests add column if not exists leave_purpose_notes jsonb not null default '{}'::jsonb;
 alter table public.leave_requests add column if not exists commutation text;
 alter table public.leave_requests add column if not exists credit_as_of date;
-alter table public.leave_requests add column if not exists credit_earned_vacation numeric(10,2);
-alter table public.leave_requests add column if not exists credit_earned_sick numeric(10,2);
-alter table public.leave_requests add column if not exists credit_balance_vacation numeric(10,2);
-alter table public.leave_requests add column if not exists credit_balance_sick numeric(10,2);
+alter table public.employees alter column leave_credits type numeric(10,3);
+alter table public.leave_requests add column if not exists credit_earned_vacation numeric(10,3);
+alter table public.leave_requests add column if not exists credit_earned_sick numeric(10,3);
+alter table public.leave_requests add column if not exists credit_balance_vacation numeric(10,3);
+alter table public.leave_requests add column if not exists credit_balance_sick numeric(10,3);
+alter table public.leave_requests alter column credit_earned_vacation type numeric(10,3);
+alter table public.leave_requests alter column credit_earned_sick type numeric(10,3);
+alter table public.leave_requests alter column credit_balance_vacation type numeric(10,3);
+alter table public.leave_requests alter column credit_balance_sick type numeric(10,3);
 alter table public.leave_requests add column if not exists credit_deduction_processed_at date;
 alter table public.leave_requests add column if not exists recommendation text;
 alter table public.leave_requests add column if not exists recommendation_details text;
@@ -289,7 +294,7 @@ begin
   while next_month_end <= current_date loop
     update public.employees
     set
-      leave_credits = round((coalesce(leave_credits, 0) + 1.25::numeric)::numeric, 2),
+      leave_credits = round((coalesce(leave_credits, 0) + 1.25::numeric)::numeric, 3),
       last_credit_accrual_date = next_month_end
     where id = p_employee_id
     returning * into employee_record;
@@ -665,8 +670,8 @@ as $$
 declare
   request_record public.leave_requests;
   employee_record public.employees;
-  credits_before_deduction numeric(10,2);
-  credits_after_deduction numeric(10,2);
+  credits_before_deduction numeric(10,3);
+  credits_after_deduction numeric(10,3);
   approved_with_pay integer;
   approved_without_pay integer;
   updated_request public.leave_requests;
@@ -692,12 +697,12 @@ begin
   if request_record.status = 'approved'
     and p_status <> 'approved' then
     update public.employees
-    set leave_credits = round((coalesce(leave_credits, 0) + request_record.days_requested)::numeric, 2)
+    set leave_credits = round((coalesce(leave_credits, 0) + request_record.days_requested)::numeric, 3)
     where id = request_record.employee_id
     returning * into employee_record;
   end if;
 
-  credits_before_deduction := round(coalesce(employee_record.leave_credits, 0)::numeric, 2);
+  credits_before_deduction := round(coalesce(employee_record.leave_credits, 0)::numeric, 3);
   credits_after_deduction := credits_before_deduction;
   approved_with_pay := null;
   approved_without_pay := null;
@@ -707,7 +712,7 @@ begin
       credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
 
       update public.employees
-      set leave_credits = round(credits_after_deduction::numeric, 2)
+      set leave_credits = round(credits_after_deduction::numeric, 3)
       where id = request_record.employee_id
       returning * into employee_record;
     end if;
