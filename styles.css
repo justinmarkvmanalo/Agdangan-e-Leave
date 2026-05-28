@@ -1898,6 +1898,44 @@ button:focus {
   font: inherit;
 }
 
+.credit-deduction-entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(8rem, 0.8fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.credit-deduction-entry-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.credit-deduction-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(102, 79, 178, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.credit-deduction-entry strong,
+.credit-deduction-entry span {
+  display: block;
+}
+
+.credit-deduction-entry strong {
+  color: var(--navy);
+}
+
+.credit-deduction-entry span {
+  margin-top: 0.12rem;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+
 .credit-deduction-summary {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1933,6 +1971,13 @@ button:focus {
   justify-content: flex-end;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .credit-deduction-entry-row,
+  .credit-deduction-entry {
+    grid-template-columns: 1fr;
+  }
 }
 
 .credit-request-chip {

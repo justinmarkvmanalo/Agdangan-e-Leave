@@ -111,13 +111,24 @@
           <span>Current Credits</span>
           <strong id="credit-deduction-current">0.000</strong>
         </div>
-        <label>
-          Late minutes
-          <input type="number" id="credit-deduction-minutes" name="lateMinutes" min="1" step="1" inputmode="numeric" required>
-        </label>
+        <div class="credit-deduction-entry-row">
+          <label>
+            Date or note
+            <input type="text" id="credit-deduction-entry-note" placeholder="Monday, May 4">
+          </label>
+          <label>
+            Minutes
+            <input type="number" id="credit-deduction-entry-minutes" min="1" step="1" inputmode="numeric">
+          </label>
+          <button type="button" class="button button-muted" id="credit-deduction-add-entry">Add</button>
+        </div>
+        <div class="credit-deduction-entry-list" id="credit-deduction-entry-list">
+          <p class="empty-state">No late-minute entries added yet.</p>
+        </div>
+        <input type="hidden" id="credit-deduction-total-minutes" name="lateMinutes" value="0">
         <label>
           Reason
-          <input type="text" name="deductionReason" placeholder="Late for work">
+          <input type="text" name="deductionReason" placeholder="DTR late entries for the month">
         </label>
         <p class="credit-deduction-preview" id="credit-deduction-preview">Enter minutes to preview the deduction.</p>
         <p class="credit-deduction-error" id="credit-deduction-error" aria-live="polite"></p>

@@ -15,6 +15,7 @@
   let selectedAdminRequestId = null;
   let adminRequestModalOpen = false;
   let selectedCreditDeductionProfile = null;
+  let creditDeductionEntries = [];
   const monthlyCreditGain = 1.25;
   const workingMinutesPerDay = 480;
   const creditDeductionLogKey = "agdangan-credit-deduction-logs";
@@ -2214,7 +2215,9 @@
 
   function bindCreditDeductionModal() {
     const form = document.getElementById("credit-deduction-form");
-    const minutesInput = document.getElementById("credit-deduction-minutes");
+    const minutesInput = document.getElementById("credit-deduction-entry-minutes");
+    const noteInput = document.getElementById("credit-deduction-entry-note");
+    const addEntryButton = document.getElementById("credit-deduction-add-entry");
     const closeElements = Array.from(document.querySelectorAll("[data-close-credit-deduction-modal]"));
 
     if (!form) {
@@ -2226,6 +2229,19 @@
     });
 
     minutesInput?.addEventListener("input", updateCreditDeductionPreview);
+    minutesInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addCreditDeductionEntry();
+      }
+    });
+    noteInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addCreditDeductionEntry();
+      }
+    });
+    addEntryButton?.addEventListener("click", addCreditDeductionEntry);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -2237,7 +2253,7 @@
       const formData = new FormData(form);
       const minutes = Number(formData.get("lateMinutes"));
       const reason = String(formData.get("deductionReason") || "").trim();
-      await handleLateMinuteDeduction(selectedCreditDeductionProfile, minutes, reason);
+      await handleLateMinuteDeduction(selectedCreditDeductionProfile, minutes, reason, creditDeductionEntries);
     });
   }
 
@@ -2251,11 +2267,12 @@
     }
 
     selectedCreditDeductionProfile = profile;
+    creditDeductionEntries = [];
     form.reset();
     setText("credit-deduction-employee", getEmployeeDisplayName(profile));
     setText("credit-deduction-current", formatCreditAmount(profile.leave_credits));
     setText("credit-deduction-error", "");
-    setText("credit-deduction-preview", "Enter minutes to preview the deduction.");
+    renderCreditDeductionEntries();
     modal.classList.remove("hidden");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
@@ -2272,6 +2289,79 @@
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
     selectedCreditDeductionProfile = null;
+    creditDeductionEntries = [];
+  }
+
+  function addCreditDeductionEntry() {
+    if (!selectedCreditDeductionProfile) {
+      return;
+    }
+
+    const minutesInput = document.getElementById("credit-deduction-entry-minutes");
+    const noteInput = document.getElementById("credit-deduction-entry-note");
+    const minutes = Number(minutesInput?.value || 0);
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      setText("credit-deduction-error", "Enter valid minutes before adding.");
+      return;
+    }
+
+    const normalizedMinutes = Math.round(minutes);
+    creditDeductionEntries.push({
+      note: String(noteInput?.value || "").trim(),
+      minutes: normalizedMinutes
+    });
+    if (minutesInput) {
+      minutesInput.value = "";
+    }
+    if (noteInput) {
+      noteInput.value = "";
+      noteInput.focus();
+    }
+    setText("credit-deduction-error", "");
+    renderCreditDeductionEntries();
+  }
+
+  function removeCreditDeductionEntry(index) {
+    creditDeductionEntries.splice(index, 1);
+    renderCreditDeductionEntries();
+  }
+
+  function renderCreditDeductionEntries() {
+    const list = document.getElementById("credit-deduction-entry-list");
+    const totalInput = document.getElementById("credit-deduction-total-minutes");
+    if (!list) {
+      return;
+    }
+
+    if (!creditDeductionEntries.length) {
+      list.innerHTML = '<p class="empty-state">No late-minute entries added yet.</p>';
+    } else {
+      list.innerHTML = creditDeductionEntries.map((entry, index) => `
+        <div class="credit-deduction-entry">
+          <div>
+            <strong>${escapeHtml(entry.note || `Entry ${index + 1}`)}</strong>
+            <span>${escapeHtml(String(entry.minutes))} minute(s)</span>
+          </div>
+          <button type="button" class="button button-muted" data-remove-credit-deduction-entry="${index}">Remove</button>
+        </div>
+      `).join("");
+
+      Array.from(list.querySelectorAll("[data-remove-credit-deduction-entry]")).forEach((button) => {
+        button.addEventListener("click", () => {
+          removeCreditDeductionEntry(Number(button.getAttribute("data-remove-credit-deduction-entry")));
+        });
+      });
+    }
+
+    const totalMinutes = getCreditDeductionTotalMinutes();
+    if (totalInput) {
+      totalInput.value = String(totalMinutes);
+    }
+    updateCreditDeductionPreview();
+  }
+
+  function getCreditDeductionTotalMinutes() {
+    return creditDeductionEntries.reduce((total, entry) => total + Number(entry.minutes || 0), 0);
   }
 
   function updateCreditDeductionPreview() {
@@ -2279,21 +2369,21 @@
       return;
     }
 
-    const minutes = Number(document.getElementById("credit-deduction-minutes")?.value || 0);
-    if (!Number.isFinite(minutes) || minutes <= 0) {
-      setText("credit-deduction-preview", "Enter minutes to preview the deduction.");
+    const totalMinutes = getCreditDeductionTotalMinutes();
+    if (!totalMinutes) {
+      setText("credit-deduction-preview", "Add late-minute entries to preview the deduction.");
       return;
     }
 
-    const deduction = calculateLateDeduction(minutes);
+    const deduction = calculateLateDeduction(totalMinutes);
     const currentCredits = Number(selectedCreditDeductionProfile.leave_credits || 0);
     const updatedCredits = Math.max(currentCredits - deduction, 0);
-    setText("credit-deduction-preview", `Minus ${formatCreditAmount(deduction)} credit. New balance ${formatCreditAmount(updatedCredits)}.`);
+    setText("credit-deduction-preview", `${creditDeductionEntries.length} entr${creditDeductionEntries.length === 1 ? "y" : "ies"} | ${totalMinutes} total minute(s) | Minus ${formatCreditAmount(deduction)} credit. New balance ${formatCreditAmount(updatedCredits)}.`);
   }
 
-  async function handleLateMinuteDeduction(profile, minutes, reasonText) {
+  async function handleLateMinuteDeduction(profile, minutes, reasonText, entries = []) {
     if (!Number.isFinite(minutes) || minutes <= 0) {
-      setText("credit-deduction-error", "Enter a valid number of late minutes.");
+      setText("credit-deduction-error", "Add at least one late-minute entry.");
       return;
     }
 
@@ -2309,6 +2399,7 @@
 
     saveCreditDeductionLog(profile, {
       minutes,
+      entries,
       deduction,
       reason,
       beforeCredits: currentCredits,
@@ -2422,6 +2513,12 @@
           `Before credits: ${formatCreditAmount(entry.beforeCredits)}`,
           `After credits: ${formatCreditAmount(entry.afterCredits)}`
         );
+        if (Array.isArray(entry.entries) && entry.entries.length) {
+          lines.push("Entries:");
+          entry.entries.forEach((lateEntry) => {
+            lines.push(`- ${lateEntry.note || "No note"}: ${lateEntry.minutes} minute(s)`);
+          });
+        }
       });
     }
 
