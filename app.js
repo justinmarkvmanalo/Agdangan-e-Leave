@@ -15,6 +15,9 @@
   let selectedAdminRequestId = null;
   let adminRequestModalOpen = false;
   const monthlyCreditGain = 1.25;
+  const lateDeductionRatePerMinute = 0.002;
+  const lateDeductionMaximumMinutes = 60;
+  const creditDeductionLogKey = "agdangan-credit-deduction-logs";
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
     "mandatory-forced": "Mandatory/Forced Leave",
@@ -237,7 +240,7 @@
       return;
     }
 
-    setText("credit-page-title", `Month-End Leave Credit Logic for ${profile.department}`);
+    setText("credit-page-title", `Leave Credit Computation for ${profile.department}`);
     setText("credit-page-meta", `${profile.first_name} ${profile.last_name} | ${profile.position_title}`);
 
     await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
@@ -2068,7 +2071,7 @@
 
     const currentTotal = rows.reduce((total, row) => total + row.currentCredits, 0);
     setText("credit-stat-employees", String(rows.length));
-    setText("credit-stat-current-total", formatNumberDisplay(currentTotal));
+    setText("credit-stat-current-total", formatCreditAmount(currentTotal));
     setText("credit-stat-next-run", formatDateShort(nextMonthEnd) || "-");
 
     if (!rows.length) {
@@ -2082,9 +2085,11 @@
           <tr>
             <th>Employee</th>
             <th>Current Credits</th>
+            <th>Late Minutes</th>
             <th>Month-End Gain</th>
             <th>Projected Balance</th>
             <th>Latest Approved Leave</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -2095,15 +2100,228 @@
                 ${escapeHtml(profile.employee_no || "No employee number")}<br>
                 ${escapeHtml(profile.department || "-")}
               </td>
-              <td>${escapeHtml(formatNumberDisplay(currentCredits))}</td>
+              <td>${escapeHtml(formatCreditAmount(currentCredits))}</td>
+              <td>
+                <span class="credit-minute-equivalent">1 min = ${escapeHtml(formatCreditAmount(lateDeductionRatePerMinute))}</span><br>
+                <span class="muted">Max ${escapeHtml(String(lateDeductionMaximumMinutes))} min = ${escapeHtml(formatCreditAmount(calculateLateDeduction(lateDeductionMaximumMinutes)))}</span>
+              </td>
               <td>${escapeHtml(formatNumberDisplay(monthlyCreditGain))}</td>
-              <td>${escapeHtml(formatNumberDisplay(projectedBalance))}</td>
+              <td>${escapeHtml(formatCreditAmount(projectedBalance))}</td>
               <td>${buildLatestApprovedLeaveMarkup(profile.id)}</td>
+              <td>
+                <div class="credit-action-stack">
+                  <button type="button" class="button button-muted" data-deduct-late="${profile.id}">Enter Minutes</button>
+                  <button type="button" class="button button-muted" data-download-deduction-log="${profile.id}">Text File</button>
+                </div>
+              </td>
             </tr>
           `).join("")}
         </tbody>
       </table>
     `;
+
+    bindCreditDeductionActions(container);
+  }
+
+  function bindCreditDeductionActions(container) {
+    Array.from(container.querySelectorAll("[data-deduct-late]")).forEach((button) => {
+      button.addEventListener("click", async () => {
+        const employeeId = Number(button.getAttribute("data-deduct-late"));
+        const profile = getAdminEmployeeProfileById(employeeId);
+        if (!profile) {
+          return;
+        }
+
+        await handleLateMinuteDeduction(profile);
+      });
+    });
+
+    Array.from(container.querySelectorAll("[data-download-deduction-log]")).forEach((button) => {
+      button.addEventListener("click", () => {
+        const employeeId = Number(button.getAttribute("data-download-deduction-log"));
+        const profile = getAdminEmployeeProfileById(employeeId);
+        if (!profile) {
+          return;
+        }
+
+        downloadEmployeeDeductionLog(profile);
+      });
+    });
+  }
+
+  async function handleLateMinuteDeduction(profile) {
+    const employeeName = getEmployeeDisplayName(profile);
+    const rawMinutes = window.prompt(`Enter late minutes for ${employeeName} (maximum ${lateDeductionMaximumMinutes}):`);
+    if (rawMinutes === null) {
+      return;
+    }
+
+    const minutes = Number(rawMinutes);
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      window.alert("Enter a valid number of late minutes.");
+      return;
+    }
+
+    if (minutes > lateDeductionMaximumMinutes) {
+      window.alert(`Late minutes cannot be more than ${lateDeductionMaximumMinutes}.`);
+      return;
+    }
+
+    const deduction = calculateLateDeduction(minutes);
+    const currentCredits = Number(profile.leave_credits || 0);
+    const updatedCredits = Math.max(currentCredits - deduction, 0);
+    const defaultReason = `Late for ${minutes} minute(s)`;
+    const rawReason = window.prompt("Reason for deduction:", defaultReason);
+    if (rawReason === null) {
+      return;
+    }
+
+    const reason = String(rawReason || "").trim() || defaultReason;
+    const confirmed = window.confirm(
+      `${employeeName}\nMinutes: ${minutes}\nMinus: ${formatCreditAmount(deduction)}\nNew credits: ${formatCreditAmount(updatedCredits)}`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    const updated = await updateEmployeeCreditBalance(profile, updatedCredits);
+    if (!updated) {
+      return;
+    }
+
+    saveCreditDeductionLog(profile, {
+      minutes,
+      deduction,
+      reason,
+      beforeCredits: currentCredits,
+      afterCredits: updatedCredits,
+      createdAt: new Date().toISOString()
+    });
+
+    if (db) {
+      await loadAdminProfiles();
+    } else {
+      const currentProfile = getAdminEmployeeProfileById(profile.id);
+      if (currentProfile) {
+        currentProfile.leave_credits = updatedCredits;
+      }
+    }
+
+    renderCreditComputationPage();
+    window.alert(`Deducted ${formatCreditAmount(deduction)} credit from ${employeeName}.`);
+  }
+
+  async function updateEmployeeCreditBalance(profile, leaveCredits) {
+    if (!db) {
+      return true;
+    }
+
+    const { error } = await db.rpc("update_employee", {
+      p_employee_id: profile.id,
+      p_email: profile.email,
+      p_password: null,
+      p_first_name: profile.first_name,
+      p_middle_name: profile.middle_name,
+      p_last_name: profile.last_name,
+      p_suffix: profile.suffix,
+      p_department: profile.department,
+      p_position_title: profile.position_title,
+      p_contact_no: profile.contact_no,
+      p_hire_date: profile.hire_date,
+      p_employment_status: profile.employment_status || "active",
+      p_leave_credits: leaveCredits
+    });
+
+    if (error) {
+      window.alert(error.message);
+      return false;
+    }
+
+    return true;
+  }
+
+  function calculateLateDeduction(minutes) {
+    const boundedMinutes = Math.min(Math.max(Number(minutes) || 0, 0), lateDeductionMaximumMinutes);
+    return Number((boundedMinutes * lateDeductionRatePerMinute).toFixed(3));
+  }
+
+  function formatCreditAmount(value) {
+    return Number(value || 0).toFixed(3);
+  }
+
+  function getEmployeeDisplayName(profile) {
+    return [profile.first_name, profile.middle_name, profile.last_name, profile.suffix]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim() || "Employee";
+  }
+
+  function getCreditDeductionLogs() {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(creditDeductionLogKey) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function saveCreditDeductionLog(profile, entry) {
+    const logs = getCreditDeductionLogs();
+    const employeeKey = String(profile.id);
+    logs[employeeKey] = Array.isArray(logs[employeeKey]) ? logs[employeeKey] : [];
+    logs[employeeKey].push({
+      employeeName: getEmployeeDisplayName(profile),
+      employeeNo: profile.employee_no || "",
+      ...entry
+    });
+    window.localStorage.setItem(creditDeductionLogKey, JSON.stringify(logs));
+  }
+
+  function downloadEmployeeDeductionLog(profile) {
+    const logs = getCreditDeductionLogs()[String(profile.id)] || [];
+    const employeeName = getEmployeeDisplayName(profile);
+    const lines = [
+      `Employee: ${employeeName}`,
+      `Employee No: ${profile.employee_no || "No employee number"}`,
+      `Generated: ${new Date().toLocaleString()}`,
+      "",
+      "Credit deduction records",
+      "========================"
+    ];
+
+    if (!logs.length) {
+      lines.push("No manual late-minute deductions recorded in this browser yet.");
+    } else {
+      logs.forEach((entry, index) => {
+        lines.push(
+          "",
+          `${index + 1}. ${new Date(entry.createdAt).toLocaleString()}`,
+          `Reason: ${entry.reason}`,
+          `Late minutes: ${entry.minutes}`,
+          `Minus: ${formatCreditAmount(entry.deduction)}`,
+          `Before credits: ${formatCreditAmount(entry.beforeCredits)}`,
+          `After credits: ${formatCreditAmount(entry.afterCredits)}`
+        );
+      });
+    }
+
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${slugifyFileName(employeeName)}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+  }
+
+  function slugifyFileName(value) {
+    return String(value || "employee")
+      .trim()
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase() || "employee";
   }
 
   function renderEmployeeDemo() {

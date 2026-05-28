@@ -1850,7 +1850,17 @@ button:focus {
 }
 
 .credit-computation-table td:last-child {
-  min-width: 15rem;
+  min-width: 10rem;
+}
+
+.credit-minute-equivalent {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.credit-action-stack {
+  display: grid;
+  gap: 0.45rem;
 }
 
 .credit-request-chip {

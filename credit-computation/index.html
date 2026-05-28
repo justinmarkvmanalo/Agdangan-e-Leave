@@ -31,8 +31,8 @@
     <section class="dashboard-header" id="credit-computation">
       <div class="dashboard-title">
         <p class="section-label">Credit Computation</p>
-        <h2 id="credit-page-title">Month-End Leave Credit Logic</h2>
-        <p id="credit-page-meta">This page explains and monitors the month-end leave credit formula for all employees.</p>
+        <h2 id="credit-page-title">Leave Credit Computation</h2>
+        <p id="credit-page-meta">This page monitors balances and manual late-minute deductions for all employees.</p>
       </div>
 
       <div class="dashboard-meta">
@@ -62,30 +62,30 @@
     <section class="dashboard-grid">
       <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Formula</p>
-        <h3>Month-End Credit Rules</h3>
+        <h3>Credit Rules</h3>
         <div class="credit-logic-grid">
           <div class="credit-logic-panel">
             <strong>Accrual</strong>
             <p>The system adds exactly <strong>1.25</strong> leave credits only on the last day of the month.</p>
           </div>
           <div class="credit-logic-panel">
-            <strong>Deduction</strong>
-            <p>Approved leave is deducted immediately based on the approved absent days.</p>
+            <strong>Late Deduction</strong>
+            <p>Every late minute deducts <strong>0.002</strong> credit, so 2 minutes deducts <strong>0.004</strong>.</p>
           </div>
           <div class="credit-logic-panel">
-            <strong>No Fixed 0.8 Value</strong>
-            <p>The system does not use a fixed <code>0.8</code> factor. It deducts the full approved absent days from the current balance.</p>
+            <strong>Maximum</strong>
+            <p>Manual late-minute deductions accept up to <strong>60</strong> minutes per entry, equal to <strong>0.120</strong> credit.</p>
           </div>
         </div>
         <div class="credit-formula">
-          <span>Next month-end balance</span>
-          <strong>current stored credits + 1.25</strong>
+          <span>Late deduction</span>
+          <strong>minutes x 0.002, then subtract from current credits</strong>
         </div>
       </article>
 
       <article class="dashboard-card dashboard-card-wide">
         <p class="card-label">Employee Queue</p>
-        <h3>Current and Projected Month-End Balances</h3>
+        <h3>Employee Balances and Late Deductions</h3>
         <div id="credit-computation-table">
           <p class="empty-state">No computation data loaded yet.</p>
         </div>
