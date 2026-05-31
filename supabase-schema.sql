@@ -144,6 +144,20 @@ alter table public.employees enable row level security;
 alter table public.leave_requests enable row level security;
 alter table public.credit_deduction_logs enable row level security;
 
+drop policy if exists credit_deduction_logs_select_all on public.credit_deduction_logs;
+create policy credit_deduction_logs_select_all
+on public.credit_deduction_logs
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists credit_deduction_logs_insert_all on public.credit_deduction_logs;
+create policy credit_deduction_logs_insert_all
+on public.credit_deduction_logs
+for insert
+to anon, authenticated
+with check (true);
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql

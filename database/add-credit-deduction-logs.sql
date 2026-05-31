@@ -17,6 +17,20 @@ on public.credit_deduction_logs (employee_id, created_at desc);
 
 alter table public.credit_deduction_logs enable row level security;
 
+drop policy if exists credit_deduction_logs_select_all on public.credit_deduction_logs;
+create policy credit_deduction_logs_select_all
+on public.credit_deduction_logs
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists credit_deduction_logs_insert_all on public.credit_deduction_logs;
+create policy credit_deduction_logs_insert_all
+on public.credit_deduction_logs
+for insert
+to anon, authenticated
+with check (true);
+
 create or replace function public.create_credit_deduction_log(
   p_employee_id bigint,
   p_employee_name text,

@@ -2448,6 +2448,7 @@
         return;
       }
 
+      addPendingCreditDeductionEntry();
       const formData = new FormData(form);
       const minutes = Number(formData.get("lateMinutes"));
       const reason = String(formData.get("deductionReason") || "").trim();
@@ -2458,7 +2459,7 @@
   function openCreditDeductionModal(profile) {
     const modal = document.getElementById("credit-deduction-modal");
     const form = document.getElementById("credit-deduction-form");
-    const minutesInput = document.getElementById("credit-deduction-minutes");
+    const minutesInput = document.getElementById("credit-deduction-entry-minutes");
 
     if (!modal || !form) {
       return;
@@ -2495,12 +2496,18 @@
       return;
     }
 
+    const added = addPendingCreditDeductionEntry();
+    if (!added) {
+      setText("credit-deduction-error", "Enter valid minutes before adding.");
+    }
+  }
+
+  function addPendingCreditDeductionEntry() {
     const minutesInput = document.getElementById("credit-deduction-entry-minutes");
     const noteInput = document.getElementById("credit-deduction-entry-note");
     const minutes = Number(minutesInput?.value || 0);
-    if (!Number.isFinite(minutes) || minutes <= 0) {
-      setText("credit-deduction-error", "Enter valid minutes before adding.");
-      return;
+    if (!Number.isFinite(minutes) || minutes <= 0 || !minutesInput?.value) {
+      return false;
     }
 
     const normalizedMinutes = Math.round(minutes);
@@ -2517,6 +2524,7 @@
     }
     setText("credit-deduction-error", "");
     renderCreditDeductionEntries();
+    return true;
   }
 
   function removeCreditDeductionEntry(index) {
@@ -2567,16 +2575,32 @@
       return;
     }
 
-    const totalMinutes = getCreditDeductionTotalMinutes();
+    const totalMinutes = getCreditDeductionPreviewMinutes();
     if (!totalMinutes) {
       setText("credit-deduction-preview", "Add late-minute entries to preview the deduction.");
       return;
     }
 
+    const previewEntryCount = getCreditDeductionPreviewEntryCount();
     const deduction = calculateLateDeduction(totalMinutes);
     const currentCredits = Number(selectedCreditDeductionProfile.leave_credits || 0);
     const updatedCredits = Math.max(currentCredits - deduction, 0);
-    setText("credit-deduction-preview", `${creditDeductionEntries.length} entr${creditDeductionEntries.length === 1 ? "y" : "ies"} | ${totalMinutes} total minute(s) | Minus ${formatCreditAmount(deduction)} credit. New balance ${formatCreditAmount(updatedCredits)}.`);
+    setText("credit-deduction-preview", `${previewEntryCount} entr${previewEntryCount === 1 ? "y" : "ies"} | ${totalMinutes} total minute(s) | Minus ${formatCreditAmount(deduction)} credit. New balance ${formatCreditAmount(updatedCredits)}.`);
+  }
+
+  function getCreditDeductionPreviewMinutes() {
+    const minutesInput = document.getElementById("credit-deduction-entry-minutes");
+    const pendingMinutes = Number(minutesInput?.value || 0);
+    const normalizedPendingMinutes = Number.isFinite(pendingMinutes) && pendingMinutes > 0
+      ? Math.round(pendingMinutes)
+      : 0;
+    return getCreditDeductionTotalMinutes() + normalizedPendingMinutes;
+  }
+
+  function getCreditDeductionPreviewEntryCount() {
+    const minutesInput = document.getElementById("credit-deduction-entry-minutes");
+    const pendingMinutes = Number(minutesInput?.value || 0);
+    return creditDeductionEntries.length + (Number.isFinite(pendingMinutes) && pendingMinutes > 0 ? 1 : 0);
   }
 
   async function handleLateMinuteDeduction(profile, minutes, reasonText, entries = []) {
@@ -2736,6 +2760,8 @@
         saveLocalCreditDeductionLog(profile, entry);
         if (isMissingCreditDeductionLogTableError(error)) {
           window.alert("Credit was updated, but online deduction log storage is not set up yet. Run database/add-credit-deduction-logs.sql in Supabase SQL Editor. A local backup copy was saved in this browser.");
+        } else if (isCreditDeductionLogPolicyError(error)) {
+          window.alert("Credit was updated, but Supabase is blocking online deduction log inserts. Re-run the updated database/add-credit-deduction-logs.sql in Supabase SQL Editor to add the RLS policy. A local backup copy was saved in this browser.");
         } else {
           window.alert(`Credit was updated, but the online deduction log was not saved: ${error.message}. A local backup copy was saved in this browser.`);
         }
@@ -2765,6 +2791,12 @@
       message.includes("schema cache") ||
       message.includes("does not exist")
     );
+  }
+
+  function isCreditDeductionLogPolicyError(error) {
+    const message = String(error?.message || "").toLowerCase();
+    return message.includes("credit_deduction_logs") &&
+      (message.includes("row-level security") || message.includes("violates row-level security"));
   }
 
   async function downloadEmployeeDeductionLog(profile) {
