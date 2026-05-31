@@ -417,7 +417,7 @@
         <strong>${escapeHtml(formatLeaveType(request.leave_type))}</strong>
         <div>${escapeHtml(formatLeaveDateSummary(request))}</div>
         <div>${escapeHtml(request.days_requested)} day(s)</div>
-        <div><span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span></div>
+        <div><span class="badge ${escapeHtml(getRequestStatusClass(request))}">${escapeHtml(getRequestTrackingLabel(request))}</span></div>
         <div class="table-actions">
           <button type="button" class="button button-muted" data-employee-print-request="${escapeAttribute(String(request.id))}">Print</button>
         </div>
@@ -1081,7 +1081,7 @@
         ${data.map((request) => `
           <article class="admin-request-card">
             <div class="admin-request-card-top">
-              <span class="badge ${escapeHtml(request.status)}">${escapeHtml(capitalize(request.status))}</span>
+              <span class="badge ${escapeHtml(getRequestStatusClass(request))}">${escapeHtml(getRequestTrackingLabel(request))}</span>
               <span class="admin-request-card-id">Request #${escapeHtml(String(request.id))}</span>
             </div>
             <h4>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</h4>
@@ -1400,7 +1400,7 @@
       <div class="admin-request-toolbar">
         <div>
           <strong>${escapeHtml(getApplicantFullName(request) || "Unnamed applicant")}</strong>
-          <div class="muted">Request #${escapeHtml(String(request.id))} | ${escapeHtml(capitalize(request.status))}</div>
+          <div class="muted">Request #${escapeHtml(String(request.id))} | ${escapeHtml(getRequestTrackingLabel(request))}</div>
         </div>
         <div class="table-actions">
           <button type="button" class="button button-muted" data-admin-print-request>Print / Save PDF</button>
@@ -2769,7 +2769,7 @@
           <strong>Vacation</strong>
           <div>2026-05-28 to 2026-05-30</div>
           <div>3 day(s)</div>
-          <div><span class="badge pending">Pending</span></div>
+          <div><span class="badge pending">For HRMO Review</span></div>
         </li>
         <li>
           <strong>Sick</strong>
@@ -2842,7 +2842,7 @@
         <div class="admin-request-card-grid">
           <article class="admin-request-card">
             <div class="admin-request-card-top">
-              <span class="badge pending">Pending</span>
+              <span class="badge pending">For HRMO Review</span>
               <span class="admin-request-card-id">Request #1</span>
             </div>
             <h4>Juan Dela Cruz</h4>
@@ -2919,6 +2919,34 @@
     return String(value || "")
       .replace(/_/g, " ")
       .replace(/\b\w/g, (match) => match.toUpperCase());
+  }
+
+  function getRequestTrackingLabel(request) {
+    const status = String(request?.status || "").toLowerCase();
+    const recommendation = String(request?.recommendation || "").toLowerCase();
+
+    if (status === "approved") {
+      return "Approved";
+    }
+
+    if (status === "rejected") {
+      return "Rejected";
+    }
+
+    if (recommendation === "approved") {
+      return "For Mayor Approval";
+    }
+
+    if (recommendation === "rejected") {
+      return "For Disapproval Review";
+    }
+
+    return "For HRMO Review";
+  }
+
+  function getRequestStatusClass(request) {
+    const status = String(request?.status || "").toLowerCase();
+    return status === "approved" || status === "rejected" ? status : "pending";
   }
 
   function escapeHtml(value) {
