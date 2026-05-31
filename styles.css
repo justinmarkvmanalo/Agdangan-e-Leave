@@ -1202,8 +1202,18 @@ button:focus {
 .leave-paper-other-line {
   display: grid;
   gap: 0.25rem;
-  margin-top: 0.4rem;
+  margin-top: 1.25rem;
   font-size: 0.68rem;
+}
+
+.leave-paper-other-line label,
+.leave-paper-other-line span {
+  font-style: italic;
+}
+
+.leave-paper-other-line .leave-paper-input,
+.leave-paper-other-line .leave-paper-readonly {
+  width: min(100%, 16rem);
 }
 
 .leave-paper-subgroup {

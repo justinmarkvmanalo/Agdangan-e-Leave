@@ -1438,7 +1438,7 @@
             <p class="leave-paper-note">Civil Service Form No. 6</p>
             <p class="leave-paper-note">Revised 2020</p>
           </div>
-          <div class="leave-paper-stamp">Status: ${escapeHtml(capitalize(request.status))}</div>
+          <div class="leave-paper-stamp">Stamp of Date of Receipt</div>
         </div>
 
         <div class="leave-paper-heading-grid">
@@ -1786,9 +1786,9 @@
             display: grid;
           }
           .leave-paper-topline {
-            grid-template-columns: 1fr auto;
-            gap: 3mm;
-            padding: 2.4mm 3.6mm 0.5mm;
+            display: block;
+            position: relative;
+            padding: 4mm 12mm 0;
           }
           .leave-paper-form-series {
             display: grid;
@@ -1799,52 +1799,60 @@
             margin: 0;
           }
           .leave-paper-note {
-            font-size: 9px;
+            font-size: 8px;
             font-style: italic;
             line-height: 1.2;
           }
           .leave-paper-stamp {
-            align-self: start;
-            min-width: 24mm;
-            padding: 1.5mm 2mm;
+            position: absolute;
+            top: 11mm;
+            right: 12mm;
+            min-width: 27mm;
+            padding: 1.6mm 2mm;
             border: 1px solid #111;
             text-align: center;
-            font-size: 8px;
+            font-size: 7px;
+            font-weight: 800;
           }
           .leave-paper-heading-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: start;
             justify-items: center;
             position: relative;
-            padding: 0 3.6mm 2mm;
+            padding: 0 12mm 3mm;
             border-bottom: 1px solid #111;
           }
           .leave-paper-heading-spacer {
             display: none;
           }
           .leave-paper-seal-wrap {
-            position: absolute;
-            transform: translate(-36mm, 0.5mm);
+            position: static;
+            justify-self: end;
+            margin-right: 9mm;
+            margin-top: 0;
             padding: 0;
           }
           .leave-paper-seal {
-            width: 11mm;
-            height: 11mm;
+            width: 18mm;
+            height: 18mm;
             object-fit: contain;
           }
           .leave-paper-heading {
+            grid-column: 2;
             text-align: center;
-            min-width: 62mm;
+            min-width: 72mm;
+            padding-top: 4mm;
           }
           .leave-paper-government {
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 800;
             text-transform: uppercase;
             line-height: 1.15;
           }
           .leave-paper-heading h3 {
-            margin: 1.5mm 0 0;
-            font-size: 16px;
+            margin: 6mm 0 0;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
           }
@@ -1991,6 +1999,18 @@
           .leave-paper-subgroup {
             display: grid;
             gap: 1mm;
+          }
+          .leave-paper-other-line {
+            margin-top: 8mm;
+          }
+          .leave-paper-other-line span,
+          .leave-paper-other-line label {
+            font-style: italic;
+          }
+          .leave-paper-other-line .leave-paper-readonly,
+          .leave-paper-other-line .leave-paper-input {
+            width: 66mm;
+            max-width: 100%;
           }
           .leave-option {
             display: flex;
