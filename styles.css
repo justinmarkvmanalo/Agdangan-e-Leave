@@ -142,9 +142,9 @@ textarea {
 .utility-nav {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.6rem;
   font-weight: 700;
-  white-space: nowrap;
 }
 
 .site-nav a,
@@ -158,6 +158,7 @@ textarea {
   border: 1px solid rgba(102, 79, 178, 0.08);
   border-radius: 999px;
   cursor: pointer;
+  white-space: normal;
 }
 
 .site-nav a::after,
@@ -772,6 +773,7 @@ button:focus {
   margin-top: 0;
   font-size: 1.55rem;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 .approval-queue-section {
@@ -1540,6 +1542,7 @@ button:focus {
 #admin-requests-table,
 #admin-employees-table {
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .employee-record-list {
@@ -2306,6 +2309,28 @@ button:focus {
     grid-template-columns: 1fr;
     align-items: start;
   }
+
+  .admin-request-paper .leave-paper-heading-grid {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .admin-request-paper .leave-paper-seal-wrap {
+    justify-self: center;
+    margin-right: 0;
+  }
+
+  .admin-request-paper .leave-paper-heading {
+    grid-column: auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-request-paper .leave-paper-stamp {
+    position: static;
+    width: min(100%, 12rem);
+    margin: 0.75rem 0 0 auto;
+  }
 }
 
 @media (max-width: 1080px) {
@@ -2344,6 +2369,51 @@ button:focus {
 }
 
 @media (max-width: 720px) {
+  .page-shell,
+  .hero,
+  .trust-strip,
+  .overview-section,
+  .app-layout,
+  .closing-section {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .mini-card,
+  .service-card,
+  .auth-card,
+  .dashboard-card,
+  .status-banner,
+  .stat-card {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .dashboard-page .site-header {
+    width: calc(100% - 1rem);
+    margin-top: 0.5rem;
+    border-radius: 18px;
+  }
+
+  .site-nav,
+  .utility-nav {
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  .site-nav a,
+  .utility-nav a,
+  .utility-nav button {
+    flex: 1 1 9rem;
+    padding: 0.62rem 0.7rem;
+    text-align: center;
+  }
+
+  .dashboard-header {
+    padding: 1.2rem;
+    border-radius: 20px;
+  }
+
   .brand {
     gap: 0.8rem;
   }
@@ -2358,11 +2428,6 @@ button:focus {
 
   .brand-copy p {
     font-size: 0.62rem;
-  }
-
-  .site-nav,
-  .utility-nav {
-    gap: 0.9rem;
   }
 
   .hero {
@@ -2397,7 +2462,6 @@ button:focus {
     gap: 0.5rem;
   }
 
-  .leave-paper-seal-wrap,
   .leave-paper-heading-spacer {
     display: none;
   }
@@ -2417,5 +2481,60 @@ button:focus {
 
   .leave-paper-footer .button {
     width: 100%;
+  }
+
+  .leave-paper {
+    width: 100%;
+  }
+
+  .leave-paper-cell-inline,
+  .leave-paper-name-header,
+  .leave-paper-date-range {
+    grid-template-columns: 1fr;
+  }
+
+  .leave-paper-cell-inline .leave-paper-label {
+    white-space: normal;
+  }
+
+  .leave-paper-seal-wrap {
+    position: static;
+    transform: none;
+    display: flex;
+    justify-content: center;
+  }
+
+  .leave-paper-heading {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .leave-paper-stamp {
+    width: 100%;
+  }
+
+  .admin-request-modal {
+    padding: 0.6rem;
+  }
+
+  .admin-request-modal-dialog {
+    max-height: calc(100vh - 1.2rem);
+    border-radius: 18px;
+  }
+
+  .admin-request-modal-header,
+  .admin-request-modal-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .admin-request-paper {
+    padding: 0.5rem;
+  }
+
+  .admin-request-paper .leave-paper-topline,
+  .admin-request-paper .leave-paper-heading-grid {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
