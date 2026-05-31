@@ -1758,7 +1758,7 @@
         <meta charset="UTF-8">
         <title>${escapeHtml(title)}</title>
         <style>
-          @page { size: A4; margin: 10mm; }
+          @page { size: A4; margin: 4mm; }
           body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -1766,16 +1766,17 @@
             color: #111;
           }
           .print-shell {
-            width: 210mm;
-            min-height: 277mm;
+            width: 202mm;
+            min-height: 289mm;
             margin: 0 auto;
             box-sizing: border-box;
           }
           .leave-paper {
             width: 100%;
+            min-height: 289mm;
             box-sizing: border-box;
             background: #fff;
-            border: 2px solid #111;
+            border: 0;
             font-family: Arial, sans-serif;
             color: #111;
           }
@@ -1858,6 +1859,9 @@
           }
           .leave-paper-row {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+          .leave-paper-form > .leave-paper-row:first-child .leave-paper-cell {
+            border-top: 1px solid #111;
           }
           .leave-paper-row-compact {
             grid-template-columns: 1.08fr 1fr 0.72fr;
@@ -1980,6 +1984,12 @@
             border-top: 0;
             border-left: 0;
           }
+          .leave-paper-panel-grid .leave-paper-panel:last-child {
+            display: grid;
+            grid-template-rows: auto repeat(5, minmax(0, 1fr));
+            min-height: 72mm;
+            align-content: stretch;
+          }
           .leave-paper-panel legend {
             padding: 0 0.8mm;
             font-size: 8px;
@@ -2057,6 +2067,10 @@
           }
           .leave-paper-subgroup p {
             font-style: italic;
+          }
+          .leave-paper-panel-grid .leave-paper-panel:last-child .leave-paper-subgroup {
+            align-content: start;
+            margin-bottom: 0;
           }
           .leave-paper-detail-option {
             align-items: center;
@@ -2206,6 +2220,8 @@
               background: #fff;
             }
             .print-shell {
+              width: 202mm;
+              min-height: 289mm;
               margin: 0;
             }
           }
