@@ -34,10 +34,14 @@ button {
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  width: 100%;
+  overflow-x: hidden;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: var(--ink);
   background:
@@ -2421,6 +2425,10 @@ button:focus {
 }
 
 @media (max-width: 720px) {
+  body.dashboard-page {
+    min-width: 0;
+  }
+
   .page-shell,
   .hero,
   .trust-strip,
@@ -2442,9 +2450,27 @@ button:focus {
   }
 
   .dashboard-page .site-header {
-    width: calc(100% - 1rem);
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
     margin-top: 0.5rem;
     border-radius: 18px;
+  }
+
+  .dashboard-page .page-shell {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .credit-page .stats-grid,
+  .credit-page .dashboard-grid,
+  .credit-rules-card,
+  .credit-table-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .credit-page .stats-grid {
+    grid-template-columns: 1fr;
   }
 
   .site-nav,
@@ -2484,7 +2510,43 @@ button:focus {
   }
 
   .credit-computation-table {
-    min-width: 520px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .credit-computation-table,
+  .credit-computation-table thead,
+  .credit-computation-table tbody,
+  .credit-computation-table tr,
+  .credit-computation-table th,
+  .credit-computation-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .credit-computation-table thead {
+    display: none;
+  }
+
+  .credit-computation-table tr {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(102, 79, 178, 0.12);
+  }
+
+  .credit-computation-table td {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.35rem 0;
+    border-bottom: 0;
+  }
+
+  .credit-computation-table td::before {
+    content: attr(data-label);
+    color: var(--navy);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 
   .brand {

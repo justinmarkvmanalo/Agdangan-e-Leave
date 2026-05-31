@@ -2363,14 +2363,14 @@
         <tbody>
           ${rows.map(({ profile, currentCredits }) => `
             <tr>
-              <td>
+              <td data-label="Employee">
                 <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
                 ${escapeHtml(profile.employee_no || "No employee number")}<br>
                 ${escapeHtml(profile.department || "-")}
               </td>
-              <td>${escapeHtml(formatCreditAmount(currentCredits))}</td>
-              <td>${buildLatestApprovedLeaveMarkup(profile.id)}</td>
-              <td>
+              <td data-label="Current Credits">${escapeHtml(formatCreditAmount(currentCredits))}</td>
+              <td data-label="Latest Approved Leave">${buildLatestApprovedLeaveMarkup(profile.id)}</td>
+              <td data-label="Action">
                 <div class="credit-action-stack">
                   <button type="button" class="button button-muted" data-deduct-late="${profile.id}">Enter Minutes</button>
                   <button type="button" class="button button-muted" data-download-deduction-log="${profile.id}">Text File</button>
