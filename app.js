@@ -781,37 +781,27 @@
     }
 
     container.innerHTML = `
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Department</th>
-            <th>Status</th>
-            <th>Credits</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${profiles.map((profile) => `
-            <tr>
-              <td>
-                <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong><br>
-                ${escapeHtml(profile.employee_no || "No employee number")}<br>
-                ${escapeHtml(profile.email || "No email")}
-              </td>
-              <td>${escapeHtml(profile.department)}<br>${escapeHtml(profile.position_title)}</td>
-              <td><span class="badge ${profile.employment_status === "active" ? "approved" : profile.employment_status === "inactive" ? "pending" : "rejected"}">${escapeHtml(capitalize(profile.employment_status || "active"))}</span></td>
-              <td>${escapeHtml(formatCreditAmount(profile.leave_credits))}</td>
-              <td>
-                <div class="table-actions">
-                  <button type="button" class="button button-muted" data-edit-employee="${profile.id}">Edit</button>
-                  <button type="button" class="button button-danger" data-delete-employee="${profile.id}">Delete</button>
-                </div>
-              </td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
+      <div class="employee-record-list">
+        ${profiles.map((profile) => `
+          <article class="employee-record-row">
+            <div>
+              <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong>
+              <span>${escapeHtml(profile.employee_no || "No employee number")}</span>
+              <span>${escapeHtml(profile.email || "No email")}</span>
+            </div>
+            <div>
+              <span>${escapeHtml(profile.department)}</span>
+              <span>${escapeHtml(profile.position_title)}</span>
+            </div>
+            <span class="badge ${profile.employment_status === "active" ? "approved" : profile.employment_status === "inactive" ? "pending" : "rejected"}">${escapeHtml(capitalize(profile.employment_status || "active"))}</span>
+            <div class="employee-record-credit">${escapeHtml(formatCreditAmount(profile.leave_credits))} credits</div>
+            <div class="table-actions">
+              <button type="button" class="button button-muted" data-edit-employee="${profile.id}">Edit</button>
+              <button type="button" class="button button-danger" data-delete-employee="${profile.id}">Delete</button>
+            </div>
+          </article>
+        `).join("")}
+      </div>
     `;
 
     Array.from(container.querySelectorAll("[data-edit-employee]")).forEach((button) => {
