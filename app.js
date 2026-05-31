@@ -2020,6 +2020,29 @@
             margin: 0;
             font-size: 9px;
           }
+          .leave-paper-subgroup p {
+            font-style: italic;
+          }
+          .leave-paper-detail-option {
+            align-items: center;
+          }
+          .leave-paper-detail-option-static {
+            display: flex;
+          }
+          .leave-paper-detail-line {
+            flex: 1 1 auto;
+            min-width: 18mm;
+            margin-left: 1.5mm;
+          }
+          .leave-paper-detail-line-readonly {
+            display: inline-block;
+            min-height: 4.2mm;
+            padding-top: 0.4mm;
+            padding-left: 0;
+            border-bottom: 1px solid #111;
+            font-size: 9px;
+            line-height: 1.1;
+          }
           .leave-paper-approval-lines {
             gap: 0.35mm;
             margin-top: 1mm;
