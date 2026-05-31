@@ -1927,10 +1927,10 @@
             margin-left: 1.5mm;
           }
           .leave-paper-approval-input {
-            width: 10mm;
+            width: 12mm;
           }
           .leave-paper-approval-wide {
-            width: 16mm;
+            width: 12mm;
           }
           .leave-paper-action-textarea {
             min-height: 12mm;
@@ -2029,6 +2029,12 @@
           .leave-paper-detail-option-static {
             display: flex;
           }
+          .leave-paper-detail-option-static > span:first-child {
+            padding-left: 0;
+            font-size: 7px;
+            line-height: 1.1;
+            white-space: nowrap;
+          }
           .leave-paper-detail-line {
             flex: 1 1 auto;
             min-width: 18mm;
@@ -2044,24 +2050,62 @@
             line-height: 1.1;
           }
           .leave-paper-approval-lines {
-            gap: 0.35mm;
-            margin-top: 1mm;
+            gap: 0;
+            margin-top: 0.2mm;
           }
           .leave-paper-approval-item {
             display: flex;
             align-items: center;
-            gap: 1mm;
+            gap: 0.8mm;
             font-size: 8px;
-            line-height: 1.1;
+            line-height: 1;
             white-space: nowrap;
           }
+          .leave-paper-approval-item .leave-paper-input {
+            min-height: 0;
+            padding: 0;
+            line-height: 1;
+          }
           .leave-paper-row-bottom .leave-paper-cell {
-            min-height: 17mm;
+            min-height: 18mm;
+            padding: 1.1mm 1.8mm 0;
+            border-bottom: 0;
+          }
+          .leave-paper-row-bottom .leave-paper-label {
+            margin-bottom: 0;
+            font-size: 7px;
+            font-weight: 800;
+          }
+          .leave-paper-row-bottom .leave-paper-action-box {
+            min-height: 11mm;
+          }
+          .leave-paper-row-bottom .leave-paper-action-writing {
+            gap: 0;
+            margin-top: 1.8mm;
+          }
+          .leave-paper-row-bottom .leave-paper-action-textarea {
+            min-height: 10mm;
+            padding: 0;
+            border: 0;
+            line-height: 3.2mm;
+            background-image: repeating-linear-gradient(
+              to bottom,
+              transparent 0,
+              transparent 3mm,
+              #111 3.1mm,
+              transparent 3.2mm
+            );
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .leave-paper-row-bottom .leave-paper-approval-lines {
+            margin-top: 0.4mm;
+            margin-left: 7mm;
           }
           .leave-paper-authorized-wide {
             grid-column: 1 / -1;
             margin-top: 0;
-            padding: 2mm 2.2mm 1.2mm;
+            padding: 3.8mm 2.2mm 1.6mm;
           }
           .leave-paper-authorized-wide .leave-paper-line {
             width: 74mm;
