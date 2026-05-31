@@ -1786,6 +1786,9 @@
           .leave-paper-form {
             display: grid;
           }
+          .leave-paper-form {
+            border: 1px solid #111;
+          }
           .leave-paper-topline {
             display: block;
             position: relative;
@@ -1859,9 +1862,6 @@
           }
           .leave-paper-row {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-          .leave-paper-form > .leave-paper-row:first-child .leave-paper-cell {
-            border-top: 1px solid #111;
           }
           .leave-paper-row-compact {
             grid-template-columns: 1.08fr 1fr 0.72fr;
