@@ -766,21 +766,11 @@ button:focus {
 }
 
 .approval-queue-section {
-  padding: 1.25rem 0 1.5rem;
-  border-width: 1px 0;
-  border-color: rgba(102, 79, 178, 0.16);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 2rem;
 }
 
 .line-list-section {
-  padding: 1.25rem 0 1.5rem;
-  border-width: 1px 0;
-  border-color: rgba(102, 79, 178, 0.16);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 2rem;
 }
 
 .approval-queue-section h3 {
