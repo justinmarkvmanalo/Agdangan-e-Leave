@@ -1993,7 +1993,7 @@
           .leave-paper-panel legend {
             padding: 0 0.8mm;
             font-size: 8px;
-            font-weight: 800;
+            font-weight: 400;
             text-transform: uppercase;
           }
           .leave-type-grid,

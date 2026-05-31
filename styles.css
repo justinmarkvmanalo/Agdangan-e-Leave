@@ -765,6 +765,20 @@ button:focus {
   color: var(--ink);
 }
 
+.approval-queue-section {
+  padding: 1.25rem 0 1.5rem;
+  border-width: 1px 0;
+  border-color: rgba(102, 79, 178, 0.16);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.approval-queue-section h3 {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(102, 79, 178, 0.12);
+}
+
 .leave-paper-card {
   padding: 1.1rem;
   background: linear-gradient(180deg, rgba(244, 240, 255, 0.96), rgba(237, 246, 255, 0.92));
@@ -1038,7 +1052,7 @@ button:focus {
 .leave-paper-panel legend {
   padding: 0 0.25rem;
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #111;
