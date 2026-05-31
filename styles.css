@@ -1062,10 +1062,6 @@ button:focus {
   padding-left: 0;
 }
 
-.leave-type-grid .leave-option strong {
-  font-weight: 800;
-}
-
 .leave-type-grid .leave-option small {
   font-size: 0.52rem;
   line-height: 1.1;

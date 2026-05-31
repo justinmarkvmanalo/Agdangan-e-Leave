@@ -99,19 +99,19 @@
     others: "Others"
   };
   const leavePaperTypeOptions = [
-    ["vacation", "Vacation Leave", "Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["mandatory-forced", "Mandatory/Forced Leave", "Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["sick", "Sick Leave", "Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["maternity", "Maternity Leave", "R.A. No. 11210 / IRR issued by CSC, DOLE and SSS"],
-    ["paternity", "Paternity Leave", "R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended"],
-    ["special-privilege", "Special Privilege Leave", "Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["solo-parent", "Solo Parent Leave", "R.A. No. 8972 / CSC MC No. 8, s. 2004"],
-    ["study", "Study Leave", "Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["vawc", "10-Day VAWC Leave", "R.A. No. 9262 / CSC MC No. 15, s. 2005"],
-    ["rehabilitation-privilege", "Rehabilitation Privilege", "Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
-    ["special-benefits-women", "Special Leave Benefits for Women", "R.A. No. 9710 / CSC MC No. 25, s. 2010"],
-    ["special-emergency-calamity", "Special Emergency (Calamity) Leave", "CSC MC No. 2, s. 2012, as amended"],
-    ["adoption", "Adoption Leave", "R.A. No. 8552"]
+    ["vacation", "Vacation Leave", "(Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["mandatory-forced", "Mandatory/Forced Leave", "(Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["sick", "Sick Leave", "(Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["maternity", "Maternity Leave", "(R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)"],
+    ["paternity", "Paternity Leave", "(R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)"],
+    ["special-privilege", "Special Privilege Leave", "(Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["solo-parent", "Solo Parent Leave", "(R.A. No. 8972 / CSC MC No. 8, s. 2004)"],
+    ["study", "Study Leave", "(Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["vawc", "10-Day VAWC Leave", "(R.A. No. 9262 / CSC MC No. 15, s. 2005)"],
+    ["rehabilitation-privilege", "Rehabilitation Privilege", "(Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)"],
+    ["special-benefits-women", "Special Leave Benefits for Women", "(R.A. No. 9710 / CSC MC No. 25, s. 2010)"],
+    ["special-emergency-calamity", "Special Emergency (Calamity) Leave", "(CSC MC No. 2, s. 2012, as amended)"],
+    ["adoption", "Adoption Leave", "(R.A. No. 8552)"]
   ];
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
@@ -1677,7 +1677,7 @@
     return `
       <label class="leave-option leave-type-option">
         <input type="radio" name="leaveType" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
-        <span><strong>${escapeHtml(label)}</strong> <small>${escapeHtml(reference)}</small></span>
+        <span>${escapeHtml(label)} <small>${escapeHtml(reference)}</small></span>
       </label>
     `;
   }
@@ -2001,9 +2001,6 @@
           }
           .leave-type-grid .leave-option span {
             padding-left: 0;
-          }
-          .leave-type-grid .leave-option strong {
-            font-weight: 800;
           }
           .leave-type-grid .leave-option small {
             font-size: 6.5px;
