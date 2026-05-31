@@ -2071,6 +2071,9 @@
             padding: 1.1mm 1.8mm 0;
             border-bottom: 0;
           }
+          .leave-paper-row-bottom .leave-paper-cell:first-child {
+            border-right: 0;
+          }
           .leave-paper-row-bottom .leave-paper-label {
             margin-bottom: 0;
             font-size: 7px;
