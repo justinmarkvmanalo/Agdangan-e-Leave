@@ -1607,25 +1607,29 @@ button:focus {
 
 .admin-request-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid rgba(102, 79, 178, 0.12);
 }
 
 .admin-request-card {
   display: grid;
-  gap: 0.75rem;
-  padding: 1.2rem;
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 241, 255, 0.92));
-  border: 1px solid rgba(102, 79, 178, 0.08);
-  box-shadow: 0 14px 28px rgba(54, 36, 120, 0.08);
+  grid-template-columns: minmax(10rem, 0.9fr) minmax(11rem, 1fr) minmax(8rem, 0.8fr) minmax(12rem, 1.1fr) minmax(5rem, 0.45fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid rgba(102, 79, 178, 0.12);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .admin-request-card-top {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .admin-request-card-id,
@@ -1636,7 +1640,7 @@ button:focus {
 
 .admin-request-card h4 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--ink);
 }
 
@@ -2168,6 +2172,11 @@ button:focus {
 
   .admin-request-card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-request-card {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 }
 
