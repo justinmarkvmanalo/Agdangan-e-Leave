@@ -2012,26 +2012,29 @@ button:focus {
 
 .credit-logic-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(10rem, 1fr));
-  gap: 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
 }
 
 .credit-logic-panel {
   min-width: 0;
-  padding: 0.78rem 0.85rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid rgba(102, 79, 178, 0.12);
-  border-radius: 14px;
+  border-radius: 8px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(240, 235, 255, 0.68));
 }
 
 .credit-logic-panel strong {
   display: block;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.16rem;
   color: var(--navy);
+  font-size: 0.88rem;
 }
 
 .credit-logic-panel p {
   margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.28;
 }
 
 .credit-formula {
@@ -2039,10 +2042,10 @@ button:focus {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem 0.9rem;
-  margin-top: 0.75rem;
-  padding: 0.78rem 0.9rem;
-  border-radius: 14px;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.55rem;
+  padding: 0.6rem 0.72rem;
+  border-radius: 10px;
   background: linear-gradient(135deg, rgba(75, 35, 184, 0.96), rgba(78, 166, 245, 0.84));
   color: #fff;
 }
@@ -2054,17 +2057,27 @@ button:focus {
 }
 
 .credit-formula strong {
-  font-size: 1rem;
+  font-size: 0.88rem;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
 .credit-rules-card {
-  padding: 1.35rem;
+  padding: 0.85rem;
 }
 
 .credit-rules-card h3 {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.55rem;
+  font-size: 1.2rem;
+}
+
+.credit-table-card {
+  padding: 1.15rem;
+}
+
+.credit-table-card h3 {
+  margin-bottom: 0.55rem;
+  font-size: 1.2rem;
 }
 
 .credit-computation-table td:last-child {
@@ -2072,7 +2085,7 @@ button:focus {
 }
 
 .credit-computation-table {
-  min-width: 720px;
+  min-width: 640px;
 }
 
 #credit-computation-table {
@@ -2086,8 +2099,8 @@ button:focus {
 }
 
 .credit-deduction-status {
-  min-height: 1.25rem;
-  margin: 0 0 0.85rem;
+  min-height: 1rem;
+  margin: 0 0 0.45rem;
   font-weight: 700;
   color: var(--success);
 }
@@ -2286,6 +2299,25 @@ button:focus {
   color: var(--ink-soft);
 }
 
+.credit-page .stats-grid {
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.credit-page .stat-card {
+  padding: 1.15rem;
+  border-radius: 18px;
+}
+
+.credit-page .stat-card strong {
+  margin-top: 0.35rem;
+  font-size: 1.45rem;
+}
+
+.credit-page .dashboard-grid {
+  gap: 0.9rem;
+}
+
 @media (max-width: 1180px) {
   .hero-shell,
   .overview-section,
@@ -2309,7 +2341,11 @@ button:focus {
   }
 
   .credit-rules-card {
-    padding: 1.1rem;
+    padding: 0.9rem;
+  }
+
+  .credit-table-card {
+    padding: 0.95rem;
   }
 
   .admin-request-card-grid {
@@ -2437,6 +2473,18 @@ button:focus {
   .credit-formula {
     display: grid;
     justify-items: start;
+  }
+
+  .credit-page .stat-card {
+    padding: 0.85rem;
+  }
+
+  .credit-page .stat-card strong {
+    font-size: 1.25rem;
+  }
+
+  .credit-computation-table {
+    min-width: 520px;
   }
 
   .brand {
