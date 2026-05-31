@@ -2683,9 +2683,12 @@
       return getLocalEmployeeDeductionLogs(profile);
     }
 
-    const { data, error } = await db.rpc("get_credit_deduction_logs", {
-      p_employee_id: profile.id
-    });
+    const { data, error } = await db
+      .from("credit_deduction_logs")
+      .select("employee_name, employee_no, minutes, entries, deduction, reason, before_credits, after_credits, created_at")
+      .eq("employee_id", profile.id)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
 
     if (error) {
       window.alert(`Unable to load online deduction logs: ${error.message}`);
@@ -2711,16 +2714,17 @@
 
   async function saveCreditDeductionLog(profile, entry) {
     if (db) {
-      const { error } = await db.rpc("create_credit_deduction_log", {
-        p_employee_id: profile.id,
-        p_employee_name: getEmployeeDisplayName(profile),
-        p_employee_no: profile.employee_no || "",
-        p_minutes: Number(entry.minutes || 0),
-        p_entries: entry.entries || [],
-        p_deduction: entry.deduction,
-        p_reason: entry.reason,
-        p_before_credits: entry.beforeCredits,
-        p_after_credits: entry.afterCredits
+      const { error } = await db.from("credit_deduction_logs").insert({
+        employee_id: profile.id,
+        employee_name: getEmployeeDisplayName(profile),
+        employee_no: profile.employee_no || null,
+        minutes: Number(entry.minutes || 0),
+        entries: entry.entries || [],
+        deduction: entry.deduction,
+        reason: entry.reason,
+        before_credits: entry.beforeCredits,
+        after_credits: entry.afterCredits,
+        created_at: entry.createdAt
       });
 
       if (error) {
