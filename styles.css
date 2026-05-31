@@ -1058,6 +1058,19 @@ button:focus {
   line-height: 1.18;
 }
 
+.leave-type-grid .leave-option span {
+  padding-left: 0;
+}
+
+.leave-type-grid .leave-option strong {
+  font-weight: 800;
+}
+
+.leave-type-grid .leave-option small {
+  font-size: 0.52rem;
+  line-height: 1.1;
+}
+
 .leave-option input {
   width: 0.72rem;
   height: 0.72rem;

@@ -98,6 +98,21 @@
     adoption: "Adoption Leave",
     others: "Others"
   };
+  const leavePaperTypeOptions = [
+    ["vacation", "Vacation Leave", "Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["mandatory-forced", "Mandatory/Forced Leave", "Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["sick", "Sick Leave", "Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["maternity", "Maternity Leave", "R.A. No. 11210 / IRR issued by CSC, DOLE and SSS"],
+    ["paternity", "Paternity Leave", "R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended"],
+    ["special-privilege", "Special Privilege Leave", "Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["solo-parent", "Solo Parent Leave", "R.A. No. 8972 / CSC MC No. 8, s. 2004"],
+    ["study", "Study Leave", "Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["vawc", "10-Day VAWC Leave", "R.A. No. 9262 / CSC MC No. 15, s. 2005"],
+    ["rehabilitation-privilege", "Rehabilitation Privilege", "Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292"],
+    ["special-benefits-women", "Special Leave Benefits for Women", "R.A. No. 9710 / CSC MC No. 25, s. 2010"],
+    ["special-emergency-calamity", "Special Emergency (Calamity) Leave", "CSC MC No. 2, s. 2012, as amended"],
+    ["adoption", "Adoption Leave", "R.A. No. 8552"]
+  ];
 
   if (isConfigured && window.supabase && typeof window.supabase.createClient === "function") {
     supabase = window.supabase.createClient(config.url, config.anonKey);
@@ -1073,7 +1088,6 @@
             <div class="admin-request-card-meta">${escapeHtml(formatLeaveType(request.leave_type))}</div>
             <div class="admin-request-card-meta">${escapeHtml(formatLeaveDateSummary(request))}</div>
             <div class="admin-request-card-meta">${escapeHtml(String(request.days_requested))} day(s)</div>
-            <p>${escapeHtml(request.reason)}</p>
             <div class="table-actions">
               <button type="button" class="button button-muted" data-view-request="${request.id}">View</button>
               <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
@@ -1410,7 +1424,10 @@
     const sickLeaveNotes = request.sick_leave_notes && typeof request.sick_leave_notes === "object" ? request.sick_leave_notes : {};
     const leavePurposeNotes = request.leave_purpose_notes && typeof request.leave_purpose_notes === "object" ? request.leave_purpose_notes : {};
     const creditSnapshot = buildLeaveCreditSnapshot(request);
-    const creditCells = buildCreditCellValues(request, creditSnapshot);
+    const shouldShowCreditComputation = String(request.commutation || "") === "requested";
+    const creditCells = shouldShowCreditComputation
+      ? buildCreditCellValues(request, creditSnapshot)
+      : buildBlankCreditCellValues();
     const recommendationDetails = getRecommendationDetailsDisplay(request.recommendation_details);
     const approvedOtherDetails = getApprovedOtherDetailsDisplay(request.approved_other_details);
 
@@ -1481,21 +1498,7 @@
             <fieldset class="leave-paper-panel">
               <legend>6.A Type of Leave to Be Availed Of</legend>
               <div class="leave-type-grid">
-                ${renderLeavePaperOptionInput("radio", "leaveType", "vacation", "Vacation Leave", leaveType === "vacation", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "mandatory-forced", "Mandatory/Forced Leave", leaveType === "mandatory-forced", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "sick", "Sick Leave", leaveType === "sick", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "maternity", "Maternity Leave", leaveType === "maternity", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "paternity", "Paternity Leave", leaveType === "paternity", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "special-privilege", "Special Privilege Leave", leaveType === "special-privilege", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "wellness", "Wellness Leave", leaveType === "wellness", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "solo-parent", "Solo Parent Leave", leaveType === "solo-parent", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "study", "Study Leave", leaveType === "study", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "vawc", "10-Day VAWC Leave", leaveType === "vawc", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "rehabilitation-privilege", "Rehabilitation Privilege", leaveType === "rehabilitation-privilege", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "special-benefits-women", "Special Leave Benefits for Women", leaveType === "special-benefits-women", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "special-emergency-calamity", "Special Emergency (Calamity) Leave", leaveType === "special-emergency-calamity", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "adoption", "Adoption Leave", leaveType === "adoption", true)}
-                ${renderLeavePaperOptionInput("radio", "leaveType", "others", "Others", leaveType === "others", true)}
+                ${leavePaperTypeOptions.map(([value, label, reference]) => renderLeavePaperLeaveTypeOption(value, label, reference, leaveType === value, true)).join("")}
               </div>
               <div class="leave-paper-other-line">
                 <span>Others:</span>
@@ -1547,10 +1550,6 @@
                 </div>
               </div>
 
-              <div class="field leave-paper-reason-field">
-                <label>Specify Purpose / Reason / Details</label>
-                <div class="leave-paper-readonly">${escapeHtml(request.reason || "")}</div>
-              </div>
             </fieldset>
           </div>
 
@@ -1587,7 +1586,7 @@
           <div class="leave-paper-row leave-paper-row-action">
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.A Certification of Leave Credits</span>
-              <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line">${escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf))}</span></div>
+              <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line">${shouldShowCreditComputation ? escapeHtml(formatDateDisplay(creditSnapshot.creditAsOf)) : ""}</span></div>
               <table class="leave-paper-credit-table" aria-label="Leave credits certification">
                 <thead>
                   <tr>
@@ -1670,6 +1669,15 @@
       <label class="leave-option">
         <input type="${type}" name="${escapeAttribute(name)}" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
         <span>${escapeHtml(label)}</span>
+      </label>
+    `;
+  }
+
+  function renderLeavePaperLeaveTypeOption(value, label, reference, isChecked, isDisabled = false) {
+    return `
+      <label class="leave-option leave-type-option">
+        <input type="radio" name="leaveType" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
+        <span><strong>${escapeHtml(label)}</strong> <small>${escapeHtml(reference)}</small></span>
       </label>
     `;
   }
@@ -1991,6 +1999,16 @@
             font-size: 9px;
             line-height: 1.2;
           }
+          .leave-type-grid .leave-option span {
+            padding-left: 0;
+          }
+          .leave-type-grid .leave-option strong {
+            font-weight: 800;
+          }
+          .leave-type-grid .leave-option small {
+            font-size: 6.5px;
+            line-height: 1.05;
+          }
           .leave-option input {
             width: 2.8mm;
             height: 2.8mm;
@@ -2264,6 +2282,21 @@
         current: useSickColumn ? formatNumberDisplay(snapshot.currentCredits) : "-",
         deduction: useSickColumn ? formatNumberDisplay(snapshot.deduction) : "-",
         balance: useSickColumn ? formatNumberDisplay(snapshot.projectedBalance) : "-"
+      }
+    };
+  }
+
+  function buildBlankCreditCellValues() {
+    return {
+      vacation: {
+        current: "",
+        deduction: "",
+        balance: ""
+      },
+      sick: {
+        current: "",
+        deduction: "",
+        balance: ""
       }
     };
   }
