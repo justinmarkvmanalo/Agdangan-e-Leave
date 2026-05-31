@@ -2012,14 +2012,15 @@ button:focus {
 
 .credit-logic-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+  gap: 0.7rem;
 }
 
 .credit-logic-panel {
-  padding: 1rem 1.05rem;
+  min-width: 0;
+  padding: 0.78rem 0.85rem;
   border: 1px solid rgba(102, 79, 178, 0.12);
-  border-radius: 20px;
+  border-radius: 14px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(240, 235, 255, 0.68));
 }
 
@@ -2037,10 +2038,11 @@ button:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding: 1rem 1.15rem;
-  border-radius: 22px;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  margin-top: 0.75rem;
+  padding: 0.78rem 0.9rem;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(75, 35, 184, 0.96), rgba(78, 166, 245, 0.84));
   color: #fff;
 }
@@ -2053,6 +2055,16 @@ button:focus {
 
 .credit-formula strong {
   font-size: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.credit-rules-card {
+  padding: 1.35rem;
+}
+
+.credit-rules-card h3 {
+  margin-bottom: 0.8rem;
 }
 
 .credit-computation-table td:last-child {
@@ -2293,7 +2305,11 @@ button:focus {
   }
 
   .credit-logic-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .credit-rules-card {
+    padding: 1.1rem;
   }
 
   .admin-request-card-grid {
@@ -2412,6 +2428,15 @@ button:focus {
   .dashboard-header {
     padding: 1.2rem;
     border-radius: 20px;
+  }
+
+  .credit-logic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-formula {
+    display: grid;
+    justify-items: start;
   }
 
   .brand {
