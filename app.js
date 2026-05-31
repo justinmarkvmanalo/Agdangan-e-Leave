@@ -2399,14 +2399,14 @@
     });
 
     Array.from(container.querySelectorAll("[data-download-deduction-log]")).forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
         const employeeId = Number(button.getAttribute("data-download-deduction-log"));
         const profile = getAdminEmployeeProfileById(employeeId);
         if (!profile) {
           return;
         }
 
-        downloadEmployeeDeductionLog(profile);
+        await downloadEmployeeDeductionLog(profile);
       });
     });
   }
@@ -2595,7 +2595,7 @@
       return;
     }
 
-    saveCreditDeductionLog(profile, {
+    await saveCreditDeductionLog(profile, {
       minutes,
       entries,
       deduction,
@@ -2665,7 +2665,7 @@
       .trim() || "Employee";
   }
 
-  function getCreditDeductionLogs() {
+  function getLocalCreditDeductionLogs() {
     try {
       const parsed = JSON.parse(window.localStorage.getItem(creditDeductionLogKey) || "{}");
       return parsed && typeof parsed === "object" ? parsed : {};
@@ -2674,8 +2674,62 @@
     }
   }
 
-  function saveCreditDeductionLog(profile, entry) {
-    const logs = getCreditDeductionLogs();
+  function getLocalEmployeeDeductionLogs(profile) {
+    return getLocalCreditDeductionLogs()[String(profile.id)] || [];
+  }
+
+  async function getEmployeeDeductionLogs(profile) {
+    if (!db) {
+      return getLocalEmployeeDeductionLogs(profile);
+    }
+
+    const { data, error } = await db.rpc("get_credit_deduction_logs", {
+      p_employee_id: profile.id
+    });
+
+    if (error) {
+      window.alert(`Unable to load online deduction logs: ${error.message}`);
+      return [];
+    }
+
+    return Array.isArray(data) ? data.map(normalizeCreditDeductionLog) : [];
+  }
+
+  function normalizeCreditDeductionLog(entry) {
+    return {
+      employeeName: entry.employee_name || entry.employeeName || "",
+      employeeNo: entry.employee_no || entry.employeeNo || "",
+      minutes: Number(entry.minutes || 0),
+      entries: Array.isArray(entry.entries) ? entry.entries : [],
+      deduction: Number(entry.deduction || 0),
+      reason: entry.reason || "",
+      beforeCredits: Number(entry.before_credits ?? entry.beforeCredits ?? 0),
+      afterCredits: Number(entry.after_credits ?? entry.afterCredits ?? 0),
+      createdAt: entry.created_at || entry.createdAt || new Date().toISOString()
+    };
+  }
+
+  async function saveCreditDeductionLog(profile, entry) {
+    if (db) {
+      const { error } = await db.rpc("create_credit_deduction_log", {
+        p_employee_id: profile.id,
+        p_employee_name: getEmployeeDisplayName(profile),
+        p_employee_no: profile.employee_no || "",
+        p_minutes: Number(entry.minutes || 0),
+        p_entries: entry.entries || [],
+        p_deduction: entry.deduction,
+        p_reason: entry.reason,
+        p_before_credits: entry.beforeCredits,
+        p_after_credits: entry.afterCredits
+      });
+
+      if (error) {
+        window.alert(`Credit was updated, but the online deduction log was not saved: ${error.message}`);
+      }
+      return;
+    }
+
+    const logs = getLocalCreditDeductionLogs();
     const employeeKey = String(profile.id);
     logs[employeeKey] = Array.isArray(logs[employeeKey]) ? logs[employeeKey] : [];
     logs[employeeKey].push({
@@ -2686,20 +2740,20 @@
     window.localStorage.setItem(creditDeductionLogKey, JSON.stringify(logs));
   }
 
-  function downloadEmployeeDeductionLog(profile) {
-    const logs = getCreditDeductionLogs()[String(profile.id)] || [];
+  async function downloadEmployeeDeductionLog(profile) {
+    const logs = await getEmployeeDeductionLogs(profile);
     const employeeName = getEmployeeDisplayName(profile);
     const lines = [
       `Employee: ${employeeName}`,
       `Employee No: ${profile.employee_no || "No employee number"}`,
       `Generated: ${new Date().toLocaleString()}`,
       "",
-      "Credit deduction records",
+      db ? "Online credit deduction records" : "Local demo credit deduction records",
       "========================"
     ];
 
     if (!logs.length) {
-      lines.push("No manual late-minute deductions recorded in this browser yet.");
+      lines.push(db ? "No online manual late-minute deductions recorded yet." : "No manual late-minute deductions recorded in this browser yet.");
     } else {
       logs.forEach((entry, index) => {
         lines.push(

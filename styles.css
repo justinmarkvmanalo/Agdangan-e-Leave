@@ -23,6 +23,15 @@
   box-sizing: border-box;
 }
 
+img,
+table,
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -1547,6 +1556,7 @@ button:focus {
   padding: 0.95rem 0.85rem;
   border-bottom: 1px solid rgba(102, 79, 178, 0.12);
   background: rgba(255, 255, 255, 0.74);
+  min-width: 0;
 }
 
 .employee-record-row:nth-child(even) {
@@ -1566,6 +1576,11 @@ button:focus {
 .employee-record-credit {
   color: var(--ink-soft);
   font-size: 0.88rem;
+}
+
+.employee-record-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .employee-management-dialog {
@@ -1661,6 +1676,7 @@ button:focus {
   border-radius: 0;
   background: rgba(255, 255, 255, 0.74);
   box-shadow: none;
+  min-width: 0;
 }
 
 .admin-request-card:nth-child(even) {
@@ -1691,6 +1707,11 @@ button:focus {
   margin: 0;
   color: var(--ink-soft);
   line-height: 1.55;
+}
+
+.admin-request-card > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-request-toolbar {
