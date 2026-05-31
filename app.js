@@ -2691,8 +2691,13 @@
       .order("id", { ascending: false });
 
     if (error) {
+      if (isMissingCreditDeductionLogTableError(error)) {
+        window.alert("Online deduction log storage is not set up yet. Run database/add-credit-deduction-logs.sql in Supabase SQL Editor. Showing local backup records for now.");
+        return getLocalEmployeeDeductionLogs(profile);
+      }
+
       window.alert(`Unable to load online deduction logs: ${error.message}`);
-      return [];
+      return getLocalEmployeeDeductionLogs(profile);
     }
 
     return Array.isArray(data) ? data.map(normalizeCreditDeductionLog) : [];
@@ -2728,11 +2733,20 @@
       });
 
       if (error) {
-        window.alert(`Credit was updated, but the online deduction log was not saved: ${error.message}`);
+        saveLocalCreditDeductionLog(profile, entry);
+        if (isMissingCreditDeductionLogTableError(error)) {
+          window.alert("Credit was updated, but online deduction log storage is not set up yet. Run database/add-credit-deduction-logs.sql in Supabase SQL Editor. A local backup copy was saved in this browser.");
+        } else {
+          window.alert(`Credit was updated, but the online deduction log was not saved: ${error.message}. A local backup copy was saved in this browser.`);
+        }
       }
       return;
     }
 
+    saveLocalCreditDeductionLog(profile, entry);
+  }
+
+  function saveLocalCreditDeductionLog(profile, entry) {
     const logs = getLocalCreditDeductionLogs();
     const employeeKey = String(profile.id);
     logs[employeeKey] = Array.isArray(logs[employeeKey]) ? logs[employeeKey] : [];
@@ -2742,6 +2756,15 @@
       ...entry
     });
     window.localStorage.setItem(creditDeductionLogKey, JSON.stringify(logs));
+  }
+
+  function isMissingCreditDeductionLogTableError(error) {
+    const message = String(error?.message || "").toLowerCase();
+    return message.includes("credit_deduction_logs") && (
+      message.includes("could not find the table") ||
+      message.includes("schema cache") ||
+      message.includes("does not exist")
+    );
   }
 
   async function downloadEmployeeDeductionLog(profile) {
