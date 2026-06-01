@@ -328,6 +328,7 @@ textarea {
 }
 
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -337,11 +338,60 @@ textarea {
   font-weight: 800;
   border: 0;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .button:hover {
   transform: translateY(-2px);
+}
+
+.button:disabled,
+.button.is-loading {
+  cursor: wait;
+  opacity: 0.82;
+}
+
+.button:disabled:hover,
+.button.is-loading:hover {
+  transform: none;
+}
+
+.button.is-loading::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.92), transparent);
+  animation: button-loading-progress 1s ease-in-out infinite;
+}
+
+.button-spinner {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: button-spinner 700ms linear infinite;
+}
+
+@keyframes button-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes button-loading-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .button-primary {

@@ -145,6 +145,65 @@
     }
   });
 
+  function beginFormSubmit(form, loadingText) {
+    if (!form || form.dataset.submitting === "true") {
+      return null;
+    }
+
+    form.dataset.submitting = "true";
+    form.classList.add("is-submitting");
+
+    const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+    const restoreButton = setButtonLoading(submitButton, loadingText);
+
+    return () => {
+      form.dataset.submitting = "false";
+      form.classList.remove("is-submitting");
+      restoreButton();
+    };
+  }
+
+  function setButtonLoading(button, loadingText) {
+    if (!button) {
+      return () => {};
+    }
+
+    if (button.dataset.loading === "true") {
+      return () => {};
+    }
+
+    button.dataset.loading = "true";
+    button.dataset.originalHtml = button.innerHTML;
+    button.dataset.originalDisabled = button.disabled ? "true" : "false";
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.classList.add("is-loading");
+    button.innerHTML = `<span class="button-spinner" aria-hidden="true"></span><span>${escapeHtml(loadingText || "Processing...")}</span>`;
+
+    return () => {
+      button.innerHTML = button.dataset.originalHtml || "";
+      button.disabled = button.dataset.originalDisabled === "true";
+      button.removeAttribute("aria-busy");
+      button.classList.remove("is-loading");
+      delete button.dataset.loading;
+      delete button.dataset.originalHtml;
+      delete button.dataset.originalDisabled;
+    };
+  }
+
+  async function runWithButtonLoading(button, loadingText, callback) {
+    if (button?.dataset.loading === "true") {
+      return null;
+    }
+
+    const restoreButton = setButtonLoading(button, loadingText);
+    try {
+      return await callback();
+    } finally {
+      restoreButton();
+    }
+  }
+
   function initLoginPage() {
     const configStatus = document.getElementById("config-status");
     const switchButtons = Array.from(document.querySelectorAll("[data-role-switch]"));
@@ -207,35 +266,44 @@
         return;
       }
 
-      const formData = new FormData(loginForm);
-      const email = String(formData.get("email") || "").trim().toLowerCase();
-      const password = String(formData.get("password") || "");
-      const selectedRole = String(formData.get("selectedRole") || "employee");
-
-      const { data, error } = await db.rpc("login_user", {
-        p_email: email,
-        p_password: password,
-        p_role: selectedRole
-      });
-
-      if (error) {
-        window.alert(error.message);
+      const finishSubmit = beginFormSubmit(loginForm, "Signing in...");
+      if (!finishSubmit) {
         return;
       }
 
-      const account = Array.isArray(data) ? data[0] : data;
-      if (!account) {
-        window.alert("Invalid login credentials.");
-        return;
+      try {
+        const formData = new FormData(loginForm);
+        const email = String(formData.get("email") || "").trim().toLowerCase();
+        const password = String(formData.get("password") || "");
+        const selectedRole = String(formData.get("selectedRole") || "employee");
+
+        const { data, error } = await db.rpc("login_user", {
+          p_email: email,
+          p_password: password,
+          p_role: selectedRole
+        });
+
+        if (error) {
+          window.alert(error.message);
+          return;
+        }
+
+        const account = Array.isArray(data) ? data[0] : data;
+        if (!account) {
+          window.alert("Invalid login credentials.");
+          return;
+        }
+
+        saveSession({
+          role: account.role,
+          userId: Number(account.user_id),
+          email: account.email
+        });
+
+        window.location.href = account.role === "admin" ? "/admin-dashboard" : "/employee-dashboard";
+      } finally {
+        finishSubmit();
       }
-
-      saveSession({
-        role: account.role,
-        userId: Number(account.user_id),
-        email: account.email
-      });
-
-      window.location.href = account.role === "admin" ? "/admin-dashboard" : "/employee-dashboard";
     });
   }
 
@@ -690,43 +758,52 @@
         return;
       }
 
-      const { error } = await db.rpc("create_leave_request", {
-        p_employee_id: payload.employee_id,
-        p_leave_type: payload.leave_type,
-        p_office_department: payload.office_department,
-        p_applicant_last_name: payload.applicant_last_name,
-        p_applicant_first_name: payload.applicant_first_name,
-        p_applicant_middle_name: payload.applicant_middle_name,
-        p_filing_date: payload.filing_date,
-        p_position_title: payload.position_title,
-        p_salary_display: payload.salary_display,
-        p_start_date: payload.start_date,
-        p_end_date: payload.end_date,
-        p_selected_leave_dates: payload.selected_leave_dates,
-        p_days_requested: payload.days_requested,
-        p_other_leave_details: payload.other_leave_details,
-        p_vacation_location: payload.vacation_location,
-        p_vacation_location_notes: payload.vacation_location_notes,
-        p_sick_leave_details: payload.sick_leave_details,
-        p_sick_leave_notes: payload.sick_leave_notes,
-        p_leave_purpose_details: payload.leave_purpose_details,
-        p_leave_purpose_notes: payload.leave_purpose_notes,
-        p_commutation: payload.commutation,
-        p_reason: payload.reason
-      });
-
-      if (error) {
-        window.alert(error.message);
+      const finishSubmit = beginFormSubmit(form, "Submitting...");
+      if (!finishSubmit) {
         return;
       }
 
-      form.reset();
-      selectedLeaveDates = [];
-      populateLeaveApplicationProfile(profile);
-      syncLeaveTypeState();
-      syncDateModeState();
-      await loadEmployeeRequests(profile.id);
-      window.alert("Leave request submitted.");
+      try {
+        const { error } = await db.rpc("create_leave_request", {
+          p_employee_id: payload.employee_id,
+          p_leave_type: payload.leave_type,
+          p_office_department: payload.office_department,
+          p_applicant_last_name: payload.applicant_last_name,
+          p_applicant_first_name: payload.applicant_first_name,
+          p_applicant_middle_name: payload.applicant_middle_name,
+          p_filing_date: payload.filing_date,
+          p_position_title: payload.position_title,
+          p_salary_display: payload.salary_display,
+          p_start_date: payload.start_date,
+          p_end_date: payload.end_date,
+          p_selected_leave_dates: payload.selected_leave_dates,
+          p_days_requested: payload.days_requested,
+          p_other_leave_details: payload.other_leave_details,
+          p_vacation_location: payload.vacation_location,
+          p_vacation_location_notes: payload.vacation_location_notes,
+          p_sick_leave_details: payload.sick_leave_details,
+          p_sick_leave_notes: payload.sick_leave_notes,
+          p_leave_purpose_details: payload.leave_purpose_details,
+          p_leave_purpose_notes: payload.leave_purpose_notes,
+          p_commutation: payload.commutation,
+          p_reason: payload.reason
+        });
+
+        if (error) {
+          window.alert(error.message);
+          return;
+        }
+
+        form.reset();
+        selectedLeaveDates = [];
+        populateLeaveApplicationProfile(profile);
+        syncLeaveTypeState();
+        syncDateModeState();
+        await loadEmployeeRequests(profile.id);
+        window.alert("Leave request submitted.");
+      } finally {
+        finishSubmit();
+      }
     });
   }
 
@@ -876,12 +953,21 @@
         return;
       }
 
-      if (employeeId) {
-        await updateEmployeeAccount(employeeId, payload);
+      const finishSubmit = beginFormSubmit(form, employeeId ? "Updating..." : "Creating...");
+      if (!finishSubmit) {
         return;
       }
 
-      await createEmployeeAccount(payload);
+      try {
+        if (employeeId) {
+          await updateEmployeeAccount(employeeId, payload);
+          return;
+        }
+
+        await createEmployeeAccount(payload);
+      } finally {
+        finishSubmit();
+      }
     });
 
     if (cancelButton) {
@@ -1149,40 +1235,46 @@
 
     const adminRequestForm = container.querySelector("[data-admin-request-form]");
 
-    container.querySelector("[data-admin-save-request]")?.addEventListener("click", async () => {
-      await saveAdminRequestDetails(request.id, adminRequestForm);
+    container.querySelector("[data-admin-save-request]")?.addEventListener("click", async (event) => {
+      await runWithButtonLoading(event.currentTarget, "Saving...", async () => {
+        await saveAdminRequestDetails(request.id, adminRequestForm);
+      });
     });
 
-    container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async () => {
-      if (adminRequestForm) {
-        const recommendationApproved = adminRequestForm.querySelector('input[name="recommendation"][value="approved"]');
-        if (recommendationApproved) {
-          recommendationApproved.checked = true;
+    container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async (event) => {
+      await runWithButtonLoading(event.currentTarget, "Approving...", async () => {
+        if (adminRequestForm) {
+          const recommendationApproved = adminRequestForm.querySelector('input[name="recommendation"][value="approved"]');
+          if (recommendationApproved) {
+            recommendationApproved.checked = true;
+          }
+
+          const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
+          if (!saved) {
+            return;
+          }
         }
 
-        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
-        if (!saved) {
-          return;
-        }
-      }
-
-      await updateLeaveStatus(request.id, "approved");
+        await updateLeaveStatus(request.id, "approved");
+      });
     });
 
-    container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async () => {
-      if (adminRequestForm) {
-        const recommendationRejected = adminRequestForm.querySelector('input[name="recommendation"][value="rejected"]');
-        if (recommendationRejected) {
-          recommendationRejected.checked = true;
+    container.querySelector("[data-admin-reject-request]")?.addEventListener("click", async (event) => {
+      await runWithButtonLoading(event.currentTarget, "Rejecting...", async () => {
+        if (adminRequestForm) {
+          const recommendationRejected = adminRequestForm.querySelector('input[name="recommendation"][value="rejected"]');
+          if (recommendationRejected) {
+            recommendationRejected.checked = true;
+          }
+
+          const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
+          if (!saved) {
+            return;
+          }
         }
 
-        const saved = await saveAdminRequestDetails(request.id, adminRequestForm, { silent: true });
-        if (!saved) {
-          return;
-        }
-      }
-
-      await updateLeaveStatus(request.id, "rejected");
+        await updateLeaveStatus(request.id, "rejected");
+      });
     });
   }
 
@@ -2452,7 +2544,22 @@
       const formData = new FormData(form);
       const minutes = Number(formData.get("lateMinutes"));
       const reason = String(formData.get("deductionReason") || "").trim();
-      await handleLateMinuteDeduction(selectedCreditDeductionProfile, minutes, reason, creditDeductionEntries);
+
+      if (!Number.isFinite(minutes) || minutes <= 0) {
+        setText("credit-deduction-error", "Add at least one late-minute entry.");
+        return;
+      }
+
+      const finishSubmit = beginFormSubmit(form, "Applying...");
+      if (!finishSubmit) {
+        return;
+      }
+
+      try {
+        await handleLateMinuteDeduction(selectedCreditDeductionProfile, minutes, reason, creditDeductionEntries);
+      } finally {
+        finishSubmit();
+      }
     });
   }
 
