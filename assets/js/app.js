@@ -2702,43 +2702,21 @@
     return getLocalCreditDeductionLogs()[String(profile.id)] || [];
   }
 
-  async function requestFileDeductionLogs(profile, entry = null) {
-    try {
-      const params = new URLSearchParams({ employeeId: String(profile.id) });
-      const response = await fetch(`/api/deduction-logs?${params.toString()}`, entry
-        ? {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            employee: {
-              id: profile.id,
-              name: getEmployeeDisplayName(profile),
-              employeeNo: profile.employee_no || "",
-              leaveCredits: profile.leave_credits
-            },
-            entry
-          })
-        }
-        : undefined);
-
-      if (!response.ok) {
-        return { data: null, error: { message: "File deduction log storage is not available." } };
-      }
-
-      const payload = await response.json();
-      return { data: payload.data || [], error: payload.error || null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  }
-
   async function getEmployeeDeductionLogs(profile) {
-    const { data, error } = await requestFileDeductionLogs(profile);
-    if (!error && Array.isArray(data)) {
-      return data.map(normalizeCreditDeductionLog);
+    if (!db) {
+      return getLocalEmployeeDeductionLogs(profile);
     }
 
-    return getLocalEmployeeDeductionLogs(profile);
+    const { data, error } = await db.rpc("get_credit_deduction_logs", {
+      p_employee_id: profile.id
+    });
+
+    if (error) {
+      window.alert(`Unable to load deduction logs: ${error.message}`);
+      return getLocalEmployeeDeductionLogs(profile);
+    }
+
+    return Array.isArray(data) ? data.map(normalizeCreditDeductionLog) : [];
   }
 
   function normalizeCreditDeductionLog(entry) {
@@ -2756,13 +2734,27 @@
   }
 
   async function saveCreditDeductionLog(profile, entry) {
-    const { error } = await requestFileDeductionLogs(profile, entry);
-    if (!error) {
+    if (!db) {
+      saveLocalCreditDeductionLog(profile, entry);
       return;
     }
 
-    saveLocalCreditDeductionLog(profile, entry);
-    window.alert("Credit was updated, but the text-file deduction log was not saved because the local file server is not available. A local browser backup was saved.");
+    const { error } = await db.rpc("create_credit_deduction_log", {
+      p_employee_id: profile.id,
+      p_employee_name: getEmployeeDisplayName(profile),
+      p_employee_no: profile.employee_no || null,
+      p_minutes: Number(entry.minutes || 0),
+      p_entries: entry.entries || [],
+      p_deduction: entry.deduction,
+      p_reason: entry.reason,
+      p_before_credits: entry.beforeCredits,
+      p_after_credits: entry.afterCredits
+    });
+
+    if (error) {
+      saveLocalCreditDeductionLog(profile, entry);
+      window.alert(`Credit was updated, but the Supabase deduction log was not saved: ${error.message}. A local browser backup was saved.`);
+    }
   }
 
   function saveLocalCreditDeductionLog(profile, entry) {
@@ -2785,12 +2777,12 @@
       `Employee No: ${profile.employee_no || "No employee number"}`,
       `Generated: ${new Date().toLocaleString()}`,
       "",
-      "Text-file credit deduction records",
+      db ? "Supabase credit deduction records" : "Local demo credit deduction records",
       "========================"
     ];
 
     if (!logs.length) {
-      lines.push("No manual late-minute deductions recorded yet.");
+      lines.push(db ? "No Supabase manual late-minute deductions recorded yet." : "No manual late-minute deductions recorded in this browser yet.");
     } else {
       logs.forEach((entry, index) => {
         lines.push(

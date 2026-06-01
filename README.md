@@ -1,14 +1,8 @@
 # Agdangan-e-Leave
 
-Run the local server:
+Open the site with any static web server or deploy it to Vercel.
 
-```bash
-node backend/server.js
-```
-
-Open `http://localhost:3000`.
-
-The app still uses Supabase for its main data. Only manual late-minute credit deduction logs are saved through file handling in `file-data/credit-deduction-logs.txt`.
+The app uses Supabase for admins, employees, leave requests, leave credits, and manual late-minute deduction logs.
 
 Folder layout:
 
@@ -16,7 +10,5 @@ Folder layout:
 - `assets/css/`: shared styles
 - `assets/js/`: shared browser scripts and Supabase config
 - `assets/images/`, `assets/vendor/`: images and third-party browser libraries
-- `backend/`: local Node server for file handling
 - `database/`: Supabase SQL setup files
 - `docs/`: setup notes
-- `file-data/`: local text-file deduction logs
