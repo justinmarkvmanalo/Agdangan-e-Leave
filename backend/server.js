@@ -27,6 +27,11 @@ function ensureFiles() {
   }
 }
 
+function compactExistingDeductionLogFile() {
+  const logs = readDeductionLogs();
+  writeDeductionLogs(logs);
+}
+
 function readDeductionLogs() {
   ensureFiles();
   const text = fs.readFileSync(deductionLogFile, "utf8").trim();
@@ -35,7 +40,8 @@ function readDeductionLogs() {
   }
 
   try {
-    return JSON.parse(text);
+    const logs = JSON.parse(text);
+    return Array.isArray(logs) ? logs.map(expandStoredLog) : [];
   } catch (error) {
     return [];
   }
@@ -43,7 +49,7 @@ function readDeductionLogs() {
 
 function writeDeductionLogs(logs) {
   ensureFiles();
-  fs.writeFileSync(deductionLogFile, JSON.stringify(logs, null, 2));
+  fs.writeFileSync(deductionLogFile, JSON.stringify(logs.map(compactLog)));
 }
 
 function normalizeLog(body) {
@@ -62,6 +68,60 @@ function normalizeLog(body) {
     after_credits: Number(entry.afterCredits || 0),
     created_at: entry.createdAt || new Date().toISOString()
   };
+}
+
+function compactLog(log) {
+  return {
+    i: Number(log.employee_id || log.i || 0),
+    n: log.employee_name || log.n || "Employee",
+    no: log.employee_no || log.no || "",
+    c: roundNumber(log.current_credits ?? log.c ?? log.after_credits ?? log.a ?? 0),
+    m: Number(log.minutes || log.m || 0),
+    e: compactEntries(log.entries || log.e || []),
+    d: roundNumber(log.deduction ?? log.d ?? 0),
+    r: log.reason || log.r || "",
+    b: roundNumber(log.before_credits ?? log.b ?? 0),
+    a: roundNumber(log.after_credits ?? log.a ?? 0),
+    t: log.created_at || log.t || new Date().toISOString()
+  };
+}
+
+function expandStoredLog(log) {
+  if (Object.prototype.hasOwnProperty.call(log, "employee_id")) {
+    return log;
+  }
+
+  return {
+    employee_id: Number(log.i || 0),
+    employee_name: log.n || "Employee",
+    employee_no: log.no || "",
+    current_credits: Number(log.c || 0),
+    minutes: Number(log.m || 0),
+    entries: expandEntries(log.e || []),
+    deduction: Number(log.d || 0),
+    reason: log.r || "",
+    before_credits: Number(log.b || 0),
+    after_credits: Number(log.a || 0),
+    created_at: log.t || new Date().toISOString()
+  };
+}
+
+function compactEntries(entries) {
+  return entries.map((entry) => ({
+    m: Number(entry.minutes || entry.m || 0),
+    n: entry.note || entry.n || ""
+  }));
+}
+
+function expandEntries(entries) {
+  return entries.map((entry) => ({
+    minutes: Number(entry.m || entry.minutes || 0),
+    note: entry.n || entry.note || ""
+  }));
+}
+
+function roundNumber(value) {
+  return Number(Number(value || 0).toFixed(3));
 }
 
 function sendJson(response, status, payload) {
@@ -109,6 +169,7 @@ function serveStatic(response, url) {
 }
 
 ensureFiles();
+compactExistingDeductionLogFile();
 
 http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
