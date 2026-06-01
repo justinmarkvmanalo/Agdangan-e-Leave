@@ -123,6 +123,11 @@
   const isEmployeeDashboardPage = /^\/employee-dashboard(?:\/index\.html)?$/.test(normalizedPath);
   const isAdminDashboardPage = /^\/admin-dashboard(?:\/index\.html)?$/.test(normalizedPath);
   const isCreditComputationPage = /^\/credit-computation(?:\/index\.html)?$/.test(normalizedPath);
+  const nativeAlert = window.alert.bind(window);
+  let activeSystemAlert = null;
+  let lastSystemAlertFocus = null;
+
+  window.alert = showSystemAlert;
 
   document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("login-form")) {
@@ -144,6 +149,79 @@
       initCreditComputationPage();
     }
   });
+
+  function showSystemAlert(message, options = {}) {
+    const text = String(message || "Something needs your attention.");
+    if (!document.body) {
+      nativeAlert(text);
+      return;
+    }
+
+    closeSystemAlert();
+
+    const variant = options.variant || getAlertVariant(text);
+    const title = options.title || getAlertTitle(variant);
+    const icon = variant === "success" ? "OK" : "!";
+    const alert = document.createElement("div");
+    alert.className = `system-alert system-alert-${variant}`;
+    alert.setAttribute("role", "alertdialog");
+    alert.setAttribute("aria-modal", "true");
+    alert.setAttribute("aria-labelledby", "system-alert-title");
+    alert.setAttribute("aria-describedby", "system-alert-message");
+    alert.innerHTML = `
+      <div class="system-alert-backdrop" data-system-alert-close></div>
+      <div class="system-alert-dialog" tabindex="-1">
+        <div class="system-alert-icon" aria-hidden="true">${icon}</div>
+        <div class="system-alert-copy">
+          <h3 id="system-alert-title">${escapeHtml(title)}</h3>
+          <p id="system-alert-message">${escapeHtml(text)}</p>
+        </div>
+        <button type="button" class="button button-primary system-alert-action" data-system-alert-close>OK</button>
+      </div>
+    `;
+
+    activeSystemAlert = alert;
+    lastSystemAlertFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.body.appendChild(alert);
+
+    Array.from(alert.querySelectorAll("[data-system-alert-close]")).forEach((element) => {
+      element.addEventListener("click", closeSystemAlert);
+    });
+
+    alert.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" || event.key === "Enter") {
+        event.preventDefault();
+        closeSystemAlert();
+      }
+    });
+
+    alert.querySelector(".system-alert-dialog")?.focus();
+  }
+
+  function closeSystemAlert() {
+    if (!activeSystemAlert) {
+      return;
+    }
+
+    activeSystemAlert.remove();
+    activeSystemAlert = null;
+    if (lastSystemAlertFocus && document.body.contains(lastSystemAlertFocus)) {
+      lastSystemAlertFocus.focus();
+    }
+    lastSystemAlertFocus = null;
+  }
+
+  function getAlertVariant(message) {
+    if (/submitted|created|updated|deleted|saved|deducted/i.test(message)) {
+      return "success";
+    }
+
+    return "notice";
+  }
+
+  function getAlertTitle(variant) {
+    return variant === "success" ? "Done" : "Notice";
+  }
 
   function beginFormSubmit(form, loadingText) {
     if (!form || form.dataset.submitting === "true") {

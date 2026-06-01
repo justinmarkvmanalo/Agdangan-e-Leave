@@ -747,6 +747,78 @@ button:focus {
   display: none !important;
 }
 
+.system-alert {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.system-alert-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 20, 36, 0.54);
+  backdrop-filter: blur(10px);
+}
+
+.system-alert-dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  width: min(100%, 440px);
+  padding: 1.35rem;
+  border: 1px solid rgba(102, 79, 178, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 26px 70px rgba(24, 20, 66, 0.28);
+}
+
+.system-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  background: var(--violet-soft);
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.system-alert-success .system-alert-icon {
+  background: rgba(38, 163, 109, 0.12);
+  color: var(--success);
+}
+
+.system-alert-copy {
+  min-width: 0;
+}
+
+.system-alert-copy h3 {
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  font-size: 1.1rem;
+}
+
+.system-alert-copy p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.system-alert-action {
+  grid-column: 2;
+  justify-self: end;
+  margin-top: 0.15rem;
+  padding: 0.75rem 1.15rem;
+  border-radius: 14px;
+}
+
 .page-shell {
   padding: 2rem 2rem 4rem;
   width: min(100%, 84rem);
