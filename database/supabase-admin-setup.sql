@@ -1,5 +1,5 @@
 -- Optional admin update for the basic table-based schema.
--- Run this after supabase-schema.sql if you want to replace the default seeded admin details.
+-- Run this after database/supabase-schema.sql if you want to replace the default seeded admin details.
 
 update public.admins
 set

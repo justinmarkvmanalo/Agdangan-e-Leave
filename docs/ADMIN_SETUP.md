@@ -18,8 +18,8 @@ Relationship flow:
 Setup steps in Supabase:
 1. Open your Supabase project dashboard.
 2. Go to the SQL editor.
-3. Run the full SQL file from [supabase-schema.sql](/C:/Users/Justin%20Mark/OneDrive/Desktop/Agdangan%20e-Leave/supabase-schema.sql:1).
-4. Keep using your project URL and anon key in `supabase-config.js`.
+3. Run the full SQL file from `database/supabase-schema.sql`.
+4. Keep using your project URL and anon key in `assets/js/supabase-config.js`.
 
 RLS note:
 - This version is prepared for `RLS` to stay enabled on `admins`, `employees`, and `leave_requests`.

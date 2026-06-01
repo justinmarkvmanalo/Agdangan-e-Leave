@@ -171,7 +171,7 @@
       configStatus.hidden = isConfigured;
       configStatus.textContent = isConfigured
         ? ""
-        : "Supabase is not configured yet. Open supabase-config.js and set your project values first.";
+        : "Supabase is not configured yet. Open assets/js/supabase-config.js and set your project values first.";
     }
 
     switchButtons.forEach((button) => {
@@ -203,7 +203,7 @@
       event.preventDefault();
 
       if (!db) {
-        window.alert("Supabase is not configured yet. Update supabase-config.js first.");
+        window.alert("Supabase is not configured yet. Update assets/js/supabase-config.js first.");
         return;
       }
 
@@ -2702,29 +2702,43 @@
     return getLocalCreditDeductionLogs()[String(profile.id)] || [];
   }
 
-  async function getEmployeeDeductionLogs(profile) {
-    if (!db) {
-      return getLocalEmployeeDeductionLogs(profile);
-    }
+  async function requestFileDeductionLogs(profile, entry = null) {
+    try {
+      const params = new URLSearchParams({ employeeId: String(profile.id) });
+      const response = await fetch(`/api/deduction-logs?${params.toString()}`, entry
+        ? {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            employee: {
+              id: profile.id,
+              name: getEmployeeDisplayName(profile),
+              employeeNo: profile.employee_no || "",
+              leaveCredits: profile.leave_credits
+            },
+            entry
+          })
+        }
+        : undefined);
 
-    const { data, error } = await db
-      .from("credit_deduction_logs")
-      .select("employee_name, employee_no, minutes, entries, deduction, reason, before_credits, after_credits, created_at")
-      .eq("employee_id", profile.id)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false });
-
-    if (error) {
-      if (isMissingCreditDeductionLogTableError(error)) {
-        window.alert("Online deduction log storage is not set up yet. Run database/add-credit-deduction-logs.sql in Supabase SQL Editor. Showing local backup records for now.");
-        return getLocalEmployeeDeductionLogs(profile);
+      if (!response.ok) {
+        return { data: null, error: { message: "File deduction log storage is not available." } };
       }
 
-      window.alert(`Unable to load online deduction logs: ${error.message}`);
-      return getLocalEmployeeDeductionLogs(profile);
+      const payload = await response.json();
+      return { data: payload.data || [], error: payload.error || null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  }
+
+  async function getEmployeeDeductionLogs(profile) {
+    const { data, error } = await requestFileDeductionLogs(profile);
+    if (!error && Array.isArray(data)) {
+      return data.map(normalizeCreditDeductionLog);
     }
 
-    return Array.isArray(data) ? data.map(normalizeCreditDeductionLog) : [];
+    return getLocalEmployeeDeductionLogs(profile);
   }
 
   function normalizeCreditDeductionLog(entry) {
@@ -2742,34 +2756,13 @@
   }
 
   async function saveCreditDeductionLog(profile, entry) {
-    if (db) {
-      const { error } = await db.from("credit_deduction_logs").insert({
-        employee_id: profile.id,
-        employee_name: getEmployeeDisplayName(profile),
-        employee_no: profile.employee_no || null,
-        minutes: Number(entry.minutes || 0),
-        entries: entry.entries || [],
-        deduction: entry.deduction,
-        reason: entry.reason,
-        before_credits: entry.beforeCredits,
-        after_credits: entry.afterCredits,
-        created_at: entry.createdAt
-      });
-
-      if (error) {
-        saveLocalCreditDeductionLog(profile, entry);
-        if (isMissingCreditDeductionLogTableError(error)) {
-          window.alert("Credit was updated, but online deduction log storage is not set up yet. Run database/add-credit-deduction-logs.sql in Supabase SQL Editor. A local backup copy was saved in this browser.");
-        } else if (isCreditDeductionLogPolicyError(error)) {
-          window.alert("Credit was updated, but Supabase is blocking online deduction log inserts. Re-run the updated database/add-credit-deduction-logs.sql in Supabase SQL Editor to add the RLS policy. A local backup copy was saved in this browser.");
-        } else {
-          window.alert(`Credit was updated, but the online deduction log was not saved: ${error.message}. A local backup copy was saved in this browser.`);
-        }
-      }
+    const { error } = await requestFileDeductionLogs(profile, entry);
+    if (!error) {
       return;
     }
 
     saveLocalCreditDeductionLog(profile, entry);
+    window.alert("Credit was updated, but the text-file deduction log was not saved because the local file server is not available. A local browser backup was saved.");
   }
 
   function saveLocalCreditDeductionLog(profile, entry) {
@@ -2784,21 +2777,6 @@
     window.localStorage.setItem(creditDeductionLogKey, JSON.stringify(logs));
   }
 
-  function isMissingCreditDeductionLogTableError(error) {
-    const message = String(error?.message || "").toLowerCase();
-    return message.includes("credit_deduction_logs") && (
-      message.includes("could not find the table") ||
-      message.includes("schema cache") ||
-      message.includes("does not exist")
-    );
-  }
-
-  function isCreditDeductionLogPolicyError(error) {
-    const message = String(error?.message || "").toLowerCase();
-    return message.includes("credit_deduction_logs") &&
-      (message.includes("row-level security") || message.includes("violates row-level security"));
-  }
-
   async function downloadEmployeeDeductionLog(profile) {
     const logs = await getEmployeeDeductionLogs(profile);
     const employeeName = getEmployeeDisplayName(profile);
@@ -2807,12 +2785,12 @@
       `Employee No: ${profile.employee_no || "No employee number"}`,
       `Generated: ${new Date().toLocaleString()}`,
       "",
-      db ? "Online credit deduction records" : "Local demo credit deduction records",
+      "Text-file credit deduction records",
       "========================"
     ];
 
     if (!logs.length) {
-      lines.push(db ? "No online manual late-minute deductions recorded yet." : "No manual late-minute deductions recorded in this browser yet.");
+      lines.push("No manual late-minute deductions recorded yet.");
     } else {
       logs.forEach((entry, index) => {
         lines.push(
