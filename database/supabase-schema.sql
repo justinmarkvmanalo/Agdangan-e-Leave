@@ -73,9 +73,11 @@ create table if not exists public.leave_requests (
   credit_deduction_processed_at date,
   recommendation text,
   recommendation_details text,
+  recommendation_officer_name text,
   approved_with_pay_days integer,
   approved_without_pay_days integer,
   approved_other_details text,
+  approval_authorized_official_name text,
   disapproval_details text,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   reviewed_at timestamptz,
@@ -130,9 +132,11 @@ alter table public.leave_requests alter column credit_balance_sick type numeric(
 alter table public.leave_requests add column if not exists credit_deduction_processed_at date;
 alter table public.leave_requests add column if not exists recommendation text;
 alter table public.leave_requests add column if not exists recommendation_details text;
+alter table public.leave_requests add column if not exists recommendation_officer_name text;
 alter table public.leave_requests add column if not exists approved_with_pay_days integer;
 alter table public.leave_requests add column if not exists approved_without_pay_days integer;
 alter table public.leave_requests add column if not exists approved_other_details text;
+alter table public.leave_requests add column if not exists approval_authorized_official_name text;
 alter table public.leave_requests add column if not exists disapproval_details text;
 alter table public.employees add column if not exists last_credit_accrual_date date;
 update public.employees
@@ -511,9 +515,11 @@ create or replace function public.update_leave_request_details(
   p_credit_balance_sick numeric,
   p_recommendation text,
   p_recommendation_details text,
+  p_recommendation_officer_name text,
   p_approved_with_pay_days integer,
   p_approved_without_pay_days integer,
   p_approved_other_details text,
+  p_approval_authorized_official_name text,
   p_disapproval_details text
 )
 returns public.leave_requests
@@ -554,9 +560,11 @@ begin
     credit_balance_sick = p_credit_balance_sick,
     recommendation = nullif(trim(coalesce(p_recommendation, '')), ''),
     recommendation_details = nullif(trim(coalesce(p_recommendation_details, '')), ''),
+    recommendation_officer_name = nullif(trim(coalesce(p_recommendation_officer_name, '')), ''),
     approved_with_pay_days = p_approved_with_pay_days,
     approved_without_pay_days = p_approved_without_pay_days,
     approved_other_details = nullif(trim(coalesce(p_approved_other_details, '')), ''),
+    approval_authorized_official_name = nullif(trim(coalesce(p_approval_authorized_official_name, '')), ''),
     disapproval_details = nullif(trim(coalesce(p_disapproval_details, '')), ''),
     reviewed_by_admin_id = p_admin_id,
     reviewed_at = now()
@@ -689,6 +697,26 @@ begin
 end;
 $$;
 
+create or replace function public.get_leave_credit_deduction_days(
+  p_leave_type text,
+  p_days_requested integer
+)
+returns integer
+language sql
+immutable
+as $$
+  select greatest(
+    coalesce(p_days_requested, 0) - case lower(trim(coalesce(p_leave_type, '')))
+      when 'mandatory-forced' then 5
+      when 'wellness' then 5
+      when 'vacation' then 0
+      when 'sick' then 0
+      else coalesce(p_days_requested, 0)
+    end,
+    0
+  );
+$$;
+
 create or replace function public.update_leave_request_status(
   p_admin_id bigint,
   p_request_id bigint,
@@ -704,6 +732,8 @@ declare
   employee_record public.employees;
   credits_before_deduction numeric(10,3);
   credits_after_deduction numeric(10,3);
+  deduction_days integer;
+  previous_credit_deduction numeric(10,3);
   approved_with_pay integer;
   approved_without_pay integer;
   updated_request public.leave_requests;
@@ -725,11 +755,18 @@ begin
   end if;
 
   employee_record := public.apply_employee_monthly_leave_credit(request_record.employee_id);
+  deduction_days := public.get_leave_credit_deduction_days(request_record.leave_type, request_record.days_requested);
+  previous_credit_deduction := case
+    when request_record.credit_earned_vacation is not null
+      and request_record.credit_balance_vacation is not null
+      then greatest(request_record.credit_earned_vacation - request_record.credit_balance_vacation, 0)
+    else deduction_days
+  end;
 
   if request_record.status = 'approved'
     and p_status <> 'approved' then
     update public.employees
-    set leave_credits = round((coalesce(leave_credits, 0) + request_record.days_requested)::numeric, 3)
+    set leave_credits = round((coalesce(leave_credits, 0) + coalesce(previous_credit_deduction, deduction_days, 0))::numeric, 3)
     where id = request_record.employee_id
     returning * into employee_record;
   end if;
@@ -741,7 +778,7 @@ begin
 
   if p_status = 'approved' then
     if request_record.status <> 'approved' then
-      credits_after_deduction := greatest(credits_before_deduction - request_record.days_requested, 0);
+      credits_after_deduction := greatest(credits_before_deduction - deduction_days, 0);
 
       update public.employees
       set leave_credits = round(credits_after_deduction::numeric, 3)
@@ -749,7 +786,10 @@ begin
       returning * into employee_record;
     end if;
 
-    approved_with_pay := least(floor(credits_before_deduction)::integer, request_record.days_requested);
+    approved_with_pay := least(
+      request_record.days_requested,
+      (request_record.days_requested - deduction_days) + floor(credits_before_deduction)::integer
+    );
     approved_without_pay := greatest(request_record.days_requested - approved_with_pay, 0);
   end if;
 
@@ -765,11 +805,15 @@ begin
     credit_balance_sick = credits_after_deduction,
     credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
-    recommendation_details = case when p_status = 'rejected' then 'Request disapproved.' else null end,
-    approved_with_pay_days = case when p_status = 'approved' then approved_with_pay else null end,
-    approved_without_pay_days = case when p_status = 'approved' then approved_without_pay else null end,
-    approved_other_details = null,
-    disapproval_details = case when p_status = 'rejected' then 'Rejected by administrator.' else null end
+    recommendation_details = case
+      when p_status = 'approved' then request_record.recommendation_details
+      when p_status = 'rejected' then coalesce(request_record.recommendation_details, 'Request disapproved.')
+      else null
+    end,
+    approved_with_pay_days = case when p_status = 'approved' then coalesce(request_record.approved_with_pay_days, approved_with_pay) else null end,
+    approved_without_pay_days = case when p_status = 'approved' then coalesce(request_record.approved_without_pay_days, approved_without_pay) else null end,
+    approved_other_details = case when p_status = 'approved' then request_record.approved_other_details else null end,
+    disapproval_details = case when p_status = 'rejected' then coalesce(request_record.disapproval_details, 'Rejected by administrator.') else null end
   where id = p_request_id
   returning * into updated_request;
 
