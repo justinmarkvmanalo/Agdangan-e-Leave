@@ -420,7 +420,8 @@ create or replace function public.create_leave_request(
   p_leave_purpose_details text[],
   p_leave_purpose_notes jsonb,
   p_commutation text,
-  p_reason text
+  p_reason text,
+  p_recommendation_officer_name text default null
 )
 returns public.leave_requests
 language plpgsql
@@ -452,7 +453,8 @@ begin
     leave_purpose_details,
     leave_purpose_notes,
     commutation,
-    reason
+    reason,
+    recommendation_officer_name
   )
   values (
     p_employee_id,
@@ -476,7 +478,8 @@ begin
     coalesce(p_leave_purpose_details, '{}'::text[]),
     coalesce(p_leave_purpose_notes, '{}'::jsonb),
     nullif(trim(coalesce(p_commutation, '')), ''),
-    trim(p_reason)
+    trim(p_reason),
+    nullif(trim(coalesce(p_recommendation_officer_name, '')), '')
   )
   returning * into new_request;
 

@@ -829,7 +829,8 @@
         leave_purpose_details: leavePurposeDetails,
         leave_purpose_notes: leavePurposeNotes,
         commutation: String(formData.get("commutation") || ""),
-        reason: String(formData.get("reason") || "")
+        reason: String(formData.get("reason") || ""),
+        recommendation_officer_name: String(formData.get("recommendationOfficerName") || "").trim()
       };
 
       if (dateMode === "selected" && !payload.selected_leave_dates.length) {
@@ -875,7 +876,8 @@
           p_leave_purpose_details: payload.leave_purpose_details,
           p_leave_purpose_notes: payload.leave_purpose_notes,
           p_commutation: payload.commutation,
-          p_reason: payload.reason
+          p_reason: payload.reason,
+          p_recommendation_officer_name: payload.recommendation_officer_name
         });
 
         if (error) {
