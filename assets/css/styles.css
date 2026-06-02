@@ -1117,6 +1117,12 @@ button:focus {
   color: #111;
 }
 
+.leave-paper-officer .leave-paper-line,
+.leave-paper-authorized .leave-paper-line,
+.leave-paper-signature .leave-paper-line {
+  font-weight: 800;
+}
+
 .leave-paper-inline-fields {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

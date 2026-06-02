@@ -870,6 +870,36 @@
         return;
       }
 
+      if (selectedLeaveTypes.some((leaveType) => leaveType === "vacation" || leaveType === "special-privilege") && !vacationLocation.length) {
+        window.alert("Select Within the Philippines or Abroad for Vacation / Special Privilege Leave.");
+        return;
+      }
+
+      if (selectedLeaveTypes.includes("sick") && !sickLeaveDetails.length) {
+        window.alert("Select In Hospital or Out Patient for Sick Leave.");
+        return;
+      }
+
+      if (selectedLeaveTypes.includes("special-benefits-women") && !String(formData.get("womenIllnessNote") || "").trim()) {
+        window.alert("Specify the illness for Special Leave Benefits for Women.");
+        return;
+      }
+
+      if (selectedLeaveTypes.includes("study") && !leavePurposeDetails.some((value) => value === "masters-completion" || value === "bar-review")) {
+        window.alert("Select a study leave purpose.");
+        return;
+      }
+
+      if (selectedLeaveTypes.includes("others") && !leavePurposeDetails.some((value) => value === "monetization" || value === "terminal")) {
+        window.alert("Select an other-purpose option.");
+        return;
+      }
+
+      if (!payload.commutation) {
+        window.alert("Select a commutation option.");
+        return;
+      }
+
       if (dateMode === "selected" && !payload.selected_leave_dates.length) {
         window.alert("Add at least one selected leave date.");
         return;
@@ -1891,7 +1921,7 @@
               <span class="leave-paper-label">7.D Disapproved Due To</span>
               <div class="leave-paper-action-box">
                 <div class="leave-paper-action-writing">
-                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3" placeholder="Type disapproval reason">${escapeHtml(request.disapproval_details || "")}</textarea>
+                  <textarea class="leave-paper-action-textarea" name="disapprovalDetails" rows="3">${escapeHtml(request.disapproval_details || "")}</textarea>
                 </div>
               </div>
             </div>
