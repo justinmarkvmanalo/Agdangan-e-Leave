@@ -627,9 +627,31 @@
       others: ["other-purpose"]
     };
 
+    const getSelectedLeaveTypes = () => leaveTypeInputs
+      .filter((input) => input.checked)
+      .map((input) => input.value);
+
+    const validateLeaveTypeSelection = (changedInput = null) => {
+      const selectedLeaveTypes = getSelectedLeaveTypes();
+      if (selectedLeaveTypes.length <= 1) {
+        return true;
+      }
+
+      const includesCreditLeave = selectedLeaveTypes.includes("vacation") || selectedLeaveTypes.includes("sick");
+      if (selectedLeaveTypes.length > 2 || !includesCreditLeave) {
+        if (changedInput) {
+          changedInput.checked = false;
+        }
+        window.alert("You can select up to two leave types. If you select two, one must be Vacation Leave or Sick Leave.");
+        return false;
+      }
+
+      return true;
+    };
+
     const syncLeaveTypeState = () => {
-      const selectedLeaveType = leaveTypeInputs.find((input) => input.checked)?.value || "";
-      const enabledGroups = new Set(detailGroupRules[selectedLeaveType] || []);
+      const selectedLeaveTypes = getSelectedLeaveTypes();
+      const enabledGroups = new Set(selectedLeaveTypes.flatMap((leaveType) => detailGroupRules[leaveType] || []));
 
       Object.entries(groupedDetailInputs).forEach(([groupKey, inputs]) => {
         const isEnabled = enabledGroups.has(groupKey);
@@ -645,7 +667,7 @@
       });
 
       if (leaveOtherInput) {
-        const otherSelected = selectedLeaveType === "others";
+        const otherSelected = selectedLeaveTypes.includes("others");
         leaveOtherInput.disabled = !otherSelected;
         if (!otherSelected) {
           leaveOtherInput.value = "";
@@ -768,7 +790,10 @@
       renderSelectedLeaveDates();
     };
 
-    leaveTypeInputs.forEach((input) => input.addEventListener("change", syncLeaveTypeState));
+    leaveTypeInputs.forEach((input) => input.addEventListener("change", () => {
+      validateLeaveTypeSelection(input);
+      syncLeaveTypeState();
+    }));
     dateModeInputs.forEach((input) => input.addEventListener("change", syncDateModeState));
     startDateInput?.addEventListener("change", syncDaysRequested);
     endDateInput?.addEventListener("change", syncDaysRequested);
@@ -806,10 +831,11 @@
       const normalizedSelectedDates = selectedLeaveDates.slice().sort();
       const resolvedStartDate = dateMode === "selected" ? (normalizedSelectedDates[0] || "") : rangeStartDate;
       const resolvedEndDate = dateMode === "selected" ? (normalizedSelectedDates[normalizedSelectedDates.length - 1] || "") : rangeEndDate;
+      const selectedLeaveTypes = formData.getAll("leaveType").map((value) => String(value));
 
       const payload = {
         employee_id: profile.id,
-        leave_type: String(formData.get("leaveType") || ""),
+        leave_type: selectedLeaveTypes.join(","),
         office_department: String(document.getElementById("office-department")?.value || profile.department || ""),
         applicant_last_name: String(document.getElementById("applicant-last")?.value || profile.last_name || ""),
         applicant_first_name: String(document.getElementById("applicant-first")?.value || profile.first_name || ""),
@@ -830,8 +856,19 @@
         leave_purpose_notes: leavePurposeNotes,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || ""),
-        recommendation_officer_name: String(formData.get("recommendationOfficerName") || "").trim()
+        recommendation_officer_name: String(formData.get("recommendationOfficerName") || "").trim(),
+        approval_authorized_official_name: String(formData.get("approvalAuthorizedOfficialName") || "").trim()
       };
+
+      if (!selectedLeaveTypes.length) {
+        window.alert("Select at least one type of leave.");
+        return;
+      }
+
+      if (selectedLeaveTypes.length > 2 || (selectedLeaveTypes.length === 2 && !selectedLeaveTypes.some((leaveType) => leaveType === "vacation" || leaveType === "sick"))) {
+        window.alert("You can select up to two leave types. If you select two, one must be Vacation Leave or Sick Leave.");
+        return;
+      }
 
       if (dateMode === "selected" && !payload.selected_leave_dates.length) {
         window.alert("Add at least one selected leave date.");
@@ -877,7 +914,8 @@
           p_leave_purpose_notes: payload.leave_purpose_notes,
           p_commutation: payload.commutation,
           p_reason: payload.reason,
-          p_recommendation_officer_name: payload.recommendation_officer_name
+          p_recommendation_officer_name: payload.recommendation_officer_name,
+          p_approval_authorized_official_name: payload.approval_authorized_official_name
         });
 
         if (error) {
@@ -1617,7 +1655,7 @@
   }
 
   function buildAdminRequestPaperMarkup(request) {
-    const leaveType = normalizeLeaveType(request.leave_type);
+    const leaveTypes = getLeaveTypes(request.leave_type);
     const vacationLocations = Array.isArray(request.vacation_location) ? request.vacation_location : [];
     const sickDetails = Array.isArray(request.sick_leave_details) ? request.sick_leave_details : [];
     const leavePurposeDetails = Array.isArray(request.leave_purpose_details) ? request.leave_purpose_details : [];
@@ -1702,7 +1740,7 @@
             <fieldset class="leave-paper-panel">
               <legend>6.A Type of Leave to Be Availed Of</legend>
               <div class="leave-type-grid">
-                ${leavePaperTypeOptions.map(([value, label, reference]) => renderLeavePaperLeaveTypeOption(value, label, reference, leaveType === value, true)).join("")}
+                ${leavePaperTypeOptions.map(([value, label, reference]) => renderLeavePaperLeaveTypeOption(value, label, reference, leaveTypes.includes(value), true)).join("")}
               </div>
               <div class="leave-paper-other-line">
                 <span>Others:</span>
@@ -1834,7 +1872,7 @@
                 </div>
               </div>
               <div class="leave-paper-officer">
-                <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="recommendationOfficerName" placeholder="Authorized officer name" value="${escapeAttribute(recommendationOfficerName)}">
+                <div class="leave-paper-line">${escapeHtml(recommendationOfficerName)}</div>
                 <span>(Authorized Officer)</span>
               </div>
             </div>
@@ -1858,7 +1896,7 @@
               </div>
             </div>
             <div class="leave-paper-authorized leave-paper-authorized-wide">
-              <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="approvalAuthorizedOfficialName" placeholder="Authorized official name" value="${escapeAttribute(approvalAuthorizedOfficialName)}">
+              <div class="leave-paper-line">${escapeHtml(approvalAuthorizedOfficialName)}</div>
               <span>(Authorized Official)</span>
             </div>
           </div>
@@ -1880,7 +1918,7 @@
   function renderLeavePaperLeaveTypeOption(value, label, reference, isChecked, isDisabled = false) {
     return `
       <label class="leave-option leave-type-option">
-        <input type="radio" name="leaveType" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
+        <input type="checkbox" name="leaveType" value="${escapeAttribute(value)}" ${isChecked ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
         <span>${escapeHtml(label)} <small>${escapeHtml(reference)}</small></span>
       </label>
     `;
@@ -3268,8 +3306,19 @@
     return String(value || "").trim().toLowerCase();
   }
 
+  function getLeaveTypes(value) {
+    return String(value || "")
+      .split(",")
+      .map((item) => normalizeLeaveType(item))
+      .filter(Boolean);
+  }
+
   function getLeaveCreditPolicy(value) {
-    return leaveCreditPolicies[normalizeLeaveType(value)] || { freeDays: Infinity, deductsCredit: false, column: null };
+    const leaveTypes = getLeaveTypes(value);
+    const creditLeaveType = leaveTypes.find((leaveType) => leaveType === "vacation" || leaveType === "sick")
+      || leaveTypes.find((leaveType) => leaveCreditPolicies[leaveType]?.deductsCredit)
+      || leaveTypes[0];
+    return leaveCreditPolicies[creditLeaveType] || { freeDays: Infinity, deductsCredit: false, column: null };
   }
 
   function getLeaveCreditDeductionDays(request) {
@@ -3466,8 +3515,12 @@
   }
 
   function formatLeaveType(value) {
-    const key = String(value || "").trim().toLowerCase();
-    return leaveTypeLabels[key] || capitalize(key);
+    const keys = getLeaveTypes(value);
+    if (!keys.length) {
+      return "";
+    }
+
+    return keys.map((key) => leaveTypeLabels[key] || capitalize(key)).join(" / ");
   }
 
   function getReviewedAtDate(request) {

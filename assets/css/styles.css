@@ -1333,6 +1333,15 @@ button:focus {
   padding-bottom: 0.1rem;
 }
 
+.leave-paper-signature-input {
+  width: min(100%, 18rem);
+  margin: 0 auto;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .leave-paper-readonly-centered {
   text-align: center;
 }

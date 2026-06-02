@@ -421,7 +421,8 @@ create or replace function public.create_leave_request(
   p_leave_purpose_notes jsonb,
   p_commutation text,
   p_reason text,
-  p_recommendation_officer_name text default null
+  p_recommendation_officer_name text default null,
+  p_approval_authorized_official_name text default null
 )
 returns public.leave_requests
 language plpgsql
@@ -454,7 +455,8 @@ begin
     leave_purpose_notes,
     commutation,
     reason,
-    recommendation_officer_name
+    recommendation_officer_name,
+    approval_authorized_official_name
   )
   values (
     p_employee_id,
@@ -479,7 +481,8 @@ begin
     coalesce(p_leave_purpose_notes, '{}'::jsonb),
     nullif(trim(coalesce(p_commutation, '')), ''),
     trim(p_reason),
-    nullif(trim(coalesce(p_recommendation_officer_name, '')), '')
+    nullif(trim(coalesce(p_recommendation_officer_name, '')), ''),
+    nullif(trim(coalesce(p_approval_authorized_official_name, '')), '')
   )
   returning * into new_request;
 
@@ -709,7 +712,15 @@ language sql
 immutable
 as $$
   select greatest(
-    coalesce(p_days_requested, 0) - case lower(trim(coalesce(p_leave_type, '')))
+    coalesce(p_days_requested, 0) - case coalesce(
+      (
+        select trim(leave_type)
+        from unnest(string_to_array(lower(coalesce(p_leave_type, '')), ',')) as raw_leave_type(leave_type)
+        where trim(leave_type) in ('vacation', 'sick')
+        limit 1
+      ),
+      lower(trim(coalesce(p_leave_type, '')))
+    )
       when 'mandatory-forced' then 5
       when 'wellness' then 5
       when 'vacation' then 0

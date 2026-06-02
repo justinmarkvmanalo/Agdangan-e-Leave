@@ -127,63 +127,63 @@
                 <legend>6.A Type of Leave to Be Availed Of</legend>
                 <div class="leave-type-grid">
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="vacation" required>
+                    <input type="checkbox" name="leaveType" value="vacation">
                     <span>Vacation Leave <small>(Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="mandatory-forced" required>
+                    <input type="checkbox" name="leaveType" value="mandatory-forced">
                     <span>Mandatory/Forced Leave <small>(Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="sick" required>
+                    <input type="checkbox" name="leaveType" value="sick">
                     <span>Sick Leave <small>(Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="maternity" required>
+                    <input type="checkbox" name="leaveType" value="maternity">
                     <span>Maternity Leave <small>(R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="paternity" required>
+                    <input type="checkbox" name="leaveType" value="paternity">
                     <span>Paternity Leave <small>(R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="special-privilege" required>
+                    <input type="checkbox" name="leaveType" value="special-privilege">
                     <span>Special Privilege Leave <small>(Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="wellness" required>
+                    <input type="checkbox" name="leaveType" value="wellness">
                     <span>Wellness Leave <small>(5 days, subject to office policy)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="solo-parent" required>
+                    <input type="checkbox" name="leaveType" value="solo-parent">
                     <span>Solo Parent Leave <small>(R.A. No. 8972 / CSC MC No. 8, s. 2004)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="study" required>
+                    <input type="checkbox" name="leaveType" value="study">
                     <span>Study Leave <small>(Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="vawc" required>
+                    <input type="checkbox" name="leaveType" value="vawc">
                     <span>10-Day VAWC Leave <small>(R.A. No. 9262 / CSC MC No. 15, s. 2005)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="rehabilitation-privilege" required>
+                    <input type="checkbox" name="leaveType" value="rehabilitation-privilege">
                     <span>Rehabilitation Privilege <small>(Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="special-benefits-women" required>
+                    <input type="checkbox" name="leaveType" value="special-benefits-women">
                     <span>Special Leave Benefits for Women <small>(R.A. No. 9710 / CSC MC No. 25, s. 2010)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="special-emergency-calamity" required>
+                    <input type="checkbox" name="leaveType" value="special-emergency-calamity">
                     <span>Special Emergency (Calamity) Leave <small>(CSC MC No. 2, s. 2012, as amended)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="adoption" required>
+                    <input type="checkbox" name="leaveType" value="adoption">
                     <span>Adoption Leave <small>(R.A. No. 8552)</small></span>
                   </label>
                   <label class="leave-option">
-                    <input type="radio" name="leaveType" value="others" required>
+                    <input type="checkbox" name="leaveType" value="others">
                     <span>Others</span>
                   </label>
                 </div>
@@ -375,7 +375,7 @@
                 </div>
               </div>
               <div class="leave-paper-authorized leave-paper-authorized-wide">
-                <div class="leave-paper-line">HON. RHADAM PADILLA AGUILAR, MUN. MAYOR</div>
+                <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line leave-paper-signature-input" type="text" name="approvalAuthorizedOfficialName" value="HON. RHADAM PADILLA AGUILAR, MUN. MAYOR" placeholder="Authorized official name">
                 <span>(Authorized Official)</span>
               </div>
             </div>
@@ -399,6 +399,6 @@
 
   <script src="/assets/vendor/supabase-js-2.js"></script>
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/app.js?v=20260602-head-name"></script>
+  <script src="/assets/js/app.js?v=20260603-authorized-official"></script>
 </body>
 </html>
