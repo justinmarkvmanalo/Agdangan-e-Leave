@@ -1832,7 +1832,7 @@
                 </div>
               </div>
               <div class="leave-paper-officer">
-                <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="recommendationOfficerName" value="${escapeAttribute(recommendationOfficerName)}">
+                <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="recommendationOfficerName" placeholder="Authorized officer name" value="${escapeAttribute(recommendationOfficerName)}">
                 <span>(Authorized Officer)</span>
               </div>
             </div>
@@ -1842,9 +1842,9 @@
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.C Approved For</span>
               <div class="leave-paper-approval-lines">
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_with_pay_days))}"> days with pay</label>
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" placeholder="0" value="${escapeAttribute(normalizeFormNumber(request.approved_with_pay_days))}"> days with pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" placeholder="0" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" placeholder="Specify other approval" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
               </div>
             </div>
             <div class="leave-paper-cell">
@@ -1856,7 +1856,7 @@
               </div>
             </div>
             <div class="leave-paper-authorized leave-paper-authorized-wide">
-              <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="approvalAuthorizedOfficialName" value="${escapeAttribute(approvalAuthorizedOfficialName)}">
+              <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="approvalAuthorizedOfficialName" placeholder="Authorized official name" value="${escapeAttribute(approvalAuthorizedOfficialName)}">
               <span>(Authorized Official)</span>
             </div>
           </div>
