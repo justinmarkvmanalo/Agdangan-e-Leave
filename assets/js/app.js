@@ -2187,6 +2187,7 @@
             border-bottom: 1px solid #111;
             font-size: 9px;
             color: #111;
+            font-weight: 800;
           }
           .leave-paper-input,
           .leave-paper-inline-input,
@@ -2265,7 +2266,7 @@
           .leave-paper-panel legend {
             padding: 0 0.8mm;
             font-size: 8px;
-            font-weight: 400;
+            font-weight: 800;
             text-transform: uppercase;
           }
           .leave-type-grid,
