@@ -2234,6 +2234,10 @@
           .leave-paper-readonly {
             padding-top: 1.2mm;
           }
+          .leave-paper-tight-field .leave-paper-input,
+          .leave-paper-tight-field .leave-paper-readonly {
+            text-align: center;
+          }
           .leave-paper-readonly-centered {
             text-align: center;
           }
@@ -2345,6 +2349,9 @@
             align-content: start;
             margin-bottom: 0;
           }
+          .leave-paper-panel-grid .leave-paper-panel:last-child .leave-paper-subgroup:nth-of-type(n + 2) {
+            padding-top: 1.8mm;
+          }
           .leave-paper-detail-option {
             align-items: center;
           }
@@ -2452,7 +2459,7 @@
             min-width: 30mm;
             margin-left: 1.5mm;
             border-bottom: 1px solid #111;
-            vertical-align: middle;
+            vertical-align: -1.1mm;
           }
           .leave-paper-credit-table {
             width: 100%;

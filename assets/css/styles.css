@@ -1353,6 +1353,11 @@ button:focus {
   text-transform: uppercase;
 }
 
+.leave-paper-officer .leave-paper-signature-input,
+.leave-paper-authorized .leave-paper-signature-input {
+  font-weight: 800;
+}
+
 .leave-paper-readonly-centered {
   text-align: center;
 }
@@ -1395,6 +1400,10 @@ button:focus {
   display: grid;
   gap: 0.2rem;
   margin-bottom: 0.5rem;
+}
+
+.leave-paper-panel:last-child .leave-paper-subgroup:nth-of-type(n + 2) {
+  padding-top: 0.35rem;
 }
 
 .leave-paper-subgroup.is-disabled {
@@ -1461,6 +1470,11 @@ button:focus {
 .leave-paper-tight-field {
   width: 100%;
   max-width: 100%;
+}
+
+.leave-paper-tight-field .leave-paper-input,
+.leave-paper-tight-field .leave-paper-readonly {
+  text-align: center;
 }
 
 .leave-paper-subline-group {
@@ -1577,7 +1591,7 @@ button:focus {
   width: 8.5rem;
   margin-left: 0.35rem;
   border-bottom: 1px solid rgba(20, 20, 20, 0.78);
-  vertical-align: middle;
+  vertical-align: -0.18rem;
 }
 
 .leave-paper-credit-table {
