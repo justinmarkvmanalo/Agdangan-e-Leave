@@ -2045,7 +2045,7 @@
           }
           .leave-paper {
             width: 100%;
-            min-height: 263mm;
+            min-height: auto;
             box-sizing: border-box;
             background: #fff;
             border: 0;
@@ -2060,7 +2060,7 @@
           }
           .leave-paper-form {
             border: 1px solid #111;
-            min-height: 263mm;
+            min-height: 246mm;
           }
           .leave-paper-topline {
             display: block;
