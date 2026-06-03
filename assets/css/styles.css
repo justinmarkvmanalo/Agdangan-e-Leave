@@ -1129,6 +1129,11 @@ button:focus {
   gap: 0.45rem;
 }
 
+.leave-paper-inline-fields .leave-paper-input {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .leave-paper-inline-line {
   display: block;
   min-height: 1.45rem;
@@ -1197,9 +1202,10 @@ button:focus {
 }
 
 .leave-paper-panel legend {
+  margin-bottom: 0.28rem;
   padding: 0 0.25rem;
   font-size: 0.62rem;
-  font-weight: 400;
+  font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #111;
