@@ -2039,7 +2039,6 @@
           }
           .print-shell {
             width: 202mm;
-            min-height: 289mm;
             margin: 0 auto;
             box-sizing: border-box;
           }
@@ -2060,7 +2059,6 @@
           }
           .leave-paper-form {
             border: 1px solid #111;
-            min-height: 246mm;
           }
           .leave-paper-topline {
             display: block;
@@ -2502,7 +2500,6 @@
             }
             .print-shell {
               width: 202mm;
-              min-height: 289mm;
               margin: 0;
             }
           }
