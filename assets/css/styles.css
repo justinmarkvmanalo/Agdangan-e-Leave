@@ -1000,8 +1000,8 @@ button:focus {
 }
 
 .leave-paper-seal {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
@@ -1202,9 +1202,9 @@ button:focus {
 }
 
 .leave-paper-panel legend {
-  padding: 0 0.25rem;
+  padding: 0.32rem 0.25rem 0;
   font-size: 0.62rem;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #111;
@@ -1935,8 +1935,8 @@ button:focus {
 }
 
 .admin-request-paper .leave-paper-seal {
-  width: 4.2rem;
-  height: 4.2rem;
+  width: 3.8rem;
+  height: 3.8rem;
 }
 
 .admin-request-paper .leave-paper-heading {

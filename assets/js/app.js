@@ -2045,7 +2045,7 @@
           }
           .leave-paper {
             width: 100%;
-            min-height: 289mm;
+            min-height: 263mm;
             box-sizing: border-box;
             background: #fff;
             border: 0;
@@ -2060,6 +2060,7 @@
           }
           .leave-paper-form {
             border: 1px solid #111;
+            min-height: 263mm;
           }
           .leave-paper-topline {
             display: block;
@@ -2110,8 +2111,8 @@
             padding: 0;
           }
           .leave-paper-seal {
-            width: 18mm;
-            height: 18mm;
+            width: 16mm;
+            height: 16mm;
             object-fit: contain;
           }
           .leave-paper-heading {
@@ -2268,9 +2269,9 @@
             align-content: stretch;
           }
           .leave-paper-panel legend {
-            padding: 0 0.8mm;
+            padding: 1.6mm 0.8mm 0;
             font-size: 8px;
-            font-weight: 800;
+            font-weight: 400;
             text-transform: uppercase;
           }
           .leave-type-grid,
