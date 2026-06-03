@@ -856,8 +856,8 @@
         leave_purpose_notes: leavePurposeNotes,
         commutation: String(formData.get("commutation") || ""),
         reason: String(formData.get("reason") || ""),
-        recommendation_officer_name: normalizeOfficialName(formData.get("recommendationOfficerName")) || "",
-        approval_authorized_official_name: normalizeOfficialName(formData.get("approvalAuthorizedOfficialName")) || ""
+        recommendation_officer_name: String(formData.get("recommendationOfficerName") || "").trim(),
+        approval_authorized_official_name: String(formData.get("approvalAuthorizedOfficialName") || "").trim()
       };
 
       if (!selectedLeaveTypes.length) {
@@ -1601,11 +1601,11 @@
       p_credit_balance_sick: parseOptionalNumber(formData.get("creditBalanceSick")) ?? existingRequest.credit_balance_sick,
       p_recommendation: recommendation,
       p_recommendation_details: readTextField("recommendationDetails", existingRequest.recommendation_details),
-      p_recommendation_officer_name: normalizeOfficialName(readTextField("recommendationOfficerName", existingRequest.recommendation_officer_name)),
+      p_recommendation_officer_name: readTextField("recommendationOfficerName", existingRequest.recommendation_officer_name),
       p_approved_with_pay_days: parseOptionalNumber(formData.get("approvedWithPayDays"), true),
       p_approved_without_pay_days: parseOptionalNumber(formData.get("approvedWithoutPayDays"), true),
       p_approved_other_details: readTextField("approvedOtherDetails", existingRequest.approved_other_details),
-      p_approval_authorized_official_name: normalizeOfficialName(readTextField("approvalAuthorizedOfficialName", existingRequest.approval_authorized_official_name)),
+      p_approval_authorized_official_name: readTextField("approvalAuthorizedOfficialName", existingRequest.approval_authorized_official_name),
       p_disapproval_details: recommendation === "rejected" ? readTextField("disapprovalDetails", existingRequest.disapproval_details) : ""
     };
 
@@ -1700,8 +1700,8 @@
       : buildBlankCreditCellValues();
     const recommendationDetails = getRecommendationDetailsDisplay(request.recommendation_details);
     const approvedOtherDetails = getApprovedOtherDetailsDisplay(request.approved_other_details);
-    const recommendationOfficerName = normalizeOfficialName(request.recommendation_officer_name) || "";
-    const approvalAuthorizedOfficialName = normalizeOfficialName(request.approval_authorized_official_name) || "HON. RHADAM PADILLA AGUILAR, MUN. MAYOR";
+    const recommendationOfficerName = request.recommendation_officer_name || "";
+    const approvalAuthorizedOfficialName = request.approval_authorized_official_name || "HON. RHADAM PADILLA AGUILAR, MUN. MAYOR";
 
     return `
       <form class="leave-paper admin-request-paper" data-admin-request-form="${escapeAttribute(String(request.id))}">
@@ -2030,7 +2030,7 @@
         <meta charset="UTF-8">
         <title>${escapeHtml(title)}</title>
         <style>
-          @page { size: A4; margin: 10mm; }
+          @page { size: A4; margin: 4mm; }
           body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -2038,14 +2038,14 @@
             color: #111;
           }
           .print-shell {
-            width: 190mm;
-            min-height: auto;
+            width: 202mm;
+            min-height: 289mm;
             margin: 0 auto;
             box-sizing: border-box;
           }
           .leave-paper {
             width: 100%;
-            min-height: auto;
+            min-height: 289mm;
             box-sizing: border-box;
             background: #fff;
             border: 0;
@@ -2064,7 +2064,7 @@
           .leave-paper-topline {
             display: block;
             position: relative;
-            padding: 3mm 10mm 0;
+            padding: 4mm 12mm 0;
           }
           .leave-paper-form-series {
             display: grid;
@@ -2096,7 +2096,7 @@
             align-items: start;
             justify-items: center;
             position: relative;
-            padding: 0 10mm 2.4mm;
+            padding: 0 12mm 3mm;
             border-bottom: 1px solid #111;
           }
           .leave-paper-heading-spacer {
@@ -2127,8 +2127,8 @@
             line-height: 1.15;
           }
           .leave-paper-heading h3 {
-            margin: 5mm 0 0;
-            font-size: 16px;
+            margin: 6mm 0 0;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
           }
@@ -2141,7 +2141,7 @@
           .leave-paper-cell,
           .leave-paper-panel {
             min-width: 0;
-            padding: 1.2mm 1.8mm;
+            padding: 1.8mm 2.2mm;
             border-right: 1px solid #111;
             border-bottom: 1px solid #111;
           }
@@ -2151,7 +2151,7 @@
           }
           .leave-paper-label {
             display: block;
-            font-size: 7px;
+            font-size: 8px;
             text-transform: uppercase;
           }
           .leave-paper-name-header {
@@ -2238,11 +2238,11 @@
             text-align: center;
           }
           .leave-paper-section-title {
-            padding: 0.6mm 2.6mm;
+            padding: 0.8mm 3mm;
             border-top: 1px solid #111;
             border-bottom: 1px solid #111;
             text-align: center;
-            font-size: 8px;
+            font-size: 9px;
             font-weight: 800;
             text-transform: uppercase;
           }
@@ -2260,12 +2260,12 @@
           .leave-paper-panel-grid .leave-paper-panel:last-child {
             display: grid;
             grid-template-rows: auto repeat(5, minmax(0, 1fr));
-            min-height: 68mm;
+            min-height: 72mm;
             align-content: stretch;
           }
           .leave-paper-panel legend {
             padding: 0 0.8mm;
-            font-size: 7.5px;
+            font-size: 8px;
             font-weight: 800;
             text-transform: uppercase;
           }
@@ -2298,15 +2298,15 @@
           .leave-option {
             display: flex;
             align-items: flex-start;
-            gap: 1.2mm;
-            font-size: 8px;
-            line-height: 1.12;
+            gap: 1.5mm;
+            font-size: 9px;
+            line-height: 1.2;
           }
           .leave-type-grid .leave-option span {
             padding-left: 0;
           }
           .leave-type-grid .leave-option small {
-            font-size: 5.8px;
+            font-size: 6.5px;
             line-height: 1.05;
           }
           .leave-option input {
@@ -2336,7 +2336,7 @@
           .leave-paper-authorized span,
           .leave-paper-credit-note {
             margin: 0;
-            font-size: 8px;
+            font-size: 9px;
           }
           .leave-paper-subgroup p {
             font-style: italic;
@@ -2389,8 +2389,8 @@
             line-height: 1;
           }
           .leave-paper-row-bottom .leave-paper-cell {
-            min-height: 16mm;
-            padding: 0.9mm 1.6mm 0;
+            min-height: 18mm;
+            padding: 1.1mm 1.8mm 0;
             border-bottom: 0;
           }
           .leave-paper-row-bottom .leave-paper-cell:first-child {
@@ -2430,17 +2430,13 @@
           .leave-paper-authorized-wide {
             grid-column: 1 / -1;
             margin-top: 0;
-            padding: 3mm 2mm 1.3mm;
+            padding: 3.8mm 2.2mm 1.6mm;
           }
           .leave-paper-authorized-wide .leave-paper-line {
             width: 74mm;
             margin: 0 auto;
             font-size: 8px;
             font-weight: 800;
-          }
-          .leave-paper-officer .leave-paper-line,
-          .leave-paper-authorized .leave-paper-line {
-            text-transform: uppercase;
           }
           .leave-paper-subgroup p,
           .leave-paper-reason-field label {
@@ -2461,13 +2457,13 @@
           .leave-paper-credit-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 7.5px;
-            margin-bottom: 1.5mm;
+            font-size: 8.5px;
+            margin-bottom: 2mm;
           }
           .leave-paper-credit-table th,
           .leave-paper-credit-table td {
             border: 1px solid #111;
-            padding: 0.55mm;
+            padding: 0.8mm;
             text-align: center;
             vertical-align: middle;
           }
@@ -2497,8 +2493,8 @@
               background: #fff;
             }
             .print-shell {
-              width: 190mm;
-              min-height: auto;
+              width: 202mm;
+              min-height: 289mm;
               margin: 0;
             }
           }
@@ -3288,11 +3284,6 @@
   function normalizeOptionalText(value) {
     const text = String(value || "").trim();
     return text || null;
-  }
-
-  function normalizeOfficialName(value) {
-    const text = normalizeOptionalText(value);
-    return text ? text.toUpperCase() : null;
   }
 
   function capitalize(value) {
