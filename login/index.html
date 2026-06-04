@@ -28,12 +28,12 @@
 
   <main class="app-layout">
     <section class="auth-copy">
-      <p class="section-label">Secure Access</p>
-      <h2>Sign in by role using simple Supabase tables.</h2>
-      <p>
-        This screen now uses simple Supabase tables for admins and employees. Fill in
-        <code>/assets/js/supabase-config.js</code>, run the SQL file, then sign in with the records stored in those tables.
-      </p>
+      <div class="auth-copy-inner">
+        <img src="/assets/images/agdangan-seal.webp" alt="Agdangan seal" class="auth-seal">
+        <p class="section-label">Agdangan e-Leave</p>
+        <h2>Municipal Leave Portal</h2>
+        <p>Sign in to continue to your leave services.</p>
+      </div>
 
       <div class="auth-grid">
         <div class="mini-card">
@@ -50,6 +50,10 @@
     </section>
 
     <section class="auth-card">
+      <div class="auth-icon" aria-hidden="true">
+        <img src="/assets/images/agdangan-seal.webp" alt="">
+      </div>
+
       <div class="role-switch" aria-label="Select login role">
         <button type="button" class="active" data-role-switch="employee">Employee</button>
         <button type="button" data-role-switch="admin">Admin</button>
