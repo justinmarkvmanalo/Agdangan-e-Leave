@@ -23,6 +23,7 @@
     <nav class="site-nav" aria-label="Primary navigation">
       <a href="#home" class="active">Home</a>
       <a href="#service">Service</a>
+      <a href="/login">Login</a>
     </nav>
   </header>
 
@@ -46,49 +47,6 @@
               <strong>Employee and Administrator</strong>
             </div>
           </div>
-          <div class="hero-actions">
-            <a href="/login" class="button button-primary">Go to Login</a>
-          </div>
-        </section>
-
-        <section class="service-auth-card hero-login-card" id="service" aria-label="Login form">
-          <div class="service-auth-icon" aria-hidden="true">
-            <img src="/assets/images/agdangan-seal.webp" alt="">
-          </div>
-          <p class="section-label">Sign In</p>
-          <h3 class="service-auth-heading">Access the portal</h3>
-          <div class="status-banner" id="config-status"></div>
-
-          <div class="service-auth-role-wrap">
-            <div class="role-switch" aria-label="Select login role">
-              <button type="button" class="active" data-role-switch="employee">Employee</button>
-              <button type="button" data-role-switch="admin">Admin</button>
-            </div>
-
-            <form class="auth-form service-auth-form" id="login-form">
-              <h3 id="auth-title">Employee Sign In</h3>
-              <p class="muted" id="auth-subtitle">Use your employee email and password to open your leave dashboard.</p>
-
-              <div class="field-grid">
-                <div class="field field-full">
-                  <label for="email">Email</label>
-                  <input id="email" name="email" type="email" placeholder="name@agdangan.gov.ph" required>
-                </div>
-
-                <div class="field field-full">
-                  <label for="password">Password</label>
-                  <input id="password" name="password" type="password" placeholder="Enter your password" required>
-                </div>
-              </div>
-
-              <input id="selected-role" name="selectedRole" type="hidden" value="employee">
-
-              <div class="form-actions">
-                <button type="submit" class="button button-primary">Sign In</button>
-                <button type="button" class="button button-muted" id="demo-fill">Fill Demo Credentials</button>
-              </div>
-            </form>
-          </div>
         </section>
       </div>
     </section>
@@ -99,7 +57,7 @@
       <p><strong>Availability:</strong> Employee and administrator access</p>
     </section>
 
-    <section class="overview-section">
+    <section class="overview-section" id="service">
       <div class="overview-copy">
         <p class="section-label">Overview</p>
         <h3>A simpler service page focused on the main task.</h3>
