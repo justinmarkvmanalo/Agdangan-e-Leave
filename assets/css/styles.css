@@ -929,16 +929,22 @@ textarea {
 
 .landing-page .brand-logo,
 .auth-page .brand-logo {
-  transform: scale(1.55);
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  z-index: 2;
+  width: 230px;
+  max-width: none;
+  transform: translateY(-50%);
   transform-origin: left center;
 }
 
 .landing-page .brand-copy {
-  margin-left: 3.2rem;
+  margin-left: 14rem;
 }
 
 .auth-page .brand-copy {
-  margin-left: 3.2rem;
+  margin-left: 14rem;
 }
 
 .landing-page .brand-copy h1 {
@@ -3119,7 +3125,14 @@ button:focus {
 
   .landing-page .brand-logo,
   .auth-page .brand-logo {
-    transform: scale(1.18);
+    left: 0.7rem;
+    width: 166px;
+    transform: translateY(-50%);
+  }
+
+  .landing-page .brand-copy,
+  .auth-page .brand-copy {
+    margin-left: 9.8rem;
   }
 
   .landing-page .hero {
