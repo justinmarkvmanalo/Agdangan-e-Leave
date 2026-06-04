@@ -70,7 +70,6 @@ create table if not exists public.leave_requests (
   credit_earned_sick numeric(10,3),
   credit_balance_vacation numeric(10,3),
   credit_balance_sick numeric(10,3),
-  credit_deduction_processed_at date,
   recommendation text,
   recommendation_details text,
   recommendation_officer_name text,
@@ -133,7 +132,6 @@ alter table public.leave_requests alter column credit_earned_vacation type numer
 alter table public.leave_requests alter column credit_earned_sick type numeric(10,3);
 alter table public.leave_requests alter column credit_balance_vacation type numeric(10,3);
 alter table public.leave_requests alter column credit_balance_sick type numeric(10,3);
-alter table public.leave_requests add column if not exists credit_deduction_processed_at date;
 alter table public.leave_requests add column if not exists recommendation text;
 alter table public.leave_requests add column if not exists recommendation_details text;
 alter table public.leave_requests add column if not exists recommendation_officer_name text;
@@ -256,6 +254,39 @@ begin
       and e.employment_status = 'active'
     limit 1;
   end if;
+end;
+$$;
+
+create or replace function public.change_own_password(
+  p_role text,
+  p_user_id bigint,
+  p_current_password text,
+  p_new_password text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_count integer;
+begin
+  if length(coalesce(p_new_password, '')) < 8 then
+    raise exception 'New password must be at least 8 characters.';
+  end if;
+
+  if p_role = 'employee' then
+    update public.employees
+    set password = p_new_password
+    where id = p_user_id
+      and password = p_current_password
+      and employment_status = 'active';
+
+    get diagnostics updated_count = row_count;
+    return updated_count = 1;
+  end if;
+
+  return false;
 end;
 $$;
 
@@ -889,7 +920,6 @@ begin
       when public.get_leave_credit_deduction_column(request_record.leave_type) = 'sick' then credits_after_deduction
       else null
     end,
-    credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
     recommendation_details = case
       when p_status = 'approved' then request_record.recommendation_details

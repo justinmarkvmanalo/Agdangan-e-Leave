@@ -418,6 +418,7 @@
 
     fillEmployeeHeader(profile);
     populateLeaveApplicationProfile(profile);
+    bindChangePasswordForm();
     await loadEmployeeRequests(profile.id);
     bindLeaveRequestForm(profile);
   }
@@ -1508,6 +1509,72 @@
     }
 
     await loadAdminRequests();
+  }
+
+  function bindChangePasswordForm() {
+    const form = document.querySelector("[data-change-password-form]");
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!db) {
+        window.alert("Supabase is not configured yet. Update assets/js/supabase-config.js first.");
+        return;
+      }
+
+      const session = getSession();
+      if (!session || !session.role || !session.userId) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const formData = new FormData(form);
+      const currentPassword = String(formData.get("currentPassword") || "");
+      const newPassword = String(formData.get("newPassword") || "");
+      const confirmPassword = String(formData.get("confirmPassword") || "");
+
+      if (newPassword.length < 8) {
+        window.alert("New password must be at least 8 characters.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        window.alert("New password and confirmation do not match.");
+        return;
+      }
+
+      const finishSubmit = beginFormSubmit(form, "Updating...");
+      if (!finishSubmit) {
+        return;
+      }
+
+      try {
+        const { data, error } = await db.rpc("change_own_password", {
+          p_role: "employee",
+          p_user_id: session.userId,
+          p_current_password: currentPassword,
+          p_new_password: newPassword
+        });
+
+        if (error) {
+          window.alert(error.message);
+          return;
+        }
+
+        if (data !== true) {
+          window.alert("Current password is incorrect.");
+          return;
+        }
+
+        form.reset();
+        window.alert("Password updated.");
+      } finally {
+        finishSubmit();
+      }
+    });
   }
 
   async function saveAdminRequestDetails(requestId, form, options = {}) {
@@ -3275,8 +3342,7 @@
         days_requested: 2,
         status: "approved",
         commutation: "requested",
-        reviewed_at: "2026-05-25T08:00:00Z",
-        credit_deduction_processed_at: null
+        reviewed_at: "2026-05-25T08:00:00Z"
       }
     ];
 

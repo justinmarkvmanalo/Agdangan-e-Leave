@@ -156,7 +156,6 @@ begin
       when public.get_leave_credit_deduction_column(request_record.leave_type) = 'sick' then credits_after_deduction
       else null
     end,
-    credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
     recommendation_details = case
       when p_status = 'approved' then request_record.recommendation_details
