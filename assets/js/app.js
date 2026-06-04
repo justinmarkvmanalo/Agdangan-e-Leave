@@ -3364,7 +3364,21 @@
     const creditLeaveType = leaveTypes.find((leaveType) => leaveType === "vacation" || leaveType === "sick")
       || leaveTypes.find((leaveType) => leaveCreditPolicies[leaveType]?.deductsCredit)
       || leaveTypes[0];
-    return leaveCreditPolicies[creditLeaveType] || { freeDays: Infinity, deductsCredit: false, column: null };
+    const policy = leaveCreditPolicies[creditLeaveType] || { freeDays: Infinity, deductsCredit: false, column: null };
+    if (!policy.deductsCredit) {
+      return policy;
+    }
+
+    const freeDays = leaveTypes.reduce((total, leaveType) => {
+      const leavePolicy = leaveCreditPolicies[leaveType];
+      if (!leavePolicy?.deductsCredit || leavePolicy.column !== policy.column) {
+        return total;
+      }
+
+      return total + Number(leavePolicy.freeDays || 0);
+    }, 0);
+
+    return { ...policy, freeDays };
   }
 
   function getLeaveCreditDeductionDays(request) {
