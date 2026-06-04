@@ -929,16 +929,16 @@ textarea {
 
 .landing-page .brand-logo,
 .auth-page .brand-logo {
-  transform: scale(1.2);
+  transform: scale(1.55);
   transform-origin: left center;
 }
 
 .landing-page .brand-copy {
-  margin-left: 0.9rem;
+  margin-left: 3.2rem;
 }
 
 .auth-page .brand-copy {
-  margin-left: 0.9rem;
+  margin-left: 3.2rem;
 }
 
 .landing-page .brand-copy h1 {
@@ -3119,7 +3119,7 @@ button:focus {
 
   .landing-page .brand-logo,
   .auth-page .brand-logo {
-    transform: scale(1.08);
+    transform: scale(1.18);
   }
 
   .landing-page .hero {
