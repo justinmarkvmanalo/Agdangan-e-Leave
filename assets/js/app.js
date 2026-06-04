@@ -1702,6 +1702,8 @@
     const approvedOtherDetails = getApprovedOtherDetailsDisplay(request.approved_other_details);
     const recommendationOfficerName = request.recommendation_officer_name || "";
     const approvalAuthorizedOfficialName = request.approval_authorized_official_name || "HON. RHADAM PADILLA AGUILAR, MUN. MAYOR";
+    const approvedWithPayDays = normalizeApprovalDayDisplay(request.approved_with_pay_days);
+    const approvedWithoutPayDays = normalizeApprovalDayDisplay(request.approved_without_pay_days);
 
     return `
       <form class="leave-paper admin-request-paper" data-admin-request-form="${escapeAttribute(String(request.id))}">
@@ -1898,7 +1900,8 @@
                 ${renderLeavePaperOptionInput("radio", "recommendation", "rejected", "For disapproval due to", request.recommendation === "rejected" || request.status === "rejected")}
                 </div>
                 <div class="leave-paper-action-writing">
-                  <textarea class="leave-paper-action-textarea" name="recommendationDetails" rows="3">${escapeHtml(recommendationDetails)}</textarea>
+                  ${renderStaticWritingLines(recommendationDetails, 3)}
+                  <input type="hidden" name="recommendationDetails" value="${escapeAttribute(recommendationDetails)}">
                 </div>
               </div>
               <div class="leave-paper-officer">
@@ -1912,8 +1915,8 @@
             <div class="leave-paper-cell">
               <span class="leave-paper-label">7.C Approved For</span>
               <div class="leave-paper-approval-lines">
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" placeholder="0" value="${escapeAttribute(normalizeFormNumber(request.approved_with_pay_days))}"> days with pay</label>
-                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" placeholder="0" value="${escapeAttribute(normalizeFormNumber(request.approved_without_pay_days))}"> days without pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithPayDays" value="${escapeAttribute(approvedWithPayDays)}"> days with pay</label>
+                <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input" type="number" min="0" step="1" name="approvedWithoutPayDays" value="${escapeAttribute(approvedWithoutPayDays)}"> days without pay</label>
                 <label class="leave-paper-approval-item"><input class="leave-paper-input leave-paper-approval-input leave-paper-approval-wide" type="text" name="approvedOtherDetails" placeholder="Specify other approval" value="${escapeAttribute(approvedOtherDetails)}"> others (Specify)</label>
               </div>
             </div>
@@ -2405,7 +2408,11 @@
           .leave-paper-row-bottom .leave-paper-label {
             margin-bottom: 0;
             font-size: 7px;
-            font-weight: 800;
+            font-weight: 400;
+          }
+          .leave-paper-row-bottom .leave-paper-approval-item,
+          .leave-paper-row-bottom .leave-paper-approval-item .leave-paper-input {
+            font-weight: 400;
           }
           .leave-paper-row-bottom .leave-paper-action-box {
             min-height: 11mm;
@@ -3420,6 +3427,11 @@
     }
 
     return String(value);
+  }
+
+  function normalizeApprovalDayDisplay(value) {
+    const normalized = normalizeFormNumber(value);
+    return normalized === "0" ? "" : normalized;
   }
 
   function getApplicantFullName(request) {

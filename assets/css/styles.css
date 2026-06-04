@@ -1641,7 +1641,13 @@ button:focus {
 
 .leave-paper-approval-item {
   font-size: 0.66rem;
+  font-weight: 400;
   line-height: 1.25;
+}
+
+.leave-paper-row-bottom .leave-paper-label,
+.leave-paper-row-bottom .leave-paper-approval-item .leave-paper-input {
+  font-weight: 400;
 }
 
 .leave-paper-inline-blank {
