@@ -3036,6 +3036,30 @@ button:focus {
   .admin-request-toolbar {
     display: grid;
   }
+
+  .landing-page .site-header,
+  .auth-page .site-header {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .landing-page .brand,
+  .auth-page .brand {
+    align-items: center;
+  }
+
+  .landing-page .brand-logo,
+  .auth-page .brand-logo {
+    position: static;
+    width: clamp(132px, 28vw, 166px);
+    max-width: 42vw;
+    transform: none;
+  }
+
+  .landing-page .brand-copy,
+  .auth-page .brand-copy {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 720px) {
@@ -3121,18 +3145,6 @@ button:focus {
 
   .auth-page .form-actions .button {
     width: 100%;
-  }
-
-  .landing-page .brand-logo,
-  .auth-page .brand-logo {
-    left: 0.7rem;
-    width: 166px;
-    transform: translateY(-50%);
-  }
-
-  .landing-page .brand-copy,
-  .auth-page .brand-copy {
-    margin-left: 9.8rem;
   }
 
   .landing-page .hero {
