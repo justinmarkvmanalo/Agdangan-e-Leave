@@ -2561,9 +2561,10 @@
 
   function buildLeaveCreditSnapshot(request) {
     const employee = getAdminEmployeeProfileById(request.employee_id);
+    const creditColumn = getLeaveCreditColumn(request);
     const currentCredits = Number(employee?.leave_credits || 0);
-    const storedCreditsBeforeDeduction = Number(request.credit_earned_vacation);
-    const storedBalanceAfterDeduction = Number(request.credit_balance_vacation);
+    const storedCreditsBeforeDeduction = Number(creditColumn === "sick" ? request.credit_earned_sick : request.credit_earned_vacation);
+    const storedBalanceAfterDeduction = Number(creditColumn === "sick" ? request.credit_balance_sick : request.credit_balance_vacation);
     const daysRequested = Number(request.days_requested || 0);
     const deduction = getLeaveCreditDeductionDays(request);
     const creditsBeforeDeduction = Number.isFinite(storedCreditsBeforeDeduction)

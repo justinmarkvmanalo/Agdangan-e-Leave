@@ -91,7 +91,7 @@ create table if not exists public.credit_deduction_logs (
   employee_id bigint not null references public.employees(id) on delete cascade,
   employee_name text not null,
   employee_no text,
-  minutes integer not null check (minutes > 0),
+  minutes integer not null default 0 check (minutes >= 0),
   entries jsonb not null default '[]'::jsonb,
   deduction numeric(10,3) not null,
   reason text not null,
@@ -102,6 +102,10 @@ create table if not exists public.credit_deduction_logs (
 
 create index if not exists credit_deduction_logs_employee_created_idx
 on public.credit_deduction_logs (employee_id, created_at desc);
+
+alter table public.credit_deduction_logs alter column minutes set default 0;
+alter table public.credit_deduction_logs drop constraint if exists credit_deduction_logs_minutes_check;
+alter table public.credit_deduction_logs add constraint credit_deduction_logs_minutes_check check (minutes >= 0);
 
 alter table public.leave_requests add column if not exists office_department text;
 alter table public.leave_requests add column if not exists applicant_last_name text;
@@ -734,6 +738,23 @@ as $$
   select greatest(coalesce(p_days_requested, 0) - coalesce((select days from free_days), coalesce(p_days_requested, 0)), 0);
 $$;
 
+create or replace function public.get_leave_credit_deduction_column(p_leave_type text)
+returns text
+language sql
+immutable
+as $$
+  with selected_leave_types as (
+    select trim(leave_type) as leave_type
+    from unnest(string_to_array(lower(coalesce(p_leave_type, '')), ',')) as raw_leave_type(leave_type)
+    where trim(leave_type) <> ''
+  )
+  select case
+    when exists (select 1 from selected_leave_types where leave_type in ('vacation', 'mandatory-forced')) then 'vacation'
+    when exists (select 1 from selected_leave_types where leave_type in ('sick', 'wellness')) then 'sick'
+    else null
+  end;
+$$;
+
 create or replace function public.update_leave_request_status(
   p_admin_id bigint,
   p_request_id bigint,
@@ -754,6 +775,7 @@ declare
   approved_with_pay integer;
   approved_without_pay integer;
   updated_request public.leave_requests;
+  employee_name text;
 begin
   if p_status not in ('approved', 'rejected') then
     return null;
@@ -777,6 +799,9 @@ begin
     when request_record.credit_earned_vacation is not null
       and request_record.credit_balance_vacation is not null
       then greatest(request_record.credit_earned_vacation - request_record.credit_balance_vacation, 0)
+    when request_record.credit_earned_sick is not null
+      and request_record.credit_balance_sick is not null
+      then greatest(request_record.credit_earned_sick - request_record.credit_balance_sick, 0)
     else deduction_days
   end;
 
@@ -801,6 +826,38 @@ begin
       set leave_credits = round(credits_after_deduction::numeric, 3)
       where id = request_record.employee_id
       returning * into employee_record;
+
+      if deduction_days > 0 then
+        employee_name := trim(concat_ws(' ',
+          employee_record.first_name,
+          employee_record.middle_name,
+          employee_record.last_name,
+          employee_record.suffix
+        ));
+
+        insert into public.credit_deduction_logs (
+          employee_id,
+          employee_name,
+          employee_no,
+          minutes,
+          entries,
+          deduction,
+          reason,
+          before_credits,
+          after_credits
+        )
+        values (
+          employee_record.id,
+          coalesce(nullif(employee_name, ''), 'Employee'),
+          employee_record.employee_no,
+          0,
+          '[]'::jsonb,
+          round(deduction_days::numeric, 3),
+          concat('Approved leave deduction for request #', request_record.id),
+          credits_before_deduction,
+          credits_after_deduction
+        );
+      end if;
     end if;
 
     approved_with_pay := least(
@@ -816,10 +873,22 @@ begin
     reviewed_by_admin_id = p_admin_id,
     reviewed_at = now(),
     credit_as_of = current_date,
-    credit_earned_vacation = credits_before_deduction,
-    credit_earned_sick = credits_before_deduction,
-    credit_balance_vacation = credits_after_deduction,
-    credit_balance_sick = credits_after_deduction,
+    credit_earned_vacation = case
+      when public.get_leave_credit_deduction_column(request_record.leave_type) = 'vacation' then credits_before_deduction
+      else null
+    end,
+    credit_earned_sick = case
+      when public.get_leave_credit_deduction_column(request_record.leave_type) = 'sick' then credits_before_deduction
+      else null
+    end,
+    credit_balance_vacation = case
+      when public.get_leave_credit_deduction_column(request_record.leave_type) = 'vacation' then credits_after_deduction
+      else null
+    end,
+    credit_balance_sick = case
+      when public.get_leave_credit_deduction_column(request_record.leave_type) = 'sick' then credits_after_deduction
+      else null
+    end,
     credit_deduction_processed_at = null,
     recommendation = case when p_status = 'approved' then 'approved' else 'rejected' end,
     recommendation_details = case
