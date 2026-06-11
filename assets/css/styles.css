@@ -921,7 +921,8 @@ textarea {
 .landing-page .site-header,
 .auth-page .site-header,
 .admin-page .site-header,
-.credit-page .site-header {
+.credit-page .site-header,
+.employee-page .site-header {
   min-height: 72px;
   max-height: 72px;
   overflow: visible;
@@ -2266,6 +2267,11 @@ button:focus {
   color: #4b145f;
 }
 
+.badge.employee-badge {
+  background: rgba(244, 213, 121, 0.26);
+  color: #4b145f;
+}
+
 .badge.rejected {
   background: rgba(227, 91, 107, 0.14);
   color: var(--danger);
@@ -2939,13 +2945,15 @@ button:focus {
 }
 
 .admin-page,
-.credit-page {
+.credit-page,
+.employee-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
 }
 
 .admin-page .site-header,
-.credit-page .site-header {
+.credit-page .site-header,
+.employee-page .site-header {
   width: min(100% - 2rem, 84rem);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.9);
@@ -2954,7 +2962,8 @@ button:focus {
 }
 
 .admin-page .brand-logo,
-.credit-page .brand-logo {
+.credit-page .brand-logo,
+.employee-page .brand-logo {
   position: absolute;
   left: 1.1rem;
   top: 50%;
@@ -2966,27 +2975,35 @@ button:focus {
 }
 
 .admin-page .brand-copy,
-.credit-page .brand-copy {
+.credit-page .brand-copy,
+.employee-page .brand-copy {
   margin-left: 14rem;
 }
 
 .admin-page .brand-copy h1,
 .credit-page .brand-copy h1,
+.employee-page .brand-copy h1,
 .admin-page .eyebrow,
 .credit-page .eyebrow,
+.employee-page .eyebrow,
 .admin-page .section-label,
 .credit-page .section-label,
+.employee-page .section-label,
 .admin-page .card-label,
 .credit-page .card-label,
+.employee-page .card-label,
 .admin-page .stat-label,
-.credit-page .stat-label {
+.credit-page .stat-label,
+.employee-page .stat-label {
   color: #6f2aa8;
 }
 
 .admin-page .utility-nav a,
 .credit-page .utility-nav a,
+.employee-page .utility-nav a,
 .admin-page .utility-nav button,
-.credit-page .utility-nav button {
+.credit-page .utility-nav button,
+.employee-page .utility-nav button {
   border-color: rgba(111, 42, 168, 0.12);
 }
 
@@ -2994,20 +3011,25 @@ button:focus {
 .admin-page .utility-nav a.active,
 .credit-page .utility-nav a:hover,
 .credit-page .utility-nav a.active,
+.employee-page .utility-nav a:hover,
+.employee-page .utility-nav a.active,
 .admin-page .utility-nav button:hover,
-.credit-page .utility-nav button:hover {
+.credit-page .utility-nav button:hover,
+.employee-page .utility-nav button:hover {
   color: #6f2aa8;
   background: rgba(244, 213, 121, 0.18);
   border-color: rgba(244, 213, 121, 0.42);
 }
 
 .admin-page .page-shell,
-.credit-page .page-shell {
+.credit-page .page-shell,
+.employee-page .page-shell {
   padding-top: 2.2rem;
 }
 
 .admin-page .dashboard-header,
-.credit-page .dashboard-header {
+.credit-page .dashboard-header,
+.employee-page .dashboard-header {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(244, 213, 121, 0.28);
@@ -3021,14 +3043,17 @@ button:focus {
 .admin-page .dashboard-header::before,
 .admin-page .dashboard-header::after,
 .credit-page .dashboard-header::before,
-.credit-page .dashboard-header::after {
+.credit-page .dashboard-header::after,
+.employee-page .dashboard-header::before,
+.employee-page .dashboard-header::after {
   position: absolute;
   content: "";
   pointer-events: none;
 }
 
 .admin-page .dashboard-header::before,
-.credit-page .dashboard-header::before {
+.credit-page .dashboard-header::before,
+.employee-page .dashboard-header::before {
   top: -8rem;
   right: -5rem;
   width: 19rem;
@@ -3039,7 +3064,8 @@ button:focus {
 }
 
 .admin-page .dashboard-header::after,
-.credit-page .dashboard-header::after {
+.credit-page .dashboard-header::after,
+.employee-page .dashboard-header::after {
   right: -5rem;
   bottom: -8rem;
   width: 22rem;
@@ -3051,13 +3077,16 @@ button:focus {
 .admin-page .dashboard-title,
 .admin-page .dashboard-meta,
 .credit-page .dashboard-title,
-.credit-page .dashboard-meta {
+.credit-page .dashboard-meta,
+.employee-page .dashboard-title,
+.employee-page .dashboard-meta {
   position: relative;
   z-index: 1;
 }
 
 .admin-page .dashboard-title .section-label,
-.credit-page .dashboard-title .section-label {
+.credit-page .dashboard-title .section-label,
+.employee-page .dashboard-title .section-label {
   color: #f4d579;
 }
 
@@ -3066,12 +3095,16 @@ button:focus {
 .admin-page .dashboard-meta,
 .credit-page .dashboard-title h2,
 .credit-page .dashboard-title p,
-.credit-page .dashboard-meta {
+.credit-page .dashboard-meta,
+.employee-page .dashboard-title h2,
+.employee-page .dashboard-title p,
+.employee-page .dashboard-meta {
   color: #ffffff;
 }
 
 .admin-page .dashboard-title p,
-.credit-page .dashboard-title p {
+.credit-page .dashboard-title p,
+.employee-page .dashboard-title p {
   max-width: 48rem;
   color: rgba(255, 255, 255, 0.82);
 }
@@ -3079,43 +3112,52 @@ button:focus {
 .admin-page .dashboard-card,
 .admin-page .stat-card,
 .credit-page .dashboard-card,
-.credit-page .stat-card {
+.credit-page .stat-card,
+.employee-page .dashboard-card,
+.employee-page .stat-card {
   border-color: rgba(244, 213, 121, 0.22);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 22px 54px rgba(20, 8, 40, 0.22);
 }
 
 .admin-page .stats-grid .stat-card,
-.credit-page .stats-grid .stat-card {
+.credit-page .stats-grid .stat-card,
+.employee-page .stats-grid .stat-card {
   color: var(--ink);
 }
 
 .admin-page .stats-grid .stat-card strong,
-.credit-page .stats-grid .stat-card strong {
+.credit-page .stats-grid .stat-card strong,
+.employee-page .stats-grid .stat-card strong {
   color: #6f2aa8;
 }
 
 .admin-page .stats-grid .stat-card:nth-child(n),
-.credit-page .stats-grid .stat-card:nth-child(n) {
+.credit-page .stats-grid .stat-card:nth-child(n),
+.employee-page .stats-grid .stat-card:nth-child(n) {
   background: #ffffff;
 }
 
 .admin-page .stats-grid .stat-card:nth-child(1),
-.credit-page .stats-grid .stat-card:nth-child(1) {
+.credit-page .stats-grid .stat-card:nth-child(1),
+.employee-page .stats-grid .stat-card:nth-child(1) {
   border-top: 5px solid #f4d579;
 }
 
 .admin-page .stats-grid .stat-card:nth-child(2),
-.credit-page .stats-grid .stat-card:nth-child(2) {
+.credit-page .stats-grid .stat-card:nth-child(2),
+.employee-page .stats-grid .stat-card:nth-child(2) {
   border-top: 5px solid #b43b93;
 }
 
 .admin-page .stats-grid .stat-card:nth-child(3),
-.credit-page .stats-grid .stat-card:nth-child(3) {
+.credit-page .stats-grid .stat-card:nth-child(3),
+.employee-page .stats-grid .stat-card:nth-child(3) {
   border-top: 5px solid #8c3daa;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(4) {
+.admin-page .stats-grid .stat-card:nth-child(4),
+.employee-page .stats-grid .stat-card:nth-child(4) {
   border-top: 5px solid #e35b6b;
 }
 
@@ -3125,18 +3167,21 @@ button:focus {
 .credit-page .dashboard-card h3,
 .credit-page .credit-logic-panel strong,
 .credit-page .credit-deduction-entry strong,
-.credit-page .credit-deduction-summary strong {
+.credit-page .credit-deduction-summary strong,
+.employee-page .dashboard-card h3 {
   color: #4b145f;
 }
 
 .admin-page .button-primary,
-.credit-page .button-primary {
+.credit-page .button-primary,
+.employee-page .button-primary {
   background: linear-gradient(135deg, #5b1f8d, #8c2f8d);
   box-shadow: 0 12px 24px rgba(75, 20, 95, 0.22);
 }
 
 .admin-page .button-muted,
-.credit-page .button-muted {
+.credit-page .button-muted,
+.employee-page .button-muted {
   background: #eadcf7;
   color: #4b145f;
   border-color: rgba(75, 20, 95, 0.18);
@@ -3270,7 +3315,8 @@ button:focus {
   .landing-page .site-header,
   .auth-page .site-header,
   .admin-page .site-header,
-  .credit-page .site-header {
+  .credit-page .site-header,
+  .employee-page .site-header {
     max-height: none;
     overflow: visible;
   }
@@ -3278,14 +3324,16 @@ button:focus {
   .landing-page .brand,
   .auth-page .brand,
   .admin-page .brand,
-  .credit-page .brand {
+  .credit-page .brand,
+  .employee-page .brand {
     align-items: center;
   }
 
   .landing-page .brand-logo,
   .auth-page .brand-logo,
   .admin-page .brand-logo,
-  .credit-page .brand-logo {
+  .credit-page .brand-logo,
+  .employee-page .brand-logo {
     position: static;
     width: clamp(132px, 28vw, 166px);
     max-width: 42vw;
@@ -3295,7 +3343,8 @@ button:focus {
   .landing-page .brand-copy,
   .auth-page .brand-copy,
   .admin-page .brand-copy,
-  .credit-page .brand-copy {
+  .credit-page .brand-copy,
+  .employee-page .brand-copy {
     margin-left: 0;
   }
 }
