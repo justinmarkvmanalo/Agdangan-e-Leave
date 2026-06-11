@@ -2944,6 +2944,10 @@ button:focus {
   gap: 0.9rem;
 }
 
+.account-settings-grid {
+  grid-template-columns: minmax(0, 48rem);
+}
+
 .admin-page,
 .credit-page,
 .employee-page {

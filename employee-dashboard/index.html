@@ -22,7 +22,7 @@
 
     <nav class="utility-nav" aria-label="Employee navigation">
       <a href="#employee-service">Employee Service</a>
-      <a href="#account-settings">Account Settings</a>
+      <a href="/account-settings">Account Settings</a>
       <button type="button" id="sign-out-button">Sign Out</button>
     </nav>
   </header>
@@ -394,28 +394,6 @@
         <ul class="request-list" id="employee-request-list">
           <li class="empty-state">No leave requests loaded yet.</li>
         </ul>
-      </article>
-
-      <article class="dashboard-card" id="account-settings">
-        <p class="card-label">Account Settings</p>
-        <h3>Change Password</h3>
-        <form class="auth-form" data-change-password-form>
-          <div class="field">
-            <label for="employee-current-password">Current Password</label>
-            <input id="employee-current-password" name="currentPassword" type="password" autocomplete="current-password" required>
-          </div>
-          <div class="field">
-            <label for="employee-new-password">New Password</label>
-            <input id="employee-new-password" name="newPassword" type="password" minlength="8" autocomplete="new-password" required>
-          </div>
-          <div class="field">
-            <label for="employee-confirm-password">Confirm New Password</label>
-            <input id="employee-confirm-password" name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="button button-primary">Update Password</button>
-          </div>
-        </form>
       </article>
     </section>
   </main>

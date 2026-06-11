@@ -132,6 +132,7 @@
 
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const isEmployeeDashboardPage = /^\/employee-dashboard(?:\/index\.html)?$/.test(normalizedPath);
+  const isAccountSettingsPage = /^\/account-settings(?:\/index\.html)?$/.test(normalizedPath);
   const isAdminDashboardPage = /^\/admin-dashboard(?:\/index\.html)?$/.test(normalizedPath);
   const isCreditComputationPage = /^\/credit-computation(?:\/index\.html)?$/.test(normalizedPath);
   const nativeAlert = window.alert.bind(window);
@@ -148,6 +149,11 @@
 
     if (isEmployeeDashboardPage) {
       initEmployeeDashboard();
+      return;
+    }
+
+    if (isAccountSettingsPage) {
+      initAccountSettingsPage();
       return;
     }
 
@@ -418,9 +424,32 @@
 
     fillEmployeeHeader(profile);
     populateLeaveApplicationProfile(profile);
-    bindChangePasswordForm();
     await loadEmployeeRequests(profile.id);
     bindLeaveRequestForm(profile);
+  }
+
+  async function initAccountSettingsPage() {
+    bindSignOut();
+
+    if (!db) {
+      bindChangePasswordForm();
+      return;
+    }
+
+    const session = getSession();
+    if (!session || session.role !== "employee") {
+      window.location.href = "/login";
+      return;
+    }
+
+    const profile = await fetchEmployeeProfile(session.userId);
+    if (!profile) {
+      window.alert("Unable to load the employee profile after login. Check Supabase table access and RLS settings.");
+      return;
+    }
+
+    fillEmployeeHeader(profile);
+    bindChangePasswordForm();
   }
 
   async function initAdminDashboard() {

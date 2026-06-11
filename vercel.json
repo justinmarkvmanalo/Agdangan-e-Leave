@@ -13,6 +13,11 @@
       "permanent": true
     },
     {
+      "source": "/account-settings.html",
+      "destination": "/account-settings",
+      "permanent": true
+    },
+    {
       "source": "/admin-dashboard.html",
       "destination": "/admin-dashboard",
       "permanent": true
