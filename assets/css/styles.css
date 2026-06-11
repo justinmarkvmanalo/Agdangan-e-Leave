@@ -913,7 +913,8 @@ textarea {
 
 .landing-page .site-header,
 .auth-page .site-header,
-.admin-page .site-header {
+.admin-page .site-header,
+.credit-page .site-header {
   min-height: 72px;
   max-height: 72px;
   overflow: visible;
@@ -2925,12 +2926,14 @@ button:focus {
   gap: 0.9rem;
 }
 
-.admin-page {
+.admin-page,
+.credit-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
 }
 
-.admin-page .site-header {
+.admin-page .site-header,
+.credit-page .site-header {
   width: min(100% - 2rem, 84rem);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.9);
@@ -2938,7 +2941,8 @@ button:focus {
   box-shadow: 0 18px 48px rgba(24, 9, 48, 0.22);
 }
 
-.admin-page .brand-logo {
+.admin-page .brand-logo,
+.credit-page .brand-logo {
   position: absolute;
   left: 1.1rem;
   top: 50%;
@@ -2949,36 +2953,49 @@ button:focus {
   transform-origin: left center;
 }
 
-.admin-page .brand-copy {
+.admin-page .brand-copy,
+.credit-page .brand-copy {
   margin-left: 14rem;
 }
 
 .admin-page .brand-copy h1,
+.credit-page .brand-copy h1,
 .admin-page .eyebrow,
+.credit-page .eyebrow,
 .admin-page .section-label,
+.credit-page .section-label,
 .admin-page .card-label,
-.admin-page .stat-label {
+.credit-page .card-label,
+.admin-page .stat-label,
+.credit-page .stat-label {
   color: #6f2aa8;
 }
 
 .admin-page .utility-nav a,
-.admin-page .utility-nav button {
+.credit-page .utility-nav a,
+.admin-page .utility-nav button,
+.credit-page .utility-nav button {
   border-color: rgba(111, 42, 168, 0.12);
 }
 
 .admin-page .utility-nav a:hover,
 .admin-page .utility-nav a.active,
-.admin-page .utility-nav button:hover {
+.credit-page .utility-nav a:hover,
+.credit-page .utility-nav a.active,
+.admin-page .utility-nav button:hover,
+.credit-page .utility-nav button:hover {
   color: #6f2aa8;
   background: rgba(244, 213, 121, 0.18);
   border-color: rgba(244, 213, 121, 0.42);
 }
 
-.admin-page .page-shell {
+.admin-page .page-shell,
+.credit-page .page-shell {
   padding-top: 2.2rem;
 }
 
-.admin-page .dashboard-header {
+.admin-page .dashboard-header,
+.credit-page .dashboard-header {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(244, 213, 121, 0.28);
@@ -2990,13 +3007,16 @@ button:focus {
 }
 
 .admin-page .dashboard-header::before,
-.admin-page .dashboard-header::after {
+.admin-page .dashboard-header::after,
+.credit-page .dashboard-header::before,
+.credit-page .dashboard-header::after {
   position: absolute;
   content: "";
   pointer-events: none;
 }
 
-.admin-page .dashboard-header::before {
+.admin-page .dashboard-header::before,
+.credit-page .dashboard-header::before {
   top: -8rem;
   right: -5rem;
   width: 19rem;
@@ -3006,7 +3026,8 @@ button:focus {
   transform: rotate(42deg);
 }
 
-.admin-page .dashboard-header::after {
+.admin-page .dashboard-header::after,
+.credit-page .dashboard-header::after {
   right: -5rem;
   bottom: -8rem;
   width: 22rem;
@@ -3016,54 +3037,69 @@ button:focus {
 }
 
 .admin-page .dashboard-title,
-.admin-page .dashboard-meta {
+.admin-page .dashboard-meta,
+.credit-page .dashboard-title,
+.credit-page .dashboard-meta {
   position: relative;
   z-index: 1;
 }
 
-.admin-page .dashboard-title .section-label {
+.admin-page .dashboard-title .section-label,
+.credit-page .dashboard-title .section-label {
   color: #f4d579;
 }
 
 .admin-page .dashboard-title h2,
 .admin-page .dashboard-title p,
-.admin-page .dashboard-meta {
+.admin-page .dashboard-meta,
+.credit-page .dashboard-title h2,
+.credit-page .dashboard-title p,
+.credit-page .dashboard-meta {
   color: #ffffff;
 }
 
-.admin-page .dashboard-title p {
+.admin-page .dashboard-title p,
+.credit-page .dashboard-title p {
   max-width: 48rem;
   color: rgba(255, 255, 255, 0.82);
 }
 
 .admin-page .dashboard-card,
-.admin-page .stat-card {
+.admin-page .stat-card,
+.credit-page .dashboard-card,
+.credit-page .stat-card {
   border-color: rgba(244, 213, 121, 0.22);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 22px 54px rgba(20, 8, 40, 0.22);
 }
 
-.admin-page .stats-grid .stat-card {
+.admin-page .stats-grid .stat-card,
+.credit-page .stats-grid .stat-card {
   color: var(--ink);
 }
 
-.admin-page .stats-grid .stat-card strong {
+.admin-page .stats-grid .stat-card strong,
+.credit-page .stats-grid .stat-card strong {
   color: #6f2aa8;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(n) {
+.admin-page .stats-grid .stat-card:nth-child(n),
+.credit-page .stats-grid .stat-card:nth-child(n) {
   background: #ffffff;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(1) {
+.admin-page .stats-grid .stat-card:nth-child(1),
+.credit-page .stats-grid .stat-card:nth-child(1) {
   border-top: 5px solid #f4d579;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(2) {
+.admin-page .stats-grid .stat-card:nth-child(2),
+.credit-page .stats-grid .stat-card:nth-child(2) {
   border-top: 5px solid #b43b93;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(3) {
+.admin-page .stats-grid .stat-card:nth-child(3),
+.credit-page .stats-grid .stat-card:nth-child(3) {
   border-top: 5px solid #26a36d;
 }
 
@@ -3073,18 +3109,36 @@ button:focus {
 
 .admin-page .dashboard-card h3,
 .admin-page .admin-request-card h4,
-.admin-page .employee-record-row strong {
+.admin-page .employee-record-row strong,
+.credit-page .dashboard-card h3,
+.credit-page .credit-logic-panel strong,
+.credit-page .credit-deduction-entry strong,
+.credit-page .credit-deduction-summary strong {
   color: #4b145f;
 }
 
-.admin-page .button-primary {
+.admin-page .button-primary,
+.credit-page .button-primary {
   background: linear-gradient(135deg, #8c3daa, #b43b93);
   box-shadow: 0 14px 28px rgba(111, 42, 168, 0.26);
 }
 
-.admin-page .button-muted {
+.admin-page .button-muted,
+.credit-page .button-muted {
   background: rgba(244, 213, 121, 0.18);
   color: #6f2aa8;
+}
+
+.credit-page .credit-logic-panel,
+.credit-page .credit-deduction-entry,
+.credit-page .credit-deduction-summary {
+  border-color: rgba(111, 42, 168, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.credit-page .credit-formula {
+  background: linear-gradient(135deg, #8c3daa, #b43b93);
+  box-shadow: 0 14px 26px rgba(111, 42, 168, 0.18);
 }
 
 @media (max-width: 1180px) {
@@ -3202,20 +3256,23 @@ button:focus {
 
   .landing-page .site-header,
   .auth-page .site-header,
-  .admin-page .site-header {
+  .admin-page .site-header,
+  .credit-page .site-header {
     max-height: none;
     overflow: visible;
   }
 
   .landing-page .brand,
   .auth-page .brand,
-  .admin-page .brand {
+  .admin-page .brand,
+  .credit-page .brand {
     align-items: center;
   }
 
   .landing-page .brand-logo,
   .auth-page .brand-logo,
-  .admin-page .brand-logo {
+  .admin-page .brand-logo,
+  .credit-page .brand-logo {
     position: static;
     width: clamp(132px, 28vw, 166px);
     max-width: 42vw;
@@ -3224,7 +3281,8 @@ button:focus {
 
   .landing-page .brand-copy,
   .auth-page .brand-copy,
-  .admin-page .brand-copy {
+  .admin-page .brand-copy,
+  .credit-page .brand-copy {
     margin-left: 0;
   }
 }
