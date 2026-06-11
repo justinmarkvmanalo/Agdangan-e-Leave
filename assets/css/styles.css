@@ -333,17 +333,20 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.95rem 1.5rem;
-  border-radius: 16px;
+  min-height: 2.8rem;
+  padding: 0.82rem 1.25rem;
+  border-radius: 14px;
   font-weight: 800;
-  border: 0;
+  border: 1px solid transparent;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow: 0 10px 22px rgba(31, 12, 64, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 
 .button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(31, 12, 64, 0.12);
 }
 
 .button:disabled,
@@ -395,30 +398,33 @@ textarea {
 }
 
 .button-primary {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--blue-dark) 100%);
+  background: linear-gradient(135deg, #6f2aa8 0%, #8c3daa 100%);
   color: #ffffff;
-  box-shadow: 0 16px 30px rgba(75, 35, 184, 0.24);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .button-secondary {
   background: #ffffff;
-  color: var(--navy);
+  color: #6f2aa8;
   border: 1px solid rgba(111, 61, 244, 0.14);
 }
 
 .button-muted {
-  background: var(--violet-soft);
-  color: var(--navy);
+  background: rgba(255, 255, 255, 0.78);
+  color: #6f2aa8;
+  border-color: rgba(111, 42, 168, 0.14);
 }
 
 .button-danger {
-  background: rgba(191, 61, 61, 0.12);
+  background: rgba(227, 91, 107, 0.1);
   color: var(--danger);
+  border-color: rgba(227, 91, 107, 0.18);
 }
 
 .button-success {
-  background: rgba(244, 213, 121, 0.2);
+  background: rgba(244, 213, 121, 0.22);
   color: var(--success);
+  border-color: rgba(244, 213, 121, 0.34);
 }
 
 .overview-section {
@@ -868,8 +874,8 @@ textarea {
 }
 
 .auth-page .role-switch button.active {
-  background: linear-gradient(135deg, #6f2aa8, #b43b93);
-  box-shadow: 0 10px 22px rgba(111, 42, 168, 0.22);
+  background: linear-gradient(135deg, #7b35a2, #9c3d92);
+  box-shadow: 0 8px 18px rgba(111, 42, 168, 0.16);
 }
 
 .auth-page .field label {
@@ -896,14 +902,15 @@ textarea {
 
 .auth-page .button-primary {
   border-radius: 999px;
-  background: linear-gradient(135deg, #8c3daa, #b43b93);
-  box-shadow: 0 14px 28px rgba(111, 42, 168, 0.26);
+  background: linear-gradient(135deg, #7b35a2, #9c3d92);
+  box-shadow: 0 10px 22px rgba(111, 42, 168, 0.16);
 }
 
 .auth-page .button-muted {
   border-radius: 999px;
-  background: rgba(244, 213, 121, 0.18);
+  background: rgba(244, 213, 121, 0.16);
   color: #6f2aa8;
+  border-color: rgba(244, 213, 121, 0.32);
 }
 
 .landing-page {
@@ -1074,9 +1081,9 @@ textarea {
 }
 
 .landing-page .hero-actions .button-primary {
-  background: linear-gradient(135deg, #f4d579, #b43b93);
+  background: linear-gradient(135deg, #f4d579, #c26aa8);
   color: #2d174c;
-  box-shadow: 0 18px 34px rgba(48, 18, 78, 0.28);
+  box-shadow: 0 12px 26px rgba(48, 18, 78, 0.18);
 }
 
 .landing-page .trust-strip,
@@ -1130,7 +1137,7 @@ textarea {
 }
 
 .role-switch button.active {
-  background: linear-gradient(135deg, var(--navy), var(--blue-dark));
+  background: linear-gradient(135deg, #6f2aa8, #8c3daa);
   color: var(--white);
 }
 
@@ -3124,14 +3131,15 @@ button:focus {
 
 .admin-page .button-primary,
 .credit-page .button-primary {
-  background: linear-gradient(135deg, #8c3daa, #b43b93);
-  box-shadow: 0 14px 28px rgba(111, 42, 168, 0.26);
+  background: linear-gradient(135deg, #7b35a2, #9c3d92);
+  box-shadow: 0 10px 22px rgba(111, 42, 168, 0.16);
 }
 
 .admin-page .button-muted,
 .credit-page .button-muted {
-  background: rgba(244, 213, 121, 0.18);
+  background: rgba(255, 255, 255, 0.82);
   color: #6f2aa8;
+  border-color: rgba(244, 213, 121, 0.32);
 }
 
 .credit-page .credit-logic-panel,
