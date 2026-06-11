@@ -986,24 +986,6 @@
     adminEmployeeProfiles = data;
     setText("stat-employees", String(data.length));
     renderAdminEmployeeTable(data);
-
-    const list = document.getElementById("admin-summary-list");
-    if (!list) {
-      return;
-    }
-
-    if (!data.length) {
-      list.innerHTML = '<li class="empty-state">No employee profiles found.</li>';
-      return;
-    }
-
-    list.innerHTML = data.map((profile) => `
-      <li>
-        <strong>${escapeHtml(profile.first_name)} ${escapeHtml(profile.last_name)}</strong>
-        <div>${escapeHtml(profile.employee_no || "No employee number")}</div>
-        <div>${escapeHtml(profile.department)} | ${escapeHtml(profile.position_title)}</div>
-      </li>
-    `).join("");
   }
 
   function renderAdminEmployeeTable(profiles) {
@@ -3236,59 +3218,27 @@
   }
 
   function renderAdminDemo() {
-    adminEmployeeProfiles = [{
+    const demoProfiles = [{
       id: 1,
+      first_name: "Juan",
+      last_name: "Dela Cruz",
+      employee_no: "EMP-0001",
+      email: "juan.delacruz@agdangan.gov.ph",
+      department: "Treasury",
+      position_title: "Administrative Aide",
+      employment_status: "active",
       leave_credits: 12.5
     }];
 
     setText("admin-name", "Welcome, System Administrator");
     setText("admin-meta", "HR | Municipal Administrator");
-    setText("stat-employees", "24");
+    setText("stat-employees", String(demoProfiles.length));
     setText("stat-admin-pending", "5");
     setText("stat-admin-approved", "16");
     setText("stat-admin-rejected", "2");
 
-    const list = document.getElementById("admin-summary-list");
-    if (list) {
-      list.innerHTML = `
-        <li>
-          <strong>Juan Dela Cruz</strong>
-          <div>EMP-0001</div>
-          <div>Treasury | Administrative Aide</div>
-        </li>
-        <li>
-          <strong>Maria Santos</strong>
-          <div>EMP-002</div>
-          <div>Accounting | Records Officer</div>
-        </li>
-      `;
-    }
-
-    const employeesTable = document.getElementById("admin-employees-table");
-    if (employeesTable) {
-      employeesTable.innerHTML = `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Department</th>
-              <th>Status</th>
-              <th>Credits</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Juan Dela Cruz</strong><br>EMP-0001<br>juan.delacruz@agdangan.gov.ph</td>
-              <td>Treasury<br>Administrative Aide</td>
-              <td><span class="badge approved">Active</span></td>
-              <td>12.50</td>
-              <td><div class="table-actions"><button type="button" class="button button-muted">Edit</button><button type="button" class="button button-danger">Delete</button></div></td>
-            </tr>
-          </tbody>
-        </table>
-      `;
-    }
+    adminEmployeeProfiles = demoProfiles;
+    renderAdminEmployeeTable(demoProfiles);
 
     const table = document.getElementById("admin-requests-table");
     if (table) {

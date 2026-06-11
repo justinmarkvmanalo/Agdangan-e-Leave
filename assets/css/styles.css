@@ -912,7 +912,8 @@ textarea {
 }
 
 .landing-page .site-header,
-.auth-page .site-header {
+.auth-page .site-header,
+.admin-page .site-header {
   min-height: 72px;
   max-height: 72px;
   overflow: visible;
@@ -2924,6 +2925,168 @@ button:focus {
   gap: 0.9rem;
 }
 
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
+}
+
+.admin-page .site-header {
+  width: min(100% - 2rem, 84rem);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(244, 213, 121, 0.28);
+  box-shadow: 0 18px 48px rgba(24, 9, 48, 0.22);
+}
+
+.admin-page .brand-logo {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  z-index: 2;
+  width: 230px;
+  max-width: none;
+  transform: translateY(-50%);
+  transform-origin: left center;
+}
+
+.admin-page .brand-copy {
+  margin-left: 14rem;
+}
+
+.admin-page .brand-copy h1,
+.admin-page .eyebrow,
+.admin-page .section-label,
+.admin-page .card-label,
+.admin-page .stat-label {
+  color: #6f2aa8;
+}
+
+.admin-page .utility-nav a,
+.admin-page .utility-nav button {
+  border-color: rgba(111, 42, 168, 0.12);
+}
+
+.admin-page .utility-nav a:hover,
+.admin-page .utility-nav a.active,
+.admin-page .utility-nav button:hover {
+  color: #6f2aa8;
+  background: rgba(244, 213, 121, 0.18);
+  border-color: rgba(244, 213, 121, 0.42);
+}
+
+.admin-page .page-shell {
+  padding-top: 2.2rem;
+}
+
+.admin-page .dashboard-header {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(244, 213, 121, 0.28);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(111, 42, 168, 0.94), rgba(198, 91, 164, 0.88)),
+    #7c2b91;
+  box-shadow: 0 30px 74px rgba(20, 8, 40, 0.28);
+}
+
+.admin-page .dashboard-header::before,
+.admin-page .dashboard-header::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.admin-page .dashboard-header::before {
+  top: -8rem;
+  right: -5rem;
+  width: 19rem;
+  height: 28rem;
+  border-radius: 0 0 5rem 5rem;
+  background: linear-gradient(135deg, rgba(239, 206, 255, 0.68), rgba(255, 255, 255, 0.28));
+  transform: rotate(42deg);
+}
+
+.admin-page .dashboard-header::after {
+  right: -5rem;
+  bottom: -8rem;
+  width: 22rem;
+  height: 22rem;
+  background: linear-gradient(135deg, rgba(244, 213, 121, 0.7), rgba(140, 61, 170, 0.36));
+  transform: rotate(45deg);
+}
+
+.admin-page .dashboard-title,
+.admin-page .dashboard-meta {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-page .dashboard-title .section-label {
+  color: #f4d579;
+}
+
+.admin-page .dashboard-title h2,
+.admin-page .dashboard-title p,
+.admin-page .dashboard-meta {
+  color: #ffffff;
+}
+
+.admin-page .dashboard-title p {
+  max-width: 48rem;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.admin-page .dashboard-card,
+.admin-page .stat-card {
+  border-color: rgba(244, 213, 121, 0.22);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 54px rgba(20, 8, 40, 0.22);
+}
+
+.admin-page .stats-grid .stat-card {
+  color: var(--ink);
+}
+
+.admin-page .stats-grid .stat-card strong {
+  color: #6f2aa8;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(n) {
+  background: #ffffff;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(1) {
+  border-top: 5px solid #f4d579;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(2) {
+  border-top: 5px solid #b43b93;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(3) {
+  border-top: 5px solid #26a36d;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(4) {
+  border-top: 5px solid #e35b6b;
+}
+
+.admin-page .dashboard-card h3,
+.admin-page .admin-request-card h4,
+.admin-page .employee-record-row strong {
+  color: #4b145f;
+}
+
+.admin-page .button-primary {
+  background: linear-gradient(135deg, #8c3daa, #b43b93);
+  box-shadow: 0 14px 28px rgba(111, 42, 168, 0.26);
+}
+
+.admin-page .button-muted {
+  background: rgba(244, 213, 121, 0.18);
+  color: #6f2aa8;
+}
+
 @media (max-width: 1180px) {
   .hero-shell,
   .overview-section,
@@ -3038,18 +3201,21 @@ button:focus {
   }
 
   .landing-page .site-header,
-  .auth-page .site-header {
+  .auth-page .site-header,
+  .admin-page .site-header {
     max-height: none;
     overflow: visible;
   }
 
   .landing-page .brand,
-  .auth-page .brand {
+  .auth-page .brand,
+  .admin-page .brand {
     align-items: center;
   }
 
   .landing-page .brand-logo,
-  .auth-page .brand-logo {
+  .auth-page .brand-logo,
+  .admin-page .brand-logo {
     position: static;
     width: clamp(132px, 28vw, 166px);
     max-width: 42vw;
@@ -3057,7 +3223,8 @@ button:focus {
   }
 
   .landing-page .brand-copy,
-  .auth-page .brand-copy {
+  .auth-page .brand-copy,
+  .admin-page .brand-copy {
     margin-left: 0;
   }
 }
