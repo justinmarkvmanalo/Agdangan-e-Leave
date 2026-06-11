@@ -2,8 +2,8 @@
   --navy: #4b23b8;
   --blue: #4ea6f5;
   --blue-dark: #6f3df4;
-  --gold: #90cf3c;
-  --gold-strong: #68b335;
+  --gold: #f4d579;
+  --gold-strong: #d8a931;
   --mist: #f5f6fb;
   --ink: #1f2440;
   --ink-soft: rgba(31, 36, 64, 0.68);
@@ -11,12 +11,12 @@
   --panel: rgba(255, 255, 255, 0.92);
   --line: rgba(102, 79, 178, 0.12);
   --shadow: 0 18px 40px rgba(54, 36, 120, 0.12);
-  --success: #26a36d;
+  --success: #8c3daa;
   --danger: #e35b6b;
-  --teal: #27d3a2;
+  --teal: #b43b93;
   --violet-soft: #f0ebff;
   --blue-soft: #edf6ff;
-  --green-soft: #f2f8e8;
+  --gold-soft: #fff4c4;
 }
 
 * {
@@ -417,7 +417,7 @@ textarea {
 }
 
 .button-success {
-  background: rgba(43, 138, 87, 0.12);
+  background: rgba(244, 213, 121, 0.2);
   color: var(--success);
 }
 
@@ -1232,7 +1232,7 @@ button:focus {
 }
 
 .system-alert-success .system-alert-icon {
-  background: rgba(38, 163, 109, 0.12);
+  background: rgba(244, 213, 121, 0.2);
   color: var(--success);
 }
 
@@ -1326,11 +1326,11 @@ button:focus {
 }
 
 .stats-grid .stat-card:nth-child(3) {
-  background: linear-gradient(135deg, #1eb889, #27d3a2);
+  background: linear-gradient(135deg, #8c3daa, #b43b93);
 }
 
 .stats-grid .stat-card:nth-child(4) {
-  background: linear-gradient(135deg, #7fbe2f, #90cf3c);
+  background: linear-gradient(135deg, #d8a931, #f4d579);
 }
 
 .dashboard-card-wide {
@@ -2245,13 +2245,18 @@ button:focus {
 }
 
 .badge.pending {
-  background: rgba(144, 207, 60, 0.18);
-  color: #557f12;
+  background: rgba(244, 213, 121, 0.24);
+  color: #6f2aa8;
 }
 
 .badge.approved {
-  background: rgba(39, 211, 162, 0.16);
+  background: rgba(140, 61, 170, 0.14);
   color: var(--success);
+}
+
+.badge.admin-badge {
+  background: rgba(244, 213, 121, 0.26);
+  color: #4b145f;
 }
 
 .badge.rejected {
@@ -3100,7 +3105,7 @@ button:focus {
 
 .admin-page .stats-grid .stat-card:nth-child(3),
 .credit-page .stats-grid .stat-card:nth-child(3) {
-  border-top: 5px solid #26a36d;
+  border-top: 5px solid #8c3daa;
 }
 
 .admin-page .stats-grid .stat-card:nth-child(4) {
