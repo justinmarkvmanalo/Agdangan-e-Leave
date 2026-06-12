@@ -3411,6 +3411,10 @@ button:focus {
     margin-left: 0;
   }
 
+  .leave-paper-inline-fields {
+    grid-template-columns: 1fr;
+  }
+
   .burger {
     display: flex;
     margin-left: auto;
