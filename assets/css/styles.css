@@ -3353,8 +3353,9 @@ button:focus {
   }
 
   .site-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 0.45rem;
     min-height: auto;
     padding-top: 0.28rem;
@@ -3408,6 +3409,55 @@ button:focus {
   .credit-page .brand-copy,
   .employee-page .brand-copy {
     margin-left: 0;
+  }
+
+  .burger {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .site-nav,
+  .utility-nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 0 0.5rem;
+  }
+
+  .site-nav a,
+  .utility-nav a,
+  .utility-nav button {
+    flex: none;
+    width: 100%;
+    text-align: center;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0.5rem;
+  }
+
+  .brand-logo {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .brand-copy {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .brand-copy h1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.82rem;
+  }
+
+  .brand-copy p {
+    display: none;
   }
 }
 
@@ -3566,20 +3616,6 @@ button:focus {
 
   .credit-page .stats-grid {
     grid-template-columns: 1fr;
-  }
-
-  .site-nav,
-  .utility-nav {
-    width: 100%;
-    gap: 0.45rem;
-  }
-
-  .site-nav a,
-  .utility-nav a,
-  .utility-nav button {
-    flex: 1 1 9rem;
-    padding: 0.62rem 0.7rem;
-    text-align: center;
   }
 
   .dashboard-header {
