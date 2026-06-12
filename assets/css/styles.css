@@ -4033,6 +4033,28 @@ button:focus {
   .brand {
     flex: 1 1 auto;
     min-width: 0;
+    gap: 0.5rem;
+  }
+
+  .brand-logo {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .brand-copy {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .brand-copy h1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.82rem;
+  }
+
+  .brand-copy p {
+    display: none;
   }
 
   .burger {
