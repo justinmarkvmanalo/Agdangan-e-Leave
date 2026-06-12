@@ -3497,6 +3497,7 @@ button:focus {
   }
 
   .landing-page .hero {
+    min-height: auto;
     padding-top: 0.75rem;
   }
 
@@ -3673,6 +3674,10 @@ button:focus {
     flex-direction: column;
   }
 
+  .leave-paper-form {
+    font-size: 1rem;
+  }
+
   .leave-paper-heading-grid,
   .leave-paper-topline,
   .leave-paper-row,
@@ -3742,6 +3747,191 @@ button:focus {
     width: 100%;
   }
 
+  .leave-paper-label,
+  .leave-paper-cell-inline .leave-paper-label,
+  .leave-paper-name-header .leave-paper-label {
+    font-size: 0.85rem;
+    white-space: normal;
+  }
+
+  .leave-paper-input,
+  .leave-paper-readonly,
+  .leave-paper-table-input {
+    font-size: 1rem;
+    min-height: 2.8rem;
+  }
+
+  .leave-paper-line {
+    min-height: 2rem;
+    font-size: 0.95rem;
+  }
+
+  .leave-paper-note {
+    font-size: 0.85rem;
+  }
+
+  .leave-paper-government {
+    font-size: 0.92rem;
+  }
+
+  .leave-paper-heading h3 {
+    font-size: 1.5rem;
+  }
+
+  .leave-paper-inline-captions {
+    font-size: 0.78rem;
+  }
+
+  .leave-option {
+    font-size: 0.95rem;
+    gap: 0.65rem;
+    padding: 0.4rem 0;
+    min-height: 3rem;
+    align-items: center;
+  }
+
+  .leave-option input {
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+
+  .leave-option input::before {
+    font-size: 1rem;
+  }
+
+  .leave-option small {
+    font-size: 0.72rem;
+  }
+
+  .leave-type-grid {
+    gap: 0.15rem;
+  }
+
+  .leave-paper-panel legend {
+    font-size: 0.85rem;
+    padding-top: 0.5rem;
+  }
+
+  .leave-paper-bullets span {
+    font-size: 0.9rem;
+    padding-left: 0;
+    line-height: 1.4;
+  }
+
+  .leave-paper-bullets input[type="checkbox"],
+  .leave-paper-bullets input[type="radio"],
+  .leave-paper-inline-fields input {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .leave-paper-detail-option {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .leave-paper-detail-option input[type="checkbox"] {
+    order: -1;
+  }
+
+  .leave-paper-detail-line {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.4rem;
+    font-size: 1rem;
+  }
+
+  .leave-paper-signature-input {
+    width: 100%;
+    min-height: 2.8rem;
+    font-size: 0.92rem;
+  }
+
+  .leave-paper-other-line {
+    font-size: 0.9rem;
+  }
+
+  .leave-paper-other-line .leave-paper-input,
+  .leave-paper-other-line .leave-paper-readonly {
+    width: 100%;
+    min-height: 2.6rem;
+    font-size: 1rem;
+  }
+
+  .leave-paper-credit-table {
+    font-size: 0.85rem;
+  }
+
+  .leave-paper-credit-table th,
+  .leave-paper-credit-table td {
+    padding: 0.35rem 0.3rem;
+  }
+
+  .leave-paper-officer strong,
+  .leave-paper-authorized strong {
+    font-size: 0.9rem;
+  }
+
+  .leave-paper-officer span,
+  .leave-paper-authorized span {
+    font-size: 0.85rem;
+  }
+
+  .leave-paper-officer {
+    gap: 0.35rem;
+  }
+
+  .leave-paper-approval-item {
+    font-size: 0.9rem;
+  }
+
+  .leave-paper-inline-blank {
+    min-width: 7rem;
+  }
+
+  .leave-paper-panel .field label {
+    font-size: 0.9rem;
+  }
+
+  .leave-paper-panel .field textarea {
+    min-height: 6rem;
+    font-size: 1rem;
+  }
+
+  .leave-paper-section-title {
+    font-size: 0.95rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .leave-paper-subgroup p {
+    font-size: 0.85rem;
+  }
+
+  .leave-paper-credit-note {
+    font-size: 0.85rem;
+  }
+
+  .leave-paper-authorized {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .leave-paper-date-picker-note {
+    font-size: 0.9rem;
+  }
+
+  .leave-paper-inline-fields .leave-paper-input {
+    min-height: 2.6rem;
+    font-size: 1rem;
+  }
+
+  .leave-paper-action-textarea {
+    min-height: 5rem;
+    font-size: 0.95rem;
+  }
+
   .admin-request-modal {
     padding: 0.6rem;
   }
@@ -3765,5 +3955,155 @@ button:focus {
   .admin-request-paper .leave-paper-heading-grid {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header {
+    padding: 0.5rem 0.65rem;
+    gap: 0.35rem;
+  }
+
+  .brand-logo {
+    width: 110px;
+  }
+
+  .brand-copy h1 {
+    font-size: 0.78rem;
+  }
+
+  .brand-copy p {
+    font-size: 0.58rem;
+  }
+
+  .site-nav a,
+  .utility-nav a,
+  .utility-nav button {
+    padding: 0.7rem 0.5rem;
+    font-size: 0.82rem;
+    flex: 1 1 auto;
+  }
+
+  .hero-copy h2 {
+    font-size: 2rem;
+  }
+
+  .hero-text {
+    font-size: 0.95rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+  }
+
+  .stat-card {
+    padding: 0.85rem;
+  }
+
+  .stat-card strong {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-header {
+    padding: 1rem;
+  }
+
+  .dashboard-title h2 {
+    font-size: 1.6rem;
+  }
+
+  .auth-page .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-page .auth-copy,
+  .auth-page .auth-card {
+    padding: 1rem;
+  }
+
+  .auth-page .auth-copy h2 {
+    font-size: 1.8rem;
+  }
+
+  .auth-copy-inner {
+    max-width: 100%;
+  }
+
+  .auth-seal {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .auth-page .auth-grid {
+    margin-top: 0.75rem;
+  }
+
+  .auth-page .auth-card {
+    padding: 1.25rem;
+  }
+
+  .auth-form h3 {
+    font-size: 1.2rem;
+  }
+
+  .request-list li {
+    padding: 0.85rem 0.85rem 0.85rem 1rem;
+  }
+
+  .employee-record-row {
+    padding: 0.7rem 0.6rem;
+  }
+
+  .admin-request-card {
+    padding: 0.7rem 0.6rem;
+  }
+
+  .approval-queue-section,
+  .line-list-section {
+    padding: 1rem;
+  }
+
+  .hero-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-strip p {
+    padding: 0.85rem;
+    font-size: 0.9rem;
+  }
+
+  .button {
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .form-actions {
+    display: grid;
+  }
+
+  .form-actions .button {
+    width: 100%;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    padding: 0.85rem;
+    font-size: 1rem;
+    min-height: 3rem;
+  }
+
+  .field label {
+    font-size: 0.85rem;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px;
   }
 }
