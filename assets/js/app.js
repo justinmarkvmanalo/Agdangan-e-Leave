@@ -3648,4 +3648,23 @@
     const monthEndDay = String(monthEnd.getDate()).padStart(2, "0");
     return `${monthEndYear}-${monthEndMonth}-${monthEndDay}`;
   }
+
+  const burger = document.querySelector("[data-burger]");
+  if (burger) {
+    burger.addEventListener("click", function () {
+      const header = this.closest(".site-header");
+      header.classList.toggle("is-open");
+      this.classList.toggle("is-open");
+      this.setAttribute("aria-label", this.classList.contains("is-open") ? "Close menu" : "Open menu");
+    });
+
+    document.addEventListener("click", function (e) {
+      const header = burger.closest(".site-header");
+      if (header.classList.contains("is-open") && !header.contains(e.target)) {
+        header.classList.remove("is-open");
+        burger.classList.remove("is-open");
+        burger.setAttribute("aria-label", "Open menu");
+      }
+    });
+  }
 })();
