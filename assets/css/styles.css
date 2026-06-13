@@ -1063,6 +1063,7 @@ textarea {
 
 .landing-page .hero-meta {
   max-width: 36rem;
+  margin: 0 auto;
 }
 
 .landing-page .hero-meta div {
