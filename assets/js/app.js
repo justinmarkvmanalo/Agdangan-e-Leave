@@ -945,6 +945,24 @@
         return;
       }
 
+      const creditDeductingTypes = selectedLeaveTypes.filter((t) =>
+        ["vacation", "sick", "mandatory-forced", "wellness"].includes(t)
+      );
+      if (creditDeductingTypes.length > 0) {
+        let freeDays = 0;
+        if (selectedLeaveTypes.includes("mandatory-forced")) freeDays = 5;
+        if (selectedLeaveTypes.includes("wellness")) freeDays = Math.max(freeDays, 5);
+        const effectiveDays = Math.max(payload.days_requested - freeDays, 0);
+        const currentCredits = Number(profile.leave_credits) || 0;
+        if (effectiveDays > currentCredits) {
+          window.alert(
+            "Insufficient leave credits. You have " + formatCreditAmount(currentCredits) +
+            " credit(s) but this request requires " + effectiveDays + " day(s)."
+          );
+          return;
+        }
+      }
+
       const finishSubmit = beginFormSubmit(form, "Submitting...");
       if (!finishSubmit) {
         return;
@@ -1356,10 +1374,12 @@
 
     Array.from(container.querySelectorAll("[data-update-request]")).forEach((button) => {
       button.addEventListener("click", async () => {
-        const requestId = Number(button.getAttribute("data-update-request"));
-        const status = button.getAttribute("data-status");
-        selectedAdminRequestId = requestId;
-        await updateLeaveStatus(requestId, status);
+        await runWithButtonLoading(button, "Processing...", async () => {
+          const requestId = Number(button.getAttribute("data-update-request"));
+          const status = button.getAttribute("data-status");
+          selectedAdminRequestId = requestId;
+          await updateLeaveStatus(requestId, status);
+        });
       });
     });
   }

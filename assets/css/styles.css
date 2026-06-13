@@ -4046,6 +4046,22 @@ button:focus {
     display: flex;
   }
 
+  .admin-page .brand-logo,
+  .credit-page .brand-logo,
+  .employee-page .brand-logo {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 120px;
+    transform: none;
+  }
+
+  .admin-page .brand-copy,
+  .credit-page .brand-copy,
+  .employee-page .brand-copy {
+    margin-left: 0;
+  }
+
   .site-nav,
   .utility-nav {
     display: none;
@@ -4106,14 +4122,30 @@ button:focus {
   .site-header {
     padding: 0.5rem 0.65rem;
     gap: 0.35rem;
+    flex-wrap: nowrap;
+  }
+
+  .site-header.is-open {
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    min-width: 0;
+    gap: 0.45rem;
   }
 
   .brand-logo {
-    width: 110px;
+    width: 90px;
+  }
+
+  .admin-page .brand-logo,
+  .credit-page .brand-logo,
+  .employee-page .brand-logo {
+    width: 90px;
   }
 
   .brand-copy h1 {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
   }
 
   .brand-copy p {
