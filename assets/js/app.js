@@ -306,7 +306,6 @@
     const subtitle = document.getElementById("auth-subtitle");
     const roleInput = document.getElementById("selected-role");
     const loginForm = document.getElementById("login-form");
-    const demoFillButton = document.getElementById("demo-fill");
     const requestedRole = new URLSearchParams(window.location.search).get("role");
 
     const applyRole = (role) => {
@@ -337,16 +336,6 @@
 
     if (requestedRole === "admin" || requestedRole === "employee") {
       applyRole(requestedRole);
-    }
-
-    if (demoFillButton) {
-      demoFillButton.addEventListener("click", () => {
-        const role = roleInput.value;
-        document.getElementById("email").value = role === "admin"
-          ? "admin@agdangan.gov.ph"
-          : "employee@agdangan.gov.ph";
-        document.getElementById("password").value = "password123";
-      });
     }
 
     if (!loginForm) {
@@ -1528,6 +1517,34 @@
     if (!session || session.role !== "admin") {
       window.location.href = "/login";
       return;
+    }
+
+    if (status === "approved") {
+      const request = adminLeaveRequests.find((item) => item.id === requestId);
+      if (request) {
+        const leaveTypes = getLeaveTypes(request.leave_type);
+        const creditDeductingTypes = leaveTypes.filter((t) =>
+          ["vacation", "sick", "mandatory-forced", "wellness"].includes(t)
+        );
+        if (creditDeductingTypes.length > 0) {
+          const employee = getAdminEmployeeProfileById(request.employee_id);
+          if (employee) {
+            let freeDays = 0;
+            if (leaveTypes.includes("mandatory-forced")) freeDays = 5;
+            if (leaveTypes.includes("wellness")) freeDays = Math.max(freeDays, 5);
+            const effectiveDays = Math.max(Number(request.days_requested || 0) - freeDays, 0);
+            const currentCredits = Number(employee.leave_credits || 0);
+            if (effectiveDays > currentCredits) {
+              window.alert(
+                "Insufficient leave credits. " + getApplicantFullName(request) +
+                " has " + formatCreditAmount(currentCredits) +
+                " credit(s) but this request requires " + effectiveDays + " day(s)."
+              );
+              return;
+            }
+          }
+        }
+      }
     }
 
     const { error } = await db.rpc("update_leave_request_status", {
