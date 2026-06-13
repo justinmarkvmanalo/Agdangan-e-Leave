@@ -985,9 +985,11 @@ textarea {
 
 .landing-page .hero-shell {
   position: relative;
+  display: grid;
   grid-template-columns: 1fr;
   gap: 0;
   width: min(100%, 72rem);
+  margin: 0 auto;
   min-height: 35rem;
   padding: 0;
   overflow: hidden;
@@ -3562,7 +3564,7 @@ button:focus {
   }
 
   .landing-page .hero-shell {
-    width: calc(100vw - 1rem);
+    width: 100%;
     border-radius: 18px;
   }
 
