@@ -1062,8 +1062,9 @@ textarea {
 }
 
 .landing-page .hero-meta {
-  justify-self: center;
+  width: 100%;
   max-width: 36rem;
+  margin: 0 auto;
 }
 
 .landing-page .hero-meta div {
@@ -1082,6 +1083,8 @@ textarea {
 
 .landing-page .hero-meta strong {
   color: #ffffff;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .landing-page .hero-actions .button-primary {
