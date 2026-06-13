@@ -1355,8 +1355,10 @@
             <div class="admin-request-card-meta">${escapeHtml(String(request.days_requested))} day(s)</div>
             <div class="table-actions">
               <button type="button" class="button button-muted" data-view-request="${request.id}">View</button>
+              ${request.status === "pending" ? `
               <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
               <button type="button" class="button button-danger" data-update-request="${request.id}" data-status="rejected">Reject</button>
+              ` : ""}
             </div>
           </article>
         `).join("")}
@@ -1777,8 +1779,10 @@
           <button type="button" class="button button-muted" data-admin-print-request>Print / Save PDF</button>
           <button type="button" class="button button-muted" data-admin-download-word>Download Word</button>
           <button type="button" class="button button-muted" data-admin-save-request>Save</button>
+          ${request.status === "pending" ? `
           <button type="button" class="button button-success" data-admin-approve-request>Approve</button>
           <button type="button" class="button button-danger" data-admin-reject-request>Reject</button>
+          ` : ""}
         </div>
       </div>
       ${buildAdminRequestPaperMarkup(request)}
