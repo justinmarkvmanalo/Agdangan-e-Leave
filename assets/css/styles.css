@@ -1062,8 +1062,8 @@ textarea {
 }
 
 .landing-page .hero-meta {
+  justify-self: center;
   max-width: 36rem;
-  margin: 0 auto;
 }
 
 .landing-page .hero-meta div {
@@ -1072,6 +1072,8 @@ textarea {
   background: rgba(255, 255, 255, 0.12);
   box-shadow: none;
   backdrop-filter: blur(10px);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .landing-page .hero-meta .card-label {
