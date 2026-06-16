@@ -1135,3 +1135,30 @@ begin
   return result;
 end;
 $$;
+
+-- Deletes credit deduction logs and approved/rejected leave requests older than cutoff date
+-- Keeps employees and admins intact
+create or replace function public.cleanup_old_records(p_cutoff_date date)
+returns json
+language plpgsql
+security definer
+as $$
+declare
+  deleted_logs integer;
+  deleted_requests integer;
+begin
+  delete from public.credit_deduction_logs
+  where created_at < p_cutoff_date::timestamptz;
+  get diagnostics deleted_logs = row_count;
+
+  delete from public.leave_requests
+  where created_at < p_cutoff_date::timestamptz
+    and status in ('approved', 'rejected');
+  get diagnostics deleted_requests = row_count;
+
+  return json_build_object(
+    'deleted_deduction_logs', deleted_logs,
+    'deleted_leave_requests', deleted_requests
+  );
+end;
+$$;

@@ -1359,6 +1359,7 @@
 
     await loadStorageInfo();
     initExportButton();
+    initCleanupButton();
   }
 
   async function loadStorageInfo() {
@@ -1427,6 +1428,44 @@
     btn.disabled = false;
     btn.textContent = "Download Excel";
     btn.addEventListener("click", downloadCreditExcel);
+  }
+
+  function initCleanupButton() {
+    const btn = document.getElementById("cleanup-button");
+    const resultEl = document.getElementById("cleanup-result");
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - 3);
+      const cutoffDate = cutoff.toISOString().split("T")[0];
+
+      const confirmed = window.confirm(
+        `Delete all approved/rejected leave requests and deduction logs older than ${cutoffDate} (3 months)?\n\nEmployee records and current credit balances will NOT be affected. This cannot be undone.`
+      );
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      btn.textContent = "Cleaning up...";
+
+      try {
+        const { data, error } = await db.rpc("cleanup_old_records", { p_cutoff_date: cutoffDate });
+        if (error) {
+          window.alert("Cleanup failed: " + (error.message || "Unknown error"));
+          return;
+        }
+
+        const info = typeof data === "string" ? JSON.parse(data) : data;
+        const msg = `Cleaned up: ${info.deleted_deduction_logs || 0} deduction log(s), ${info.deleted_leave_requests || 0} leave request(s).`;
+        if (resultEl) resultEl.textContent = msg;
+        await loadStorageInfo();
+      } catch (err) {
+        window.alert("Cleanup failed: " + (err?.message || "Unknown error"));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Clean Up Old Records";
+      }
+    });
   }
 
   function sanitizeSheetName(name) {

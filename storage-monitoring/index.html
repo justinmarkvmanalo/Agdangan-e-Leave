@@ -68,6 +68,14 @@
         <p>Download all employee credit balances and deduction history as a formatted Excel file with two sheets.</p>
         <button type="button" class="button button-primary" id="export-excel-button" disabled>Loading...</button>
       </article>
+
+      <article class="dashboard-card dashboard-card-wide cleanup-section">
+        <p class="card-label">Cleanup</p>
+        <h3>Delete Old Records</h3>
+        <p>Remove credit deduction logs and approved/rejected leave requests older than 3 months. Employees and current credit balances are not affected.</p>
+        <button type="button" class="button button-danger" id="cleanup-button">Clean Up Old Records</button>
+        <p class="cleanup-result" id="cleanup-result"></p>
+      </article>
     </section>
   </main>
 

@@ -3367,6 +3367,28 @@ button:focus {
   cursor: not-allowed;
 }
 
+.cleanup-section {
+  padding: 2rem;
+}
+
+.cleanup-section p {
+  margin: 0.5rem 0 1.25rem;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.cleanup-section .button-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cleanup-result {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 1180px) {
   .hero-shell,
   .overview-section,
