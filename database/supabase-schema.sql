@@ -1055,6 +1055,7 @@ where not exists (
 );
 
 -- Returns storage info for each table plus total database size
+-- Uses actual count(*) for accurate row counts
 create or replace function public.get_db_storage_info()
 returns json
 language plpgsql
@@ -1062,22 +1063,31 @@ security definer
 as $$
 declare
   result json;
+  tbl record;
+  tables_json json = '[]'::json;
+  t_row_count bigint;
 begin
+  for tbl in
+    select relname, relid
+    from pg_class
+    where relnamespace = 'public'::regnamespace
+      and relkind = 'r'
+      and relname in ('admins', 'employees', 'leave_requests', 'credit_deduction_logs')
+    order by pg_total_relation_size(relid) desc
+  loop
+    execute format('select count(*) from %I', tbl.relname) into t_row_count;
+    tables_json := tables_json || json_build_object(
+      'table_name', tbl.relname,
+      'row_count', t_row_count,
+      'size', pg_size_pretty(pg_total_relation_size(tbl.relid)),
+      'size_bytes', pg_total_relation_size(tbl.relid)
+    )::json;
+  end loop;
+
   select json_build_object(
     'total_size', pg_size_pretty(pg_database_size(current_database())),
     'total_size_bytes', pg_database_size(current_database()),
-    'tables', coalesce(
-      (select json_agg(json_build_object(
-        'table_name', relname,
-        'row_count', n_live_tup,
-        'size', pg_size_pretty(pg_total_relation_size(relid)),
-        'size_bytes', pg_total_relation_size(relid)
-      ) order by pg_total_relation_size(relid) desc)
-      from pg_stat_user_tables
-      where schemaname = 'public'
-        and relname in ('admins', 'employees', 'leave_requests', 'credit_deduction_logs')),
-      '[]'::json
-    )
+    'tables', tables_json
   ) into result;
 
   return result;
