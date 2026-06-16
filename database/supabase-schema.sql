@@ -1123,6 +1123,7 @@ begin
     ),
     'deductions', coalesce(
       (select json_agg(json_build_object(
+        'employee_id', d.employee_id,
         'employee_name', d.employee_name,
         'employee_no', d.employee_no,
         'minutes', d.minutes,

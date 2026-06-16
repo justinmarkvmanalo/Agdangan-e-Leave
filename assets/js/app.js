@@ -1429,6 +1429,11 @@
     btn.addEventListener("click", downloadCreditExcel);
   }
 
+  function sanitizeSheetName(name) {
+    const cleaned = String(name || "Employee").slice(0, 31);
+    return cleaned.replace(/[*?:\[\]\\\/]/g, "");
+  }
+
   async function downloadCreditExcel() {
     const btn = document.getElementById("export-excel-button");
     if (!btn) return;
@@ -1464,52 +1469,52 @@
 
       const wb = XLSX.utils.book_new();
 
-      const empRows = employees.map((e) => ({
-        "Employee No": e.employee_no || "",
-        "Last Name": e.last_name || "",
-        "First Name": e.first_name || "",
-        "Middle Name": e.middle_name || "",
-        "Suffix": e.suffix || "",
-        "Department": e.department || "",
-        "Position": e.position_title || "",
-        "Status": e.employment_status || "",
-        "Leave Credits": e.leave_credits ?? 0,
-        "Last Accrual": e.last_credit_accrual_date || "",
-        "Hire Date": e.hire_date || ""
-      }));
+      const dedByEmp = {};
+      for (const d of deductions) {
+        const key = d.employee_id || d.employee_no || d.employee_name || "unknown";
+        if (!dedByEmp[key]) dedByEmp[key] = [];
+        dedByEmp[key].push(d);
+      }
 
-      const empSheet = XLSX.utils.json_to_sheet(empRows);
+      for (const emp of employees) {
+        const empKey = emp.id || emp.employee_no;
+        const empDeds = dedByEmp[empKey] || [];
+        const fullName = [emp.last_name, emp.first_name].filter(Boolean).join(", ");
+        const sheetName = sanitizeSheetName(fullName || emp.employee_no || "Employee");
 
-      const empColWidths = [
-        { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 },
-        { wch: 8 }, { wch: 16 }, { wch: 22 }, { wch: 10 },
-        { wch: 14 }, { wch: 14 }, { wch: 14 }
-      ];
-      empSheet["!cols"] = empColWidths;
+        const aoa = [];
 
-      XLSX.utils.book_append_sheet(wb, empSheet, "Employee Credits");
+        aoa.push(["EMPLOYEE INFORMATION"]);
+        aoa.push(["Employee No", emp.employee_no || ""]);
+        aoa.push(["Name", fullName || ""]);
+        aoa.push(["Department", emp.department || ""]);
+        aoa.push(["Position", emp.position_title || ""]);
+        aoa.push(["Status", emp.employment_status || ""]);
+        aoa.push(["Leave Credits", emp.leave_credits ?? 0]);
+        aoa.push([]);
 
-      const dedRows = deductions.map((d) => ({
-        "Employee Name": d.employee_name || "",
-        "Employee No": d.employee_no || "",
-        "Minutes Late": d.minutes ?? 0,
-        "Deduction": d.deduction ?? 0,
-        "Reason": d.reason || "",
-        "Before Credits": d.before_credits ?? 0,
-        "After Credits": d.after_credits ?? 0,
-        "Date": d.created_at ? new Date(d.created_at).toLocaleDateString("en-PH") : ""
-      }));
+        aoa.push(["DEDUCTION HISTORY"]);
+        aoa.push(["Date", "Minutes Late", "Deduction", "Reason", "Before Credits", "After Credits"]);
 
-      const dedSheet = XLSX.utils.json_to_sheet(dedRows);
+        if (empDeds.length) {
+          for (const d of empDeds) {
+            aoa.push([
+              d.created_at ? new Date(d.created_at).toLocaleDateString("en-PH") : "",
+              d.minutes ?? 0,
+              d.deduction ?? 0,
+              d.reason || "",
+              d.before_credits ?? 0,
+              d.after_credits ?? 0
+            ]);
+          }
+        } else {
+          aoa.push(["No deduction records."]);
+        }
 
-      const dedColWidths = [
-        { wch: 24 }, { wch: 14 }, { wch: 14 },
-        { wch: 12 }, { wch: 28 }, { wch: 16 },
-        { wch: 14 }, { wch: 14 }
-      ];
-      dedSheet["!cols"] = dedColWidths;
-
-      XLSX.utils.book_append_sheet(wb, dedSheet, "Deduction Log");
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws["!cols"] = [{ wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 32 }, { wch: 16 }, { wch: 14 }];
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
 
       const fileName = "Credit_Records_" + new Date().toISOString().split("T")[0] + ".xlsx";
       XLSX.writeFile(wb, fileName);
