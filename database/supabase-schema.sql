@@ -1099,6 +1099,7 @@ begin
   select json_build_object(
     'employees', coalesce(
       (select json_agg(json_build_object(
+        'id', e.id,
         'employee_no', e.employee_no,
         'first_name', e.first_name,
         'middle_name', e.middle_name,
