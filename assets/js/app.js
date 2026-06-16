@@ -243,28 +243,54 @@
     var tooltip = tourState.tooltip;
     if (!tooltip) return;
 
+    var titleEl = tooltip.querySelector(".tour-tooltip-title");
+    var descEl = tooltip.querySelector(".tour-tooltip-desc");
+    var counterEl = tooltip.querySelector(".tour-tooltip-counter");
+    var nextBtn = tooltip.querySelector(".tour-tooltip-next");
+    if (titleEl) titleEl.textContent = step.title;
+    if (descEl) descEl.textContent = step.desc;
+    if (counterEl) counterEl.textContent = (index + 1) + " of " + steps.length;
+    if (nextBtn) nextBtn.textContent = index < steps.length - 1 ? "Continue" : "Done";
+
     var gap = 14;
+    var margin = 12;
     var viewH = window.innerHeight;
     var viewW = window.innerWidth;
+    var tooltipW = Math.min(380, viewW - margin * 2);
+
+    tooltip.style.left = "-9999px";
+    tooltip.style.top = "0px";
+    tooltip.style.width = tooltipW + "px";
+    var tooltipH = tooltip.offsetHeight;
+
     var spaceBelow = viewH - rect.bottom;
     var spaceAbove = rect.top;
+    var placeBelow = spaceBelow >= tooltipH + gap;
+    var placeAbove = spaceAbove >= tooltipH + gap;
+
     var tooltipY, arrowClass;
 
-    if (spaceBelow > 220 || spaceBelow >= spaceAbove) {
+    if (placeBelow && (!placeAbove || spaceBelow >= spaceAbove)) {
+      tooltipY = rect.bottom + gap;
+      arrowClass = "arrow-up";
+    } else if (placeAbove) {
+      tooltipY = rect.top - tooltipH - gap;
+      arrowClass = "arrow-down";
+    } else if (spaceBelow >= spaceAbove) {
       tooltipY = rect.bottom + gap;
       arrowClass = "arrow-up";
     } else {
-      tooltipY = rect.top - gap;
+      tooltipY = rect.top - tooltipH - gap;
       arrowClass = "arrow-down";
     }
 
-    var tooltipW = Math.min(380, viewW - 32);
+    tooltipY = Math.max(margin, Math.min(tooltipY, viewH - tooltipH - margin));
+
     var idealX = rect.left + rect.width / 2 - tooltipW / 2;
-    var tooltipX = Math.max(16, Math.min(idealX, viewW - tooltipW - 16));
+    var tooltipX = Math.max(margin, Math.min(idealX, viewW - tooltipW - margin));
 
     tooltip.style.left = tooltipX + "px";
     tooltip.style.top = tooltipY + "px";
-    tooltip.style.width = tooltipW + "px";
 
     var arrow = tooltip.querySelector(".tour-tooltip-arrow");
     if (arrow) {
@@ -279,15 +305,6 @@
         arrow.style.top = "auto";
       }
     }
-
-    var titleEl = tooltip.querySelector(".tour-tooltip-title");
-    var descEl = tooltip.querySelector(".tour-tooltip-desc");
-    var counterEl = tooltip.querySelector(".tour-tooltip-counter");
-    var nextBtn = tooltip.querySelector(".tour-tooltip-next");
-    if (titleEl) titleEl.textContent = step.title;
-    if (descEl) descEl.textContent = step.desc;
-    if (counterEl) counterEl.textContent = (index + 1) + " of " + steps.length;
-    if (nextBtn) nextBtn.textContent = index < steps.length - 1 ? "Continue" : "Done";
   }
 
   function advanceTour() {
