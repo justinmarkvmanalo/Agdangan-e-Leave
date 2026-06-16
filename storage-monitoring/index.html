@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage Monitoring | Agdangan e-Leave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body class="app-shell dashboard-page admin-page">
+  <header class="site-header">
+    <a class="brand" href="/">
+      <img src="/assets/images/agdangan-eleave-logo.png" alt="Agdangan e-Leave official logo" class="brand-logo">
+      <div class="brand-copy">
+        <span class="eyebrow">Admin Portal</span>
+        <h1>Agdangan e-Leave</h1>
+        <p>Database storage usage monitoring.</p>
+      </div>
+    </a>
+
+    <button class="burger" aria-label="Open menu" data-burger><span></span><span></span><span></span></button>
+    <nav class="utility-nav" aria-label="Storage monitoring navigation">
+      <a href="/admin-dashboard">Admin Dashboard</a>
+      <a href="/credit-computation">Credit Computation</a>
+      <a href="#storage-monitoring">Storage</a>
+      <button type="button" id="sign-out-button">Sign Out</button>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <section class="dashboard-header" id="storage-monitoring">
+      <div class="dashboard-title">
+        <p class="section-label">Storage Monitoring</p>
+        <h2 id="storage-page-name">Welcome, Administrator</h2>
+        <p id="storage-page-meta">Monitor your Supabase database storage usage.</p>
+      </div>
+
+      <div class="dashboard-meta">
+        <strong class="badge admin-badge">Admin</strong>
+      </div>
+    </section>
+
+    <section class="storage-summary-card">
+      <div class="storage-summary-header">
+        <span class="stat-label">Total Database Usage</span>
+        <strong id="storage-total">Loading...</strong>
+      </div>
+      <div class="storage-bar-track">
+        <div class="storage-bar-fill" id="storage-bar-fill" style="width: 0%"></div>
+      </div>
+      <p class="storage-bar-label">500 MB limit</p>
+    </section>
+
+    <section class="dashboard-card dashboard-card-wide storage-detail-section">
+      <p class="card-label">Per-Table Breakdown</p>
+      <h3>Table Sizes</h3>
+      <div id="storage-table">
+        <p class="empty-state">Loading storage information...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/vendor/supabase-js-2.js"></script>
+  <script src="/assets/js/supabase-config.js"></script>
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

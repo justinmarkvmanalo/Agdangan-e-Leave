@@ -1317,10 +1317,6 @@ button:focus {
   margin-bottom: 1.35rem;
 }
 
-.admin-page .stats-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-
 .stat-card strong {
   display: block;
   margin-top: 0.7rem;
@@ -3235,10 +3231,6 @@ button:focus {
   border-top: 5px solid #e35b6b;
 }
 
-.admin-page .stats-grid .stat-card:nth-child(5) {
-  border-top: 5px solid #2ecc71;
-}
-
 .admin-page .dashboard-card h3,
 .admin-page .admin-request-card h4,
 .admin-page .employee-record-row strong,
@@ -3275,6 +3267,88 @@ button:focus {
 .credit-page .credit-formula {
   background: linear-gradient(135deg, #8c3daa, #b43b93);
   box-shadow: 0 14px 26px rgba(111, 42, 168, 0.18);
+}
+
+.storage-summary-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 1.35rem;
+  box-shadow: 0 22px 54px rgba(20, 8, 40, 0.22);
+  border-top: 5px solid #2ecc71;
+}
+
+.storage-summary-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.storage-summary-header strong {
+  font-size: 1.8rem;
+  color: #2ecc71;
+}
+
+.storage-bar-track {
+  width: 100%;
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 6px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.storage-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.storage-bar-label {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.storage-detail-section {
+  padding: 2rem;
+}
+
+.storage-table-list {
+  margin-top: 1rem;
+}
+
+.storage-table-header,
+.storage-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  align-items: center;
+}
+
+.storage-table-header {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #888;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.storage-table-row {
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
+}
+
+.storage-table-row:last-child {
+  border-bottom: 0;
+}
+
+.storage-table-row span:last-child {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 @media (max-width: 1180px) {

@@ -135,6 +135,7 @@
   const isAccountSettingsPage = /^\/account-settings(?:\/index\.html)?$/.test(normalizedPath);
   const isAdminDashboardPage = /^\/admin-dashboard(?:\/index\.html)?$/.test(normalizedPath);
   const isCreditComputationPage = /^\/credit-computation(?:\/index\.html)?$/.test(normalizedPath);
+  const isStorageMonitoringPage = /^\/storage-monitoring(?:\/index\.html)?$/.test(normalizedPath);
   const nativeAlert = window.alert.bind(window);
   let activeSystemAlert = null;
   let lastSystemAlertFocus = null;
@@ -164,6 +165,11 @@
 
     if (isCreditComputationPage) {
       initCreditComputationPage();
+      return;
+    }
+
+    if (isStorageMonitoringPage) {
+      initStorageMonitoringPage();
     }
   });
 
@@ -471,7 +477,7 @@
     }
 
     bindAdminEmployeeForm(profile.id);
-    await Promise.all([loadAdminProfiles(), loadAdminRequests(), loadStorageInfo()]);
+    await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
   }
 
   async function initCreditComputationPage() {
@@ -1319,31 +1325,94 @@
     syncSelectedAdminRequest();
   }
 
-  async function loadStorageInfo() {
-    const el = document.getElementById("stat-db-storage");
-    if (!el) return;
+  function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + " " + units[i];
+  }
+
+  async function initStorageMonitoringPage() {
+    bindSignOut();
 
     if (!db) {
-      el.textContent = "Demo";
+      renderStorageDemo();
       return;
     }
+
+    const session = getSession();
+    if (!session || session.role !== "admin") {
+      window.location.href = "/login";
+      return;
+    }
+
+    const profile = await fetchAdminProfile(session.userId);
+    if (!profile) {
+      window.alert("Unable to load admin profile.");
+      return;
+    }
+
+    const nameEl = document.getElementById("storage-page-name");
+    const metaEl = document.getElementById("storage-page-meta");
+    if (nameEl) nameEl.textContent = `Welcome, ${profile.first_name} ${profile.last_name}`;
+    if (metaEl) metaEl.textContent = `${profile.department} | ${profile.position_title}`;
+
+    await loadStorageInfo();
+  }
+
+  async function loadStorageInfo() {
+    const container = document.getElementById("storage-table");
+    if (!container) return;
 
     try {
       const { data, error } = await db.rpc("get_db_storage_info");
       if (error || !data) {
-        el.textContent = "N/A";
+        container.innerHTML = '<p class="empty-state">Unable to load storage info. Run the get_db_storage_info() function in Supabase SQL Editor first.</p>';
         return;
       }
 
       const info = typeof data === "string" ? JSON.parse(data) : data;
+      const tables = info.tables || [];
       const used = info.total_size_bytes || 0;
       const limit = 500 * 1024 * 1024;
       const pct = Math.min((used / limit) * 100, 100);
-      el.textContent = `${info.total_size || "0 bytes"} (${pct.toFixed(1)}%)`;
-      el.title = `${info.total_size} used of 500 MB`;
+
+      const totalEl = document.getElementById("storage-total");
+      if (totalEl) {
+        totalEl.textContent = `${info.total_size || "0 B"} used (${pct.toFixed(1)}% of 500 MB)`;
+      }
+
+      const pctEl = document.getElementById("storage-bar-fill");
+      if (pctEl) {
+        pctEl.style.width = pct + "%";
+      }
+
+      container.innerHTML = `
+        <div class="storage-table-list">
+          <div class="storage-table-header">
+            <span>Table</span>
+            <span>Rows</span>
+            <span>Size</span>
+          </div>
+          ${tables.map((t) => `
+            <div class="storage-table-row">
+              <span>${escapeHtml(t.table_name || "")}</span>
+              <span>${String(t.row_count ?? 0)}</span>
+              <span>${escapeHtml(t.size || "0 B")} (${formatBytes(t.size_bytes || 0)})</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
     } catch {
-      el.textContent = "N/A";
+      container.innerHTML = '<p class="empty-state">Failed to load storage information.</p>';
     }
+  }
+
+  function renderStorageDemo() {
+    setText("storage-page-name", "Welcome, System Administrator");
+    setText("storage-page-meta", "HR | Municipal Administrator");
+    const totalEl = document.getElementById("storage-total");
+    if (totalEl) totalEl.textContent = "Demo mode — connect Supabase to see real usage";
   }
 
   function renderAdminRequestsTable(data) {
@@ -3333,7 +3402,6 @@
     setText("stat-admin-pending", "5");
     setText("stat-admin-approved", "16");
     setText("stat-admin-rejected", "2");
-    setText("stat-db-storage", "Demo");
 
     adminEmployeeProfiles = demoProfiles;
     renderAdminEmployeeTable(demoProfiles);

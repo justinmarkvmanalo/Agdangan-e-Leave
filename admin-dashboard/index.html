@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/styles.css?v=20260603-disapproval-lines">
+  <link rel="stylesheet" href="/assets/css/styles.css?v=20260616-storage">
 </head>
 <body class="app-shell dashboard-page admin-page">
   <header class="site-header">
@@ -24,6 +24,7 @@
     <nav class="utility-nav" aria-label="Admin navigation">
       <a href="#admin-service">Admin Service</a>
       <a href="/credit-computation">Credit Computation</a>
+      <a href="/storage-monitoring">Storage</a>
       <button type="button" id="sign-out-button">Sign Out</button>
     </nav>
   </header>
@@ -57,10 +58,6 @@
       <article class="stat-card">
         <span class="stat-label">Rejected Requests</span>
         <strong id="stat-admin-rejected">0</strong>
-      </article>
-      <article class="stat-card">
-        <span class="stat-label">Database Storage</span>
-        <strong id="stat-db-storage">—</strong>
       </article>
     </section>
 
@@ -185,6 +182,6 @@
 
   <script src="/assets/vendor/supabase-js-2.js"></script>
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/app.js?v=20260603-disapproval-lines"></script>
+  <script src="/assets/js/app.js?v=20260616-storage"></script>
 </body>
 </html>
