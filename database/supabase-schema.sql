@@ -1093,3 +1093,50 @@ begin
   return result;
 end;
 $$;
+
+-- Returns all employee credit data and deduction logs for Excel export
+create or replace function public.get_credit_export_data()
+returns json
+language plpgsql
+security definer
+as $$
+declare
+  result json;
+begin
+  select json_build_object(
+    'employees', coalesce(
+      (select json_agg(json_build_object(
+        'employee_no', e.employee_no,
+        'first_name', e.first_name,
+        'middle_name', e.middle_name,
+        'last_name', e.last_name,
+        'suffix', e.suffix,
+        'department', e.department,
+        'position_title', e.position_title,
+        'employment_status', e.employment_status,
+        'leave_credits', e.leave_credits,
+        'last_credit_accrual_date', e.last_credit_accrual_date,
+        'hire_date', e.hire_date
+      ) order by e.last_name, e.first_name)
+      from public.employees e),
+      '[]'::json
+    ),
+    'deductions', coalesce(
+      (select json_agg(json_build_object(
+        'employee_name', d.employee_name,
+        'employee_no', d.employee_no,
+        'minutes', d.minutes,
+        'deduction', d.deduction,
+        'reason', d.reason,
+        'before_credits', d.before_credits,
+        'after_credits', d.after_credits,
+        'created_at', d.created_at
+      ) order by d.created_at desc)
+      from public.credit_deduction_logs d),
+      '[]'::json
+    )
+  ) into result;
+
+  return result;
+end;
+$$;

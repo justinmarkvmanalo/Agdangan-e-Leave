@@ -1358,6 +1358,7 @@
     if (metaEl) metaEl.textContent = `${profile.department} | ${profile.position_title}`;
 
     await loadStorageInfo();
+    initExportButton();
   }
 
   async function loadStorageInfo() {
@@ -1413,6 +1414,113 @@
     setText("storage-page-meta", "HR | Municipal Administrator");
     const totalEl = document.getElementById("storage-total");
     if (totalEl) totalEl.textContent = "Demo mode — connect Supabase to see real usage";
+    const btn = document.getElementById("export-excel-button");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Demo — No Data";
+    }
+  }
+
+  function initExportButton() {
+    const btn = document.getElementById("export-excel-button");
+    if (!btn) return;
+    btn.disabled = false;
+    btn.textContent = "Download Excel";
+    btn.addEventListener("click", downloadCreditExcel);
+  }
+
+  async function downloadCreditExcel() {
+    const btn = document.getElementById("export-excel-button");
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = "Generating...";
+
+    try {
+      const { data, error } = await db.rpc("get_credit_export_data");
+      if (error || !data) {
+        window.alert("Failed to fetch credit data: " + (error?.message || "No data"));
+        btn.disabled = false;
+        btn.textContent = "Download Excel";
+        return;
+      }
+
+      const info = typeof data === "string" ? JSON.parse(data) : data;
+      const employees = info.employees || [];
+      const deductions = info.deductions || [];
+
+      if (!employees.length && !deductions.length) {
+        window.alert("No employee or deduction data to export.");
+        btn.disabled = false;
+        btn.textContent = "Download Excel";
+        return;
+      }
+
+      if (typeof XLSX === "undefined") {
+        window.alert("Excel library not loaded. Try refreshing the page.");
+        btn.disabled = false;
+        btn.textContent = "Download Excel";
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      const empRows = employees.map((e) => ({
+        "Employee No": e.employee_no || "",
+        "Last Name": e.last_name || "",
+        "First Name": e.first_name || "",
+        "Middle Name": e.middle_name || "",
+        "Suffix": e.suffix || "",
+        "Department": e.department || "",
+        "Position": e.position_title || "",
+        "Status": e.employment_status || "",
+        "Leave Credits": e.leave_credits ?? 0,
+        "Last Accrual": e.last_credit_accrual_date || "",
+        "Hire Date": e.hire_date || ""
+      }));
+
+      const empSheet = XLSX.utils.json_to_sheet(empRows);
+
+      const empColWidths = [
+        { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 16 },
+        { wch: 8 }, { wch: 16 }, { wch: 22 }, { wch: 10 },
+        { wch: 14 }, { wch: 14 }, { wch: 14 }
+      ];
+      empSheet["!cols"] = empColWidths;
+
+      XLSX.utils.book_append_sheet(wb, empSheet, "Employee Credits");
+
+      const dedRows = deductions.map((d) => ({
+        "Employee Name": d.employee_name || "",
+        "Employee No": d.employee_no || "",
+        "Minutes Late": d.minutes ?? 0,
+        "Deduction": d.deduction ?? 0,
+        "Reason": d.reason || "",
+        "Before Credits": d.before_credits ?? 0,
+        "After Credits": d.after_credits ?? 0,
+        "Date": d.created_at ? new Date(d.created_at).toLocaleDateString("en-PH") : ""
+      }));
+
+      const dedSheet = XLSX.utils.json_to_sheet(dedRows);
+
+      const dedColWidths = [
+        { wch: 24 }, { wch: 14 }, { wch: 14 },
+        { wch: 12 }, { wch: 28 }, { wch: 16 },
+        { wch: 14 }, { wch: 14 }
+      ];
+      dedSheet["!cols"] = dedColWidths;
+
+      XLSX.utils.book_append_sheet(wb, dedSheet, "Deduction Log");
+
+      const fileName = "Credit_Records_" + new Date().toISOString().split("T")[0] + ".xlsx";
+      XLSX.writeFile(wb, fileName);
+
+      btn.disabled = false;
+      btn.textContent = "Download Excel";
+    } catch (err) {
+      window.alert("Export failed: " + (err?.message || "Unknown error"));
+      btn.disabled = false;
+      btn.textContent = "Download Excel";
+    }
   }
 
   function renderAdminRequestsTable(data) {

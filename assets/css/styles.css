@@ -3351,6 +3351,22 @@ button:focus {
   color: #555;
 }
 
+.export-section {
+  padding: 2rem;
+}
+
+.export-section p {
+  margin: 0.5rem 0 1.25rem;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.export-section .button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1180px) {
   .hero-shell,
   .overview-section,

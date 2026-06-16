@@ -60,10 +60,18 @@
         <p class="empty-state">Loading storage information...</p>
       </div>
     </section>
+
+    <section class="dashboard-card dashboard-card-wide export-section">
+      <p class="card-label">Data Export</p>
+      <h3>Export Credit Records to Excel</h3>
+      <p>Download all employee credit balances and deduction history as a formatted Excel file with two sheets.</p>
+      <button type="button" class="button button-primary" id="export-excel-button" disabled>Loading...</button>
+    </section>
   </main>
 
   <script src="/assets/vendor/supabase-js-2.js"></script>
   <script src="/assets/js/supabase-config.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="/assets/js/app.js"></script>
 </body>
 </html>
