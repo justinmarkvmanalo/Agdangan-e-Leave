@@ -3000,7 +3000,6 @@
               <td data-label="Action">
                 <div class="credit-action-stack">
                   <button type="button" class="button button-muted" data-deduct-late="${profile.id}">Enter Minutes</button>
-                  <button type="button" class="button button-muted" data-download-deduction-log="${profile.id}">Text File</button>
                 </div>
               </td>
             </tr>
@@ -3025,17 +3024,6 @@
       });
     });
 
-    Array.from(container.querySelectorAll("[data-download-deduction-log]")).forEach((button) => {
-      button.addEventListener("click", async () => {
-        const employeeId = Number(button.getAttribute("data-download-deduction-log"));
-        const profile = getAdminEmployeeProfileById(employeeId);
-        if (!profile) {
-          return;
-        }
-
-        await downloadEmployeeDeductionLog(profile);
-      });
-    });
   }
 
   function bindCreditDeductionModal() {
@@ -3409,50 +3397,6 @@
       ...entry
     });
     window.localStorage.setItem(creditDeductionLogKey, JSON.stringify(logs));
-  }
-
-  async function downloadEmployeeDeductionLog(profile) {
-    const logs = await getEmployeeDeductionLogs(profile);
-    const employeeName = getEmployeeDisplayName(profile);
-    const lines = [
-      `Employee: ${employeeName}`,
-      `Employee No: ${profile.employee_no || "No employee number"}`,
-      `Generated: ${new Date().toLocaleString()}`,
-      "",
-      db ? "Supabase credit deduction records" : "Local demo credit deduction records",
-      "========================"
-    ];
-
-    if (!logs.length) {
-      lines.push(db ? "No Supabase manual late-minute deductions recorded yet." : "No manual late-minute deductions recorded in this browser yet.");
-    } else {
-      logs.forEach((entry, index) => {
-        lines.push(
-          "",
-          `${index + 1}. ${new Date(entry.createdAt).toLocaleString()}`,
-          `Reason: ${entry.reason}`,
-          `Late minutes: ${entry.minutes}`,
-          `Minus: ${formatCreditAmount(entry.deduction)}`,
-          `Before credits: ${formatCreditAmount(entry.beforeCredits)}`,
-          `After credits: ${formatCreditAmount(entry.afterCredits)}`
-        );
-        if (Array.isArray(entry.entries) && entry.entries.length) {
-          lines.push("Entries:");
-          entry.entries.forEach((lateEntry) => {
-            lines.push(`- ${lateEntry.note || "No note"}: ${lateEntry.minutes} minute(s)`);
-          });
-        }
-      });
-    }
-
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${slugifyFileName(employeeName)}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(link.href);
   }
 
   function slugifyFileName(value) {
