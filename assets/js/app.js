@@ -210,7 +210,6 @@
 
   function cleanupTour() {
     if (!tourState) return;
-    document.body.style.overflow = "";
     if (tourState._cleanup) tourState._cleanup();
     if (tourState.overlay && tourState.overlay.parentNode) tourState.overlay.remove();
     if (tourState.tooltip && tourState.tooltip.parentNode) tourState.tooltip.remove();
@@ -289,8 +288,6 @@
     if (descEl) descEl.textContent = step.desc;
     if (counterEl) counterEl.textContent = (index + 1) + " of " + steps.length;
     if (nextBtn) nextBtn.textContent = index < steps.length - 1 ? "Continue" : "Done";
-
-    targetEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
   function advanceTour() {
@@ -357,7 +354,6 @@
       window.removeEventListener("resize", onResize);
     };
 
-    document.body.style.overflow = "hidden";
     positionTourStep(0);
   }
 
