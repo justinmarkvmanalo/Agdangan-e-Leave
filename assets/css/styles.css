@@ -1317,6 +1317,10 @@ button:focus {
   margin-bottom: 1.35rem;
 }
 
+.admin-page .stats-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .stat-card strong {
   display: block;
   margin-top: 0.7rem;
@@ -3229,6 +3233,10 @@ button:focus {
 .admin-page .stats-grid .stat-card:nth-child(4),
 .employee-page .stats-grid .stat-card:nth-child(4) {
   border-top: 5px solid #e35b6b;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(5) {
+  border-top: 5px solid #2ecc71;
 }
 
 .admin-page .dashboard-card h3,

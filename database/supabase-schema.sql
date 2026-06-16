@@ -1053,3 +1053,33 @@ where not exists (
   from public.admins
   where email = 'admin@agdangan.gov.ph'
 );
+
+-- Returns storage info for each table plus total database size
+create or replace function public.get_db_storage_info()
+returns json
+language plpgsql
+security definer
+as $$
+declare
+  result json;
+begin
+  select json_build_object(
+    'total_size', pg_size_pretty(pg_database_size(current_database())),
+    'total_size_bytes', pg_database_size(current_database()),
+    'tables', coalesce(
+      (select json_agg(json_build_object(
+        'table_name', relname,
+        'row_count', n_live_tup,
+        'size', pg_size_pretty(pg_total_relation_size(relid)),
+        'size_bytes', pg_total_relation_size(relid)
+      ) order by pg_total_relation_size(relid) desc)
+      from pg_stat_user_tables
+      where schemaname = 'public'
+        and relname in ('admins', 'employees', 'leave_requests', 'credit_deduction_logs')),
+      '[]'::json
+    )
+  ) into result;
+
+  return result;
+end;
+$$;

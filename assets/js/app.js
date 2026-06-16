@@ -471,7 +471,7 @@
     }
 
     bindAdminEmployeeForm(profile.id);
-    await Promise.all([loadAdminProfiles(), loadAdminRequests()]);
+    await Promise.all([loadAdminProfiles(), loadAdminRequests(), loadStorageInfo()]);
   }
 
   async function initCreditComputationPage() {
@@ -1317,6 +1317,33 @@
 
     renderAdminRequestsTable(adminLeaveRequests);
     syncSelectedAdminRequest();
+  }
+
+  async function loadStorageInfo() {
+    const el = document.getElementById("stat-db-storage");
+    if (!el) return;
+
+    if (!db) {
+      el.textContent = "Demo";
+      return;
+    }
+
+    try {
+      const { data, error } = await db.rpc("get_db_storage_info");
+      if (error || !data) {
+        el.textContent = "N/A";
+        return;
+      }
+
+      const info = typeof data === "string" ? JSON.parse(data) : data;
+      const used = info.total_size_bytes || 0;
+      const limit = 500 * 1024 * 1024;
+      const pct = Math.min((used / limit) * 100, 100);
+      el.textContent = `${info.total_size || "0 bytes"} (${pct.toFixed(1)}%)`;
+      el.title = `${info.total_size} used of 500 MB`;
+    } catch {
+      el.textContent = "N/A";
+    }
   }
 
   function renderAdminRequestsTable(data) {
@@ -3306,6 +3333,7 @@
     setText("stat-admin-pending", "5");
     setText("stat-admin-approved", "16");
     setText("stat-admin-rejected", "2");
+    setText("stat-db-storage", "Demo");
 
     adminEmployeeProfiles = demoProfiles;
     renderAdminEmployeeTable(demoProfiles);
