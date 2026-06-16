@@ -1367,8 +1367,12 @@
 
     try {
       const { data, error } = await db.rpc("get_db_storage_info");
-      if (error || !data) {
-        container.innerHTML = '<p class="empty-state">Unable to load storage info. Run the get_db_storage_info() function in Supabase SQL Editor first.</p>';
+      if (error) {
+        container.innerHTML = '<p class="empty-state">Error: ' + escapeHtml(error.message || "Unknown error") + '. Make sure the get_db_storage_info() function exists in Supabase.</p>';
+        return;
+      }
+      if (!data) {
+        container.innerHTML = '<p class="empty-state">No data returned. Run the get_db_storage_info() function in Supabase SQL Editor first.</p>';
         return;
       }
 

@@ -1055,7 +1055,7 @@ where not exists (
 );
 
 -- Returns storage info for each table plus total database size
--- Uses actual count(*) for accurate row counts
+-- Uses direct count(*) and size queries for reliable access
 create or replace function public.get_db_storage_info()
 returns json
 language plpgsql
@@ -1063,30 +1063,34 @@ security definer
 as $$
 declare
   result json;
-  tbl record;
+  t_count bigint;
+  t_size bigint;
   tables_json json = '[]'::json;
-  t_row_count bigint;
+  total_db_size bigint;
+  total_db_pretty text;
 begin
-  for tbl in
-    select relname, relid
-    from pg_class
-    where relnamespace = 'public'::regnamespace
-      and relkind = 'r'
-      and relname in ('admins', 'employees', 'leave_requests', 'credit_deduction_logs')
-    order by pg_total_relation_size(relid) desc
-  loop
-    execute format('select count(*) from %I', tbl.relname) into t_row_count;
-    tables_json := tables_json || json_build_object(
-      'table_name', tbl.relname,
-      'row_count', t_row_count,
-      'size', pg_size_pretty(pg_total_relation_size(tbl.relid)),
-      'size_bytes', pg_total_relation_size(tbl.relid)
-    )::json;
-  end loop;
+  select pg_database_size(current_database()) into total_db_size;
+  select pg_size_pretty(total_db_size) into total_db_pretty;
+
+  select count(*) into t_count from public.admins;
+  select pg_total_relation_size('public.admins'::regclass) into t_size;
+  tables_json := tables_json || json_build_object('table_name', 'admins', 'row_count', t_count, 'size', pg_size_pretty(t_size), 'size_bytes', t_size)::json;
+
+  select count(*) into t_count from public.employees;
+  select pg_total_relation_size('public.employees'::regclass) into t_size;
+  tables_json := tables_json || json_build_object('table_name', 'employees', 'row_count', t_count, 'size', pg_size_pretty(t_size), 'size_bytes', t_size)::json;
+
+  select count(*) into t_count from public.leave_requests;
+  select pg_total_relation_size('public.leave_requests'::regclass) into t_size;
+  tables_json := tables_json || json_build_object('table_name', 'leave_requests', 'row_count', t_count, 'size', pg_size_pretty(t_size), 'size_bytes', t_size)::json;
+
+  select count(*) into t_count from public.credit_deduction_logs;
+  select pg_total_relation_size('public.credit_deduction_logs'::regclass) into t_size;
+  tables_json := tables_json || json_build_object('table_name', 'credit_deduction_logs', 'row_count', t_count, 'size', pg_size_pretty(t_size), 'size_bytes', t_size)::json;
 
   select json_build_object(
-    'total_size', pg_size_pretty(pg_database_size(current_database())),
-    'total_size_bytes', pg_database_size(current_database()),
+    'total_size', total_db_pretty,
+    'total_size_bytes', total_db_size,
     'tables', tables_json
   ) into result;
 
