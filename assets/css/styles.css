@@ -647,6 +647,53 @@ textarea {
   padding-top: 1.5rem;
 }
 
+@keyframes auth-bg-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: rotate(42deg) translateY(0);
+  }
+  50% {
+    transform: rotate(42deg) translateY(-14px);
+  }
+}
+
+@keyframes float-slow-after {
+  0%, 100% {
+    transform: rotate(45deg) translateY(0);
+  }
+  50% {
+    transform: rotate(45deg) translateY(12px);
+  }
+}
+
+@keyframes auth-icon-pulse {
+  0%, 100% {
+    box-shadow: 0 14px 24px rgba(111, 42, 168, 0.28);
+  }
+  50% {
+    box-shadow: 0 14px 34px rgba(111, 42, 168, 0.48);
+  }
+}
+
 .auth-copy h2 {
   font-size: clamp(2.4rem, 4vw, 4.2rem);
   color: var(--navy);
@@ -667,6 +714,8 @@ textarea {
 .auth-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
+  background-size: 200% 200%;
+  animation: auth-bg-shift 12s ease-in-out infinite;
 }
 
 .auth-page .site-header {
@@ -729,6 +778,7 @@ textarea {
   background: linear-gradient(135deg, rgba(239, 206, 255, 0.74), rgba(255, 255, 255, 0.32));
   transform: rotate(42deg);
   box-shadow: 0 24px 46px rgba(31, 12, 64, 0.28);
+  animation: float-slow 8s ease-in-out infinite;
 }
 
 .auth-page .auth-copy::after {
@@ -739,6 +789,7 @@ textarea {
   background: linear-gradient(135deg, rgba(244, 213, 121, 0.72), rgba(140, 61, 170, 0.42));
   transform: rotate(45deg);
   box-shadow: -18px -18px 40px rgba(31, 12, 64, 0.24);
+  animation: float-slow-after 9s ease-in-out infinite;
 }
 
 .auth-copy-inner {
@@ -747,6 +798,22 @@ textarea {
   display: grid;
   gap: 0.8rem;
   max-width: 18rem;
+}
+
+.auth-copy-inner > * {
+  animation: fade-slide-up 0.7s ease-out both;
+}
+
+.auth-copy-inner > .section-label {
+  animation-delay: 0.1s;
+}
+
+.auth-copy-inner > h2 {
+  animation-delay: 0.2s;
+}
+
+.auth-copy-inner > p {
+  animation-delay: 0.3s;
 }
 
 .auth-seal {
@@ -792,6 +859,13 @@ textarea {
   background: rgba(255, 255, 255, 0.12);
   box-shadow: none;
   backdrop-filter: blur(10px);
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-page .mini-card:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 12, 64, 0.18);
 }
 
 .auth-page .mini-card strong {
@@ -824,6 +898,19 @@ textarea {
   box-shadow: none;
 }
 
+.auth-page .auth-card > .role-switch,
+.auth-page .auth-card > form {
+  animation: fade-slide-up 0.7s ease-out both;
+}
+
+.auth-page .auth-card > .role-switch {
+  animation-delay: 0.1s;
+}
+
+.auth-page .auth-card > form {
+  animation-delay: 0.2s;
+}
+
 .auth-icon {
   display: grid;
   place-items: center;
@@ -835,6 +922,7 @@ textarea {
   overflow: hidden;
   background: linear-gradient(145deg, #f3d9ff, #8c3daa 62%, #f4d579 140%);
   box-shadow: 0 14px 24px rgba(111, 42, 168, 0.28);
+  animation: auth-icon-pulse 3s ease-in-out infinite;
 }
 
 .auth-icon img {
@@ -871,6 +959,7 @@ textarea {
   min-width: 7rem;
   border-radius: 999px;
   color: #6f2aa8;
+  transition: all 0.3s ease;
 }
 
 .auth-page .role-switch button.active {
@@ -888,6 +977,7 @@ textarea {
   border-radius: 0;
   padding: 0.9rem 0.2rem;
   background: transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .auth-page .field input:focus {
@@ -904,6 +994,12 @@ textarea {
   border-radius: 999px;
   background: linear-gradient(135deg, #5b1f8d, #8c2f8d);
   box-shadow: 0 12px 24px rgba(75, 20, 95, 0.22);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-page .button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px rgba(75, 20, 95, 0.32);
 }
 
 .auth-page .button-muted {
