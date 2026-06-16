@@ -1054,7 +1054,7 @@ where not exists (
   where email = 'admin@agdangan.gov.ph'
 );
 
--- Returns storage info for each table plus total database size
+-- Returns storage for each table with actual count(*) and total DB size
 create or replace function public.get_db_storage_info()
 returns json
 language plpgsql
@@ -1063,21 +1063,24 @@ as $$
 declare
   result json;
 begin
+  with counts as (
+    select 'admins' as tbl, (select count(*) from public.admins) as cnt, pg_total_relation_size('public.admins'::regclass) as sz
+    union all
+    select 'employees', (select count(*) from public.employees), pg_total_relation_size('public.employees'::regclass)
+    union all
+    select 'leave_requests', (select count(*) from public.leave_requests), pg_total_relation_size('public.leave_requests'::regclass)
+    union all
+    select 'credit_deduction_logs', (select count(*) from public.credit_deduction_logs), pg_total_relation_size('public.credit_deduction_logs'::regclass)
+  )
   select json_build_object(
     'total_size', pg_size_pretty(pg_database_size(current_database())),
     'total_size_bytes', pg_database_size(current_database()),
-    'tables', coalesce(
-      (select json_agg(json_build_object(
-        'table_name', relname,
-        'row_count', n_live_tup,
-        'size', pg_size_pretty(pg_total_relation_size(relid)),
-        'size_bytes', pg_total_relation_size(relid)
-      ) order by pg_total_relation_size(relid) desc)
-      from pg_stat_user_tables
-      where schemaname = 'public'
-        and relname in ('admins', 'employees', 'leave_requests', 'credit_deduction_logs')),
-      '[]'::json
-    )
+    'tables', (select json_agg(json_build_object(
+      'table_name', tbl,
+      'row_count', cnt,
+      'size', pg_size_pretty(sz),
+      'size_bytes', sz
+    ) order by sz desc) from counts)
   ) into result;
 
   return result;
