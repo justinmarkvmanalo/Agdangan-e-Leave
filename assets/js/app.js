@@ -142,34 +142,298 @@
 
   window.alert = showSystemAlert;
 
+  /* ---------- TOUR / USER GUIDE ---------- */
+  const tourStorageKey = "agdangan-eleave-tour";
+
+  function isTourDone(pageId) {
+    try {
+      const data = JSON.parse(window.localStorage.getItem(tourStorageKey) || "{}");
+      return Boolean(data[pageId]);
+    } catch { return false; }
+  }
+
+  function markTourDone(pageId) {
+    try {
+      const data = JSON.parse(window.localStorage.getItem(tourStorageKey) || "{}");
+      data[pageId] = true;
+      window.localStorage.setItem(tourStorageKey, JSON.stringify(data));
+    } catch { /* ignore */ }
+  }
+
+  function resetTour(pageId) {
+    try {
+      const data = JSON.parse(window.localStorage.getItem(tourStorageKey) || "{}");
+      delete data[pageId];
+      window.localStorage.setItem(tourStorageKey, JSON.stringify(data));
+    } catch { /* ignore */ }
+  }
+
+  var tourDefinitions = {
+    login: [
+      { target: "[data-role-switch]", title: "Choose Your Role", desc: "Switch between Employee and Admin access before signing in." },
+      { target: "#email", title: "Email Address", desc: "Type your registered email \u2014 for example, name@agdangan.gov.ph." },
+      { target: "#password", title: "Password", desc: "Enter your account password." },
+      { target: ".auth-form .button-primary", title: "Sign In", desc: "Click this button to log into your dashboard." }
+    ],
+    employee: [
+      { target: ".stats-grid", title: "Leave Overview", desc: "Your leave credits, pending requests, approved and rejected leaves at a glance." },
+      { target: ".leave-paper", title: "Leave Application", desc: "This is the Civil Service Form No. 6. Fill it out to file a new leave request." },
+      { target: ".leave-type-grid", title: "Leave Type", desc: "Select the kind of leave you need \u2014 Vacation, Sick, Maternity, and more." },
+      { target: "#days-requested", title: "Days & Dates", desc: "Enter how many working days and pick the inclusive or selected dates." },
+      { target: '#leave-request-form button[type="submit"]', title: "Submit Request", desc: "Double-check your entries then click to submit for approval." },
+      { target: "#employee-request-list", title: "Request History", desc: "Keep track of all your submitted requests and their current status." }
+    ],
+    admin: [
+      { target: ".stats-grid", title: "System Overview", desc: "See total employees, pending approvals, and overall request stats." },
+      { target: "#add-employee-button", title: "Add Employee", desc: "Create new employee accounts with email, department, position, and leave credits." },
+      { target: "#admin-requests-table", title: "Approval Queue", desc: "Review leave requests here \u2014 approve or reject with remarks." },
+      { target: "#admin-employees-table", title: "Employee Records", desc: "Edit or deactivate existing employee accounts." }
+    ],
+    "account-settings": [
+      { target: "[data-change-password-form]", title: "Change Password", desc: "Update your password here. You will need your current password first." }
+    ],
+    "credit-computation": [
+      { target: ".stats-grid", title: "Credit Stats", desc: "Quick overview of total employees, current balance total, and next month-end run." },
+      { target: ".credit-rules-card", title: "Credit Rules", desc: "Learn how accrual, late deductions, and leave deductions work." },
+      { target: "#credit-computation-table", title: "Employee Balances", desc: "View all employee credit balances and apply late-minute deductions." },
+      { target: ".credit-deduction-modal .button-primary", title: "Apply Deduction", desc: "Open the modal for an employee to log late minutes and apply deductions." }
+    ],
+    "storage-monitoring": [
+      { target: ".storage-summary-card", title: "Storage Overview", desc: "See your total database usage against the 500 MB limit." },
+      { target: "#storage-table", title: "Per-Table Breakdown", desc: "Check the size of each table in the database." },
+      { target: "#export-excel-button", title: "Export to Excel", desc: "Download credit balances and deduction history as an Excel file." },
+      { target: "#cleanup-button", title: "Clean Old Records", desc: "Remove deduction logs and old leave requests to free up space." }
+    ]
+  };
+
+  var tourState = null;
+
+  function cleanupTour() {
+    if (!tourState) return;
+    document.body.style.overflow = "";
+    if (tourState._cleanup) tourState._cleanup();
+    if (tourState.overlay && tourState.overlay.parentNode) tourState.overlay.remove();
+    if (tourState.tooltip && tourState.tooltip.parentNode) tourState.tooltip.remove();
+    tourState = null;
+  }
+
+  function positionTourStep(index) {
+    if (!tourState) return;
+    var steps = tourState.steps;
+    var step = steps[index];
+    if (!step) { cleanupTour(); return; }
+
+    var targetEl = document.querySelector(step.target);
+    if (!targetEl) { advanceTour(); return; }
+
+    var rect = targetEl.getBoundingClientRect();
+    var pad = 8;
+    var overlay = tourState.overlay;
+    var spotlight = overlay.querySelector(".tour-spotlight");
+    if (!spotlight) {
+      spotlight = document.createElement("div");
+      spotlight.className = "tour-spotlight";
+      overlay.appendChild(spotlight);
+    }
+
+    spotlight.style.left = (rect.left - pad) + "px";
+    spotlight.style.top = (rect.top - pad) + "px";
+    spotlight.style.width = (rect.width + pad * 2) + "px";
+    spotlight.style.height = (rect.height + pad * 2) + "px";
+
+    var tooltip = tourState.tooltip;
+    if (!tooltip) return;
+
+    var gap = 14;
+    var viewH = window.innerHeight;
+    var viewW = window.innerWidth;
+    var spaceBelow = viewH - rect.bottom;
+    var spaceAbove = rect.top;
+    var tooltipY, arrowClass;
+
+    if (spaceBelow > 220 || spaceBelow >= spaceAbove) {
+      tooltipY = rect.bottom + gap;
+      arrowClass = "arrow-up";
+    } else {
+      tooltipY = rect.top - gap;
+      arrowClass = "arrow-down";
+    }
+
+    var tooltipW = Math.min(380, viewW - 32);
+    var idealX = rect.left + rect.width / 2 - tooltipW / 2;
+    var tooltipX = Math.max(16, Math.min(idealX, viewW - tooltipW - 16));
+
+    tooltip.style.left = tooltipX + "px";
+    tooltip.style.top = tooltipY + "px";
+    tooltip.style.width = tooltipW + "px";
+
+    var arrow = tooltip.querySelector(".tour-tooltip-arrow");
+    if (arrow) {
+      arrow.className = "tour-tooltip-arrow " + arrowClass;
+      var arrowCenterX = rect.left + rect.width / 2 - tooltipX;
+      arrow.style.left = Math.max(10, Math.min(arrowCenterX - 7, tooltipW - 24)) + "px";
+      if (arrowClass === "arrow-up") {
+        arrow.style.top = "-7px";
+        arrow.style.bottom = "auto";
+      } else {
+        arrow.style.bottom = "-7px";
+        arrow.style.top = "auto";
+      }
+    }
+
+    var titleEl = tooltip.querySelector(".tour-tooltip-title");
+    var descEl = tooltip.querySelector(".tour-tooltip-desc");
+    var counterEl = tooltip.querySelector(".tour-tooltip-counter");
+    var nextBtn = tooltip.querySelector(".tour-tooltip-next");
+    if (titleEl) titleEl.textContent = step.title;
+    if (descEl) descEl.textContent = step.desc;
+    if (counterEl) counterEl.textContent = (index + 1) + " of " + steps.length;
+    if (nextBtn) nextBtn.textContent = index < steps.length - 1 ? "Continue" : "Done";
+
+    targetEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function advanceTour() {
+    if (!tourState) return;
+    var nextIndex = tourState.index + 1;
+    if (nextIndex >= tourState.steps.length) {
+      markTourDone(tourState.pageId);
+      cleanupTour();
+      return;
+    }
+    tourState.index = nextIndex;
+    positionTourStep(nextIndex);
+  }
+
+  function skipTour() {
+    if (!tourState) return;
+    markTourDone(tourState.pageId);
+    cleanupTour();
+  }
+
+  function startTour(pageId) {
+    if (isTourDone(pageId)) return;
+    if (tourState) cleanupTour();
+
+    var steps = tourDefinitions[pageId];
+    if (!steps || !steps.length) return;
+
+    var overlay = document.createElement("div");
+    overlay.className = "tour-overlay";
+    document.body.appendChild(overlay);
+
+    var tooltip = document.createElement("div");
+    tooltip.className = "tour-tooltip";
+    tooltip.innerHTML =
+      '<p class="tour-tooltip-title"></p>' +
+      '<p class="tour-tooltip-desc"></p>' +
+      '<div class="tour-tooltip-footer">' +
+        '<span class="tour-tooltip-counter"></span>' +
+        '<div class="tour-tooltip-actions">' +
+          '<button type="button" class="tour-tooltip-skip">Skip</button>' +
+          '<button type="button" class="tour-tooltip-next">Continue</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="tour-tooltip-arrow"></div>';
+    document.body.appendChild(tooltip);
+
+    tourState = {
+      pageId: pageId,
+      steps: steps,
+      index: 0,
+      overlay: overlay,
+      tooltip: tooltip
+    };
+
+    tooltip.querySelector(".tour-tooltip-next").addEventListener("click", advanceTour);
+    tooltip.querySelector(".tour-tooltip-skip").addEventListener("click", skipTour);
+
+    var onScroll = function () { if (tourState) positionTourStep(tourState.index); };
+    var onResize = function () { if (tourState) positionTourStep(tourState.index); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
+    tourState._cleanup = function () {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+
+    document.body.style.overflow = "hidden";
+    positionTourStep(0);
+  }
+
+  function addFloatingGuideButton(pageId) {
+    var existing = document.querySelector(".tour-floating-btn");
+    if (existing) existing.remove();
+
+    var btn = document.createElement("button");
+    btn.className = "tour-floating-btn";
+    btn.setAttribute("aria-label", "User guide");
+    btn.innerHTML = "?";
+    btn.title = "User Guide";
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      resetTour(pageId);
+      startTour(pageId);
+    });
+
+    document.body.appendChild(btn);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("login-form")) {
       initLoginPage();
+      setTimeout(function () { startTour("login"); addFloatingGuideButton("login"); }, 500);
       return;
     }
 
     if (isEmployeeDashboardPage) {
-      initEmployeeDashboard();
+      var pEmp = initEmployeeDashboard();
+      if (pEmp && typeof pEmp.then === "function") {
+        pEmp.then(function () { setTimeout(function () { startTour("employee"); addFloatingGuideButton("employee"); }, 600); });
+      } else {
+        setTimeout(function () { startTour("employee"); addFloatingGuideButton("employee"); }, 600);
+      }
       return;
     }
 
     if (isAccountSettingsPage) {
-      initAccountSettingsPage();
+      var pAcct = initAccountSettingsPage();
+      if (pAcct && typeof pAcct.then === "function") {
+        pAcct.then(function () { setTimeout(function () { startTour("account-settings"); addFloatingGuideButton("account-settings"); }, 600); });
+      } else {
+        setTimeout(function () { startTour("account-settings"); addFloatingGuideButton("account-settings"); }, 600);
+      }
       return;
     }
 
     if (isAdminDashboardPage) {
-      initAdminDashboard();
+      var pAdmin = initAdminDashboard();
+      if (pAdmin && typeof pAdmin.then === "function") {
+        pAdmin.then(function () { setTimeout(function () { startTour("admin"); addFloatingGuideButton("admin"); }, 600); });
+      } else {
+        setTimeout(function () { startTour("admin"); addFloatingGuideButton("admin"); }, 600);
+      }
       return;
     }
 
     if (isCreditComputationPage) {
-      initCreditComputationPage();
+      var pCredit = initCreditComputationPage();
+      if (pCredit && typeof pCredit.then === "function") {
+        pCredit.then(function () { setTimeout(function () { startTour("credit-computation"); addFloatingGuideButton("credit-computation"); }, 600); });
+      } else {
+        setTimeout(function () { startTour("credit-computation"); addFloatingGuideButton("credit-computation"); }, 600);
+      }
       return;
     }
 
     if (isStorageMonitoringPage) {
-      initStorageMonitoringPage();
+      var pStorage = initStorageMonitoringPage();
+      if (pStorage && typeof pStorage.then === "function") {
+        pStorage.then(function () { setTimeout(function () { startTour("storage-monitoring"); addFloatingGuideButton("storage-monitoring"); }, 600); });
+      } else {
+        setTimeout(function () { startTour("storage-monitoring"); addFloatingGuideButton("storage-monitoring"); }, 600);
+      }
     }
   });
 
