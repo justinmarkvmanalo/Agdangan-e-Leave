@@ -1549,7 +1549,7 @@ button:focus {
 
 .leave-paper-seal-wrap {
   position: absolute;
-  transform: translate(-5.2rem, 0.18rem);
+  transform: translate(-7rem, 0.18rem);
   padding: 0;
 }
 
@@ -4667,3 +4667,157 @@ button:focus {
 .auth-page .tour-floating-btn:hover {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
 }
+
+/* ---------- AI ANALYSIS PANEL ---------- */
+.ai-analysis-panel {
+  max-width: 210mm;
+  margin: 1rem auto 0;
+}
+
+.ai-analysis-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: rgba(245, 241, 255, 0.6);
+  border: 1px solid rgba(102, 79, 178, 0.15);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.ai-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(91, 31, 141, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: ai-spin 0.7s linear infinite;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-analysis-error {
+  padding: 1rem 1.25rem;
+  background: rgba(227, 91, 107, 0.1);
+  border: 1px solid rgba(227, 91, 107, 0.25);
+  border-radius: 12px;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.ai-analysis-result {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(102, 79, 178, 0.2);
+  background: #fff;
+}
+
+.ai-analysis-result.ai-approve {
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.ai-analysis-result.ai-reject {
+  border-color: rgba(227, 91, 107, 0.3);
+}
+
+.ai-analysis-result.ai-review {
+  border-color: rgba(230, 168, 23, 0.3);
+}
+
+.ai-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: rgba(245, 241, 255, 0.5);
+  border-bottom: 1px solid rgba(102, 79, 178, 0.1);
+}
+
+.ai-badge {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-powered {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.ai-analysis-body {
+  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.ai-recommendation {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ai-rec-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 0.2rem;
+}
+
+.ai-rec-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.ai-confidence {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--confidence-color, var(--ink-soft));
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--confidence-color, transparent) 12%, transparent);
+}
+
+.ai-reasoning p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.ai-considerations ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.ai-considerations li {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.ai-analysis-footer {
+  padding: 0.5rem 1rem;
+  background: rgba(245, 241, 255, 0.3);
+  border-top: 1px solid rgba(102, 79, 178, 0.08);
+}
+
+.ai-analysis-footer small {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+

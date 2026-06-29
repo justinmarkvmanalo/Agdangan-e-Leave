@@ -81,6 +81,13 @@
     59: 0.123,
     60: 0.125
   };
+  const grokApiUrl = "https://api.x.ai/v1/chat/completions";
+  const grokModel = "grok-2-1212";
+
+  function getGrokApiKey() {
+    return window.GROK_CONFIG?.apiKey || "";
+  }
+
   const leaveTypeLabels = {
     vacation: "Vacation Leave",
     "mandatory-forced": "Mandatory/Forced Leave",
@@ -1870,6 +1877,7 @@
             <div class="table-actions">
               <button type="button" class="button button-muted" data-view-request="${request.id}">View</button>
               ${request.status === "pending" ? `
+              <button type="button" class="button button-secondary" data-ai-analyze="${request.id}">AI</button>
               <button type="button" class="button button-success" data-update-request="${request.id}" data-status="approved">Approve</button>
               <button type="button" class="button button-danger" data-update-request="${request.id}" data-status="rejected">Reject</button>
               ` : ""}
@@ -1896,6 +1904,16 @@
           selectedAdminRequestId = requestId;
           await updateLeaveStatus(requestId, status);
         });
+      });
+    });
+
+    Array.from(container.querySelectorAll("[data-ai-analyze]")).forEach((button) => {
+      button.addEventListener("click", async () => {
+        const requestId = Number(button.getAttribute("data-ai-analyze"));
+        selectedAdminRequestId = requestId;
+        openAdminRequestModal();
+        await renderSelectedAdminRequest();
+        await runAIAnalysis(requestId);
       });
     });
   }
@@ -1947,6 +1965,11 @@
       await runWithButtonLoading(event.currentTarget, "Saving...", async () => {
         await saveAdminRequestDetails(request.id, adminRequestForm);
       });
+    });
+
+    container.querySelector("[data-admin-ai-analyze]")?.addEventListener("click", async (event) => {
+      const requestId = Number(event.currentTarget.getAttribute("data-admin-ai-analyze"));
+      await runAIAnalysis(requestId);
     });
 
     container.querySelector("[data-admin-approve-request]")?.addEventListener("click", async (event) => {
@@ -2084,6 +2107,164 @@
     }
 
     await loadAdminRequests();
+  }
+
+  async function runAIAnalysis(requestId) {
+    const apiKey = getGrokApiKey();
+    if (!apiKey) {
+      window.alert("Grok API key is not configured. Ask the developer to set GROK_CONFIG.apiKey in assets/js/supabase-config.js.");
+      return;
+    }
+
+    const request = adminLeaveRequests.find((item) => item.id === requestId);
+    if (!request) {
+      return;
+    }
+
+    const panel = document.getElementById(`ai-analysis-panel-${requestId}`);
+    if (!panel) {
+      return;
+    }
+
+    panel.classList.remove("hidden");
+    panel.innerHTML = `<div class="ai-analysis-loading"><span class="ai-spinner"></span><span>Consulting Grok AI...</span></div>`;
+
+    const employee = getAdminEmployeeProfileById(request.employee_id);
+    const leaveTypes = getLeaveTypes(request.leave_type);
+    const leaveTypeNames = leaveTypes.map((t) => leaveTypeLabels[t] || t).join(", ");
+    const creditDeductingTypes = leaveTypes.filter((t) =>
+      ["vacation", "sick", "mandatory-forced", "wellness"].includes(t)
+    );
+    let effectiveDays = Number(request.days_requested || 0);
+    let freeDays = 0;
+    if (leaveTypes.includes("mandatory-forced")) freeDays = 5;
+    if (leaveTypes.includes("wellness")) freeDays = Math.max(freeDays, 5);
+    effectiveDays = Math.max(effectiveDays - freeDays, 0);
+    const currentCredits = Number(employee?.leave_credits || 0);
+    const hasSufficientCredits = creditDeductingTypes.length === 0 || effectiveDays <= currentCredits;
+
+    const systemPrompt = `You are an expert HR leave approval decision support assistant for a Philippine local government unit (Agdangan, Quezon). Your role is to analyze leave requests and provide a recommendation with reasoning.
+
+Consider these Philippine leave policies:
+- Vacation/Sick leave: deducted from employee's leave credit balance (monthly accrual: 1.25 credits/month)
+- Mandatory/Forced Leave: 5 free days per year, remaining days deducted from vacation leave credits
+- Wellness Leave: 5 free days per year, remaining days deducted from sick leave credits
+- Maternity: 105 days (R.A. 11210), Paternity: 7 days (R.A. 8187)
+- Special Privilege Leave: 3 days, Solo Parent: 7 days (R.A. 8972)
+- Study Leave, VAWC Leave (10 days), Rehabilitation Privilege, Special Benefits for Women, Special Emergency (Calamity) Leave, Adoption Leave
+- Commutation (cash conversion) may be requested or not requested
+- The employee must have sufficient leave credits for credit-deducting leave types
+
+Respond in valid JSON only, with this exact structure:
+{
+  "recommendation": "approve" | "reject" | "review",
+  "confidence": <number 0-100>,
+  "reasoning": "<brief explanation>",
+  "policy_considerations": ["<point 1>", "<point 2>"]
+}`;
+
+    const userPrompt = `Please analyze this leave request:
+
+Employee: ${getApplicantFullName(request) || "Unknown"}
+Department: ${request.office_department || "N/A"}
+Position: ${request.position_title || "N/A"}
+Leave Type(s): ${leaveTypeNames}
+Days Requested: ${request.days_requested}
+Free Days (policy): ${freeDays}
+Effective Deduction Days: ${effectiveDays}
+Start Date: ${request.start_date || "N/A"}
+End Date: ${request.end_date || "N/A"}
+Reason: ${request.reason || "N/A"}
+Commutation: ${request.commutation || "not-requested"}
+Current Leave Credits: ${formatCreditAmount(currentCredits)}${creditDeductingTypes.length > 0 ? "" : " (non-credit leave type)"}
+Sufficient Credits: ${hasSufficientCredits ? "Yes" : "No"}`;
+
+    try {
+      const result = await callGrokAPI(systemPrompt, userPrompt, apiKey);
+      renderAIAnalysisResult(panel, request, result);
+    } catch (err) {
+      panel.innerHTML = `<div class="ai-analysis-error">AI analysis failed: ${escapeHtml(err.message || "Unknown error")}</div>`;
+    }
+  }
+
+  async function callGrokAPI(systemPrompt, userPrompt, apiKey) {
+    const response = await fetch(grokApiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: grokModel,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 500
+      })
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text().catch(() => "");
+      throw new Error(`API error ${response.status}: ${errBody || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content?.trim();
+    if (!content) {
+      throw new Error("Empty response from AI");
+    }
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    return JSON.parse(content);
+  }
+
+  function renderAIAnalysisResult(panel, request, result) {
+    const recommendation = String(result.recommendation || "review").toLowerCase();
+    const confidence = Math.min(Math.max(Number(result.confidence) || 0, 0), 100);
+    const reasoning = String(result.reasoning || "");
+    const considerations = Array.isArray(result.policy_considerations) ? result.policy_considerations : [];
+
+    const recLabel = recommendation === "approve" ? "Approve" : recommendation === "reject" ? "Reject" : "Manual Review";
+    const recClass = recommendation === "approve" ? "ai-approve" : recommendation === "reject" ? "ai-reject" : "ai-review";
+    const confidenceColor = confidence >= 70 ? "var(--success)" : confidence >= 40 ? "#e6a817" : "var(--danger)";
+
+    panel.innerHTML = `
+      <div class="ai-analysis-result ${recClass}">
+        <div class="ai-analysis-header">
+          <span class="ai-badge">AI Decision Support</span>
+          <span class="ai-powered">Powered by Grok</span>
+        </div>
+        <div class="ai-analysis-body">
+          <div class="ai-recommendation">
+            <span class="ai-rec-label">Recommendation</span>
+            <strong class="ai-rec-value">${recLabel}</strong>
+            <span class="ai-confidence" style="--confidence-color: ${confidenceColor}">
+              ${confidence}% confident
+            </span>
+          </div>
+          <div class="ai-reasoning">
+            <span class="ai-rec-label">Reasoning</span>
+            <p>${escapeHtml(reasoning)}</p>
+          </div>
+          ${considerations.length ? `
+          <div class="ai-considerations">
+            <span class="ai-rec-label">Policy Considerations</span>
+            <ul>
+              ${considerations.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}
+            </ul>
+          </div>` : ""}
+        </div>
+        <div class="ai-analysis-footer">
+          <small>This is a suggestion only. Final decision is at your discretion.</small>
+        </div>
+      </div>
+    `;
   }
 
   function bindChangePasswordForm() {
@@ -2322,12 +2503,19 @@
           <button type="button" class="button button-muted" data-admin-download-word>Download Word</button>
           <button type="button" class="button button-muted" data-admin-save-request>Save</button>
           ${request.status === "pending" ? `
+          <button type="button" class="button button-secondary" data-admin-ai-analyze="${request.id}">AI Analysis</button>
           <button type="button" class="button button-success" data-admin-approve-request>Approve</button>
           <button type="button" class="button button-danger" data-admin-reject-request>Reject</button>
           ` : ""}
         </div>
       </div>
       ${buildAdminRequestPaperMarkup(request)}
+      <div id="ai-analysis-panel-${request.id}" class="ai-analysis-panel hidden">
+        <div class="ai-analysis-loading">
+          <span class="ai-spinner"></span>
+          <span>Consulting Grok AI...</span>
+        </div>
+      </div>
     `;
   }
 
