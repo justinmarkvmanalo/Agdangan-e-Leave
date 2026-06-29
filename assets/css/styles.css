@@ -2371,6 +2371,11 @@ button:focus {
   flex-direction: column;
 }
 
+.admin-page .employee-management-dialog {
+  border: 1px solid rgba(210, 180, 255, 0.3);
+  box-shadow: 0 24px 64px rgba(160, 120, 220, 0.18);
+}
+
 .employee-management-modal-content {
   overflow: auto;
   padding: 1.25rem 1.5rem 1.5rem;
@@ -2612,6 +2617,11 @@ button:focus {
   overflow: hidden;
 }
 
+.admin-page .admin-request-modal-dialog {
+  border: 1px solid rgba(210, 180, 255, 0.3);
+  box-shadow: 0 24px 64px rgba(160, 120, 220, 0.18);
+}
+
 .admin-request-modal-header {
   display: flex;
   align-items: flex-start;
@@ -2619,6 +2629,11 @@ button:focus {
   gap: 1rem;
   padding: 1.4rem 1.5rem 1rem;
   border-bottom: 1px solid rgba(102, 79, 178, 0.08);
+}
+
+.admin-page .admin-request-modal-header {
+  background: linear-gradient(135deg, rgba(220, 195, 255, 0.15), rgba(255, 200, 225, 0.12));
+  border-bottom-color: rgba(210, 180, 255, 0.2);
 }
 
 .admin-request-modal-header h3 {
@@ -3198,12 +3213,12 @@ button:focus {
 .employee-page .dashboard-header {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(244, 213, 121, 0.28);
-  border-radius: 20px;
+  border: 1px solid rgba(215, 185, 255, 0.35);
+  border-radius: 24px;
   background:
-    linear-gradient(135deg, rgba(111, 42, 168, 0.94), rgba(198, 91, 164, 0.88)),
-    #7c2b91;
-  box-shadow: 0 30px 74px rgba(20, 8, 40, 0.28);
+    linear-gradient(135deg, rgba(180, 130, 255, 0.88), rgba(255, 170, 215, 0.82)),
+    #d4b0ff;
+  box-shadow: 0 20px 60px rgba(150, 100, 220, 0.20);
 }
 
 .admin-page .dashboard-header::before,
@@ -3225,7 +3240,7 @@ button:focus {
   width: 19rem;
   height: 28rem;
   border-radius: 0 0 5rem 5rem;
-  background: linear-gradient(135deg, rgba(239, 206, 255, 0.68), rgba(255, 255, 255, 0.28));
+  background: linear-gradient(135deg, rgba(255, 220, 240, 0.75), rgba(255, 255, 255, 0.35));
   transform: rotate(42deg);
 }
 
@@ -3236,7 +3251,7 @@ button:focus {
   bottom: -8rem;
   width: 22rem;
   height: 22rem;
-  background: linear-gradient(135deg, rgba(244, 213, 121, 0.7), rgba(140, 61, 170, 0.36));
+  background: linear-gradient(135deg, rgba(255, 235, 180, 0.7), rgba(210, 170, 255, 0.35));
   transform: rotate(45deg);
 }
 
@@ -3281,9 +3296,9 @@ button:focus {
 .credit-page .stat-card,
 .employee-page .dashboard-card,
 .employee-page .stat-card {
-  border-color: rgba(244, 213, 121, 0.22);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 22px 54px rgba(20, 8, 40, 0.22);
+  border-color: rgba(210, 180, 255, 0.25);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 48px rgba(160, 120, 220, 0.15);
 }
 
 .admin-page .stats-grid .stat-card,
@@ -3325,6 +3340,58 @@ button:focus {
 .admin-page .stats-grid .stat-card:nth-child(4),
 .employee-page .stats-grid .stat-card:nth-child(4) {
   border-top: 5px solid #e35b6b;
+}
+
+.admin-page .stats-grid .stat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.admin-page .stats-grid .stat-card::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: "";
+  width: 6rem;
+  height: 6rem;
+  border-radius: 0 0 0 100%;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.admin-page .stats-grid .stat-card:nth-child(1)::after {
+  background: linear-gradient(135deg, #f4d579, #f9e6a0);
+}
+
+.admin-page .stats-grid .stat-card:nth-child(2)::after {
+  background: linear-gradient(135deg, #d490e0, #b43b93);
+}
+
+.admin-page .stats-grid .stat-card:nth-child(3)::after {
+  background: linear-gradient(135deg, #b490e0, #8c3daa);
+}
+
+.admin-page .stats-grid .stat-card:nth-child(4)::after {
+  background: linear-gradient(135deg, #f4a0a0, #e35b6b);
+}
+
+.admin-page .dashboard-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+.admin-page .dashboard-card::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  content: "";
+  height: 4px;
+  background: linear-gradient(90deg, #d4b0ff, #ffaad7, #ffdbb0);
+  border-radius: 22px 22px 0 0;
+  pointer-events: none;
 }
 
 .admin-page .dashboard-card h3,
