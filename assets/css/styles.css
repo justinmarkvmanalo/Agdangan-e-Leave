@@ -3353,6 +3353,190 @@ button:focus {
   border-color: rgba(75, 20, 95, 0.18);
 }
 
+.daily-entry-prompt {
+  margin-bottom: 1.35rem;
+}
+
+.daily-entry-prompt.hidden {
+  display: none;
+}
+
+.daily-entry-notification {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #f0e6ff, #e6f0ff);
+  border-radius: 26px;
+  border: 1px solid rgba(75, 20, 95, 0.12);
+  box-shadow: var(--shadow);
+}
+
+.daily-entry-notification-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.daily-entry-notification strong {
+  display: block;
+  color: #4b145f;
+  margin-bottom: 0.2rem;
+}
+
+.daily-entry-notification p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.daily-entry-notification .button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.daily-entry-card {
+  margin-bottom: 1.35rem;
+}
+
+.daily-entry-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.daily-entry-header h3 {
+  margin: 0.3rem 0 0;
+}
+
+.daily-entry-body {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.daily-entry-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.daily-entry-date-label {
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.daily-entry-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 1rem;
+  border: 1px solid rgba(102, 79, 178, 0.15);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.daily-entry-textarea:focus {
+  outline: none;
+  border-color: #6f3df4;
+  box-shadow: 0 0 0 3px rgba(111, 61, 244, 0.12);
+}
+
+.daily-entry-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.daily-entry-saved-text {
+  color: #2ecc71;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.daily-entry-saved-text.hidden {
+  display: none;
+}
+
+.daily-entry-history {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.daily-entry-history.hidden {
+  display: none;
+}
+
+.daily-entry-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.daily-entry-history-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(102, 79, 178, 0.08);
+}
+
+.daily-entry-history-list li:last-child {
+  border-bottom: 0;
+}
+
+.daily-entry-history-list .empty-state {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  border-bottom: 0;
+}
+
+.daily-entry-history-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 0.25rem;
+}
+
+.daily-entry-history-content {
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .daily-entry-body {
+    flex-direction: column;
+  }
+
+  .daily-entry-history {
+    width: 100%;
+  }
+
+  .daily-entry-notification {
+    flex-wrap: wrap;
+  }
+
+  .daily-entry-notification .button {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .daily-entry-header {
+    flex-wrap: wrap;
+  }
+}
+
 .credit-page .credit-logic-panel,
 .credit-page .credit-deduction-entry,
 .credit-page .credit-deduction-summary {

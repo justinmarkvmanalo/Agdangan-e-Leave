@@ -705,6 +705,7 @@
     populateLeaveApplicationProfile(profile);
     await loadEmployeeRequests(profile.id);
     bindLeaveRequestForm(profile);
+    await initDailyEntry(profile.id);
   }
 
   async function initAccountSettingsPage() {
@@ -1291,6 +1292,143 @@
         finishSubmit();
       }
     });
+  }
+
+  async function initDailyEntry(employeeId) {
+    const promptEl = document.getElementById("daily-entry-prompt");
+    const cardEl = document.getElementById("daily-entry-card");
+    const textarea = document.getElementById("daily-entry-textarea");
+    const saveBtn = document.getElementById("daily-entry-save-btn");
+    const openBtn = document.getElementById("daily-entry-open-btn");
+    const toggleHistoryBtn = document.getElementById("daily-entry-toggle-history");
+    const historyEl = document.getElementById("daily-entry-history");
+    const historyList = document.getElementById("daily-entry-history-list");
+    const savedText = document.getElementById("daily-entry-saved-text");
+    const dateLabel = document.getElementById("daily-entry-date-label");
+
+    if (!cardEl) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const todayFormatted = new Date().toLocaleDateString("en-PH", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+
+    if (dateLabel) {
+      dateLabel.textContent = todayFormatted;
+    }
+
+    async function loadTodayEntry() {
+      if (!db) return;
+
+      const { data, error } = await db.rpc("get_daily_entry", {
+        p_employee_id: employeeId,
+        p_entry_date: today
+      });
+
+      if (!error && data) {
+        if (data.content) {
+          textarea.value = data.content;
+          savedText.classList.remove("hidden");
+          if (promptEl) promptEl.classList.add("hidden");
+        } else {
+          savedText.classList.add("hidden");
+          if (promptEl) promptEl.classList.remove("hidden");
+        }
+      } else {
+        savedText.classList.add("hidden");
+        if (promptEl) promptEl.classList.remove("hidden");
+      }
+    }
+
+    async function loadHistory() {
+      if (!db) return;
+
+      const { data, error } = await db.rpc("get_daily_entries", {
+        p_employee_id: employeeId,
+        p_limit: 10,
+        p_offset: 0
+      });
+
+      if (error || !data || !data.length) {
+        historyList.innerHTML = '<li class="empty-state">No entries yet.</li>';
+        return;
+      }
+
+      historyList.innerHTML = data.map(function(entry) {
+        var date = new Date(entry.entry_date + "T00:00:00").toLocaleDateString("en-PH", {
+          weekday: "short",
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
+        return '<li>' +
+          '<div class="daily-entry-history-date">' + date + '</div>' +
+          '<div class="daily-entry-history-content">' + escapeHtml(entry.content) + '</div>' +
+          '</li>';
+      }).join("");
+    }
+
+    async function saveEntry() {
+      if (!db) return;
+
+      var content = textarea.value.trim();
+      if (!content) {
+        window.alert("Please write something about your day before saving.");
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+
+      var { error } = await db.rpc("create_or_update_daily_entry", {
+        p_employee_id: employeeId,
+        p_entry_date: today,
+        p_content: content
+      });
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Entry";
+
+      if (error) {
+        window.alert("Error saving entry: " + error.message);
+        return;
+      }
+
+      savedText.classList.remove("hidden");
+      if (promptEl) promptEl.classList.add("hidden");
+      await loadHistory();
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function() {
+        cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        textarea.focus();
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener("click", saveEntry);
+    }
+
+    if (toggleHistoryBtn && historyEl) {
+      toggleHistoryBtn.addEventListener("click", function() {
+        var isHidden = historyEl.classList.contains("hidden");
+        historyEl.classList.toggle("hidden");
+        toggleHistoryBtn.textContent = isHidden ? "Hide History" : "View History";
+        if (isHidden) loadHistory();
+      });
+    }
+
+    await loadTodayEntry();
+
+    if (promptEl && !promptEl.classList.contains("hidden")) {
+      setTimeout(function() {
+        promptEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 600);
+    }
   }
 
   async function loadAdminProfiles() {
@@ -3941,6 +4079,51 @@ Sufficient Credits: ${hasSufficientCredits ? "Yes" : "No"}`;
           <div><span class="badge approved">Approved</span></div>
         </li>
       `;
+    }
+
+    renderDemoDailyEntry();
+  }
+
+  function renderDemoDailyEntry() {
+    const promptEl = document.getElementById("daily-entry-prompt");
+    const textarea = document.getElementById("daily-entry-textarea");
+    const dateLabel = document.getElementById("daily-entry-date-label");
+    const savedText = document.getElementById("daily-entry-saved-text");
+    const toggleHistoryBtn = document.getElementById("daily-entry-toggle-history");
+    const historyEl = document.getElementById("daily-entry-history");
+    const historyList = document.getElementById("daily-entry-history-list");
+
+    if (promptEl) promptEl.classList.add("hidden");
+    if (savedText) savedText.classList.remove("hidden");
+    if (dateLabel) {
+      dateLabel.textContent = new Date().toLocaleDateString("en-PH", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+    if (textarea) {
+      textarea.value = "Assisted clients at the front desk, processed 15 payment transactions, and prepared end-of-day report.";
+      textarea.placeholder = "Describe your accomplishments for today...";
+    }
+
+    if (toggleHistoryBtn && historyEl) {
+      toggleHistoryBtn.addEventListener("click", function() {
+        var isHidden = historyEl.classList.contains("hidden");
+        historyEl.classList.toggle("hidden");
+        toggleHistoryBtn.textContent = isHidden ? "Hide History" : "View History";
+        if (isHidden && historyList) {
+          historyList.innerHTML = '<li><div class="daily-entry-history-date">Mon, Jun 29, 2026</div><div class="daily-entry-history-content">Processed leave applications, updated employee records, submitted report to HRMO.</div></li><li><div class="daily-entry-history-date">Sun, Jun 28, 2026</div><div class="daily-entry-history-content">Prepared monthly summary of transactions, attended coordination meeting with department heads.</div></li><li><div class="daily-entry-history-date">Sat, Jun 27, 2026</div><div class="daily-entry-history-content">Reviewed pending leave requests, encoded new employee data, filed accomplished documents.</div></li>';
+        }
+      });
+    }
+
+    var saveBtn = document.getElementById("daily-entry-save-btn");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", function() {
+        window.alert("Demo mode: database not configured. An entry would be saved to the database in production.");
+      });
     }
   }
 

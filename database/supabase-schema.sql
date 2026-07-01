@@ -1019,6 +1019,104 @@ as $$
   order by l.created_at desc, l.id desc;
 $$;
 
+-- Daily accomplishment entries
+create table if not exists public.daily_entries (
+  id bigint generated always as identity primary key,
+  employee_id bigint not null references public.employees(id) on delete cascade,
+  entry_date date not null,
+  content text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (employee_id, entry_date)
+);
+
+alter table public.daily_entries enable row level security;
+
+drop policy if exists daily_entries_select_all on public.daily_entries;
+create policy daily_entries_select_all
+on public.daily_entries
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists daily_entries_insert_all on public.daily_entries;
+create policy daily_entries_insert_all
+on public.daily_entries
+for insert
+to anon, authenticated
+with check (true);
+
+drop policy if exists daily_entries_update_all on public.daily_entries;
+create policy daily_entries_update_all
+on public.daily_entries
+for update
+to anon, authenticated
+using (true)
+with check (true);
+
+drop trigger if exists daily_entries_set_updated_at on public.daily_entries;
+create trigger daily_entries_set_updated_at
+before update on public.daily_entries
+for each row
+execute function public.set_updated_at();
+
+create or replace function public.create_or_update_daily_entry(
+  p_employee_id bigint,
+  p_entry_date date,
+  p_content text
+)
+returns public.daily_entries
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  result public.daily_entries;
+begin
+  insert into public.daily_entries (employee_id, entry_date, content)
+  values (p_employee_id, p_entry_date, trim(coalesce(p_content, '')))
+  on conflict (employee_id, entry_date)
+  do update set content = trim(coalesce(p_content, ''))
+  returning * into result;
+
+  return result;
+end;
+$$;
+
+create or replace function public.get_daily_entry(
+  p_employee_id bigint,
+  p_entry_date date
+)
+returns public.daily_entries
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.daily_entries
+  where employee_id = p_employee_id
+    and entry_date = p_entry_date
+  limit 1;
+$$;
+
+create or replace function public.get_daily_entries(
+  p_employee_id bigint,
+  p_limit integer default 30,
+  p_offset integer default 0
+)
+returns setof public.daily_entries
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.daily_entries
+  where employee_id = p_employee_id
+  order by entry_date desc
+  limit p_limit
+  offset p_offset;
+$$;
+
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on all tables in schema public to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
@@ -1071,6 +1169,8 @@ begin
     select 'leave_requests', (select count(*) from public.leave_requests), pg_total_relation_size('public.leave_requests'::regclass)
     union all
     select 'credit_deduction_logs', (select count(*) from public.credit_deduction_logs), pg_total_relation_size('public.credit_deduction_logs'::regclass)
+    union all
+    select 'daily_entries', (select count(*) from public.daily_entries), pg_total_relation_size('public.daily_entries'::regclass)
   )
   select json_build_object(
     'total_size', pg_size_pretty(pg_database_size(current_database())),

@@ -61,6 +61,43 @@
       </article>
     </section>
 
+    <section class="daily-entry-prompt hidden" id="daily-entry-prompt">
+      <div class="daily-entry-notification">
+        <span class="daily-entry-notification-icon">📝</span>
+        <div>
+          <strong>Daily Accomplishment</strong>
+          <p>You haven't written your accomplishment for today yet. Jot down what you did today!</p>
+        </div>
+        <button type="button" class="button button-primary" id="daily-entry-open-btn">Write Entry</button>
+      </div>
+    </section>
+
+    <section class="dashboard-card daily-entry-card" id="daily-entry-card">
+      <div class="daily-entry-header">
+        <div>
+          <p class="card-label">Daily Accomplishment Report</p>
+          <h3>What did you do today?</h3>
+        </div>
+        <button type="button" class="button button-muted" id="daily-entry-toggle-history">View History</button>
+      </div>
+      <div class="daily-entry-body">
+        <div class="daily-entry-main">
+          <div class="daily-entry-date-label" id="daily-entry-date-label"></div>
+          <textarea class="daily-entry-textarea" id="daily-entry-textarea" placeholder="Describe your accomplishments for today..."></textarea>
+          <div class="daily-entry-actions">
+            <span class="daily-entry-saved-text hidden" id="daily-entry-saved-text">Saved</span>
+            <button type="button" class="button button-primary" id="daily-entry-save-btn">Save Entry</button>
+          </div>
+        </div>
+        <div class="daily-entry-history hidden" id="daily-entry-history">
+          <p class="card-label">Recent Entries</p>
+          <ul class="daily-entry-history-list" id="daily-entry-history-list">
+            <li class="empty-state">No entries yet.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <section class="dashboard-grid">
       <article class="dashboard-card dashboard-card-wide leave-paper-card">
         <div class="leave-paper">
