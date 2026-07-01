@@ -3482,8 +3482,15 @@ button:focus {
 }
 
 .daily-entry-history-list li {
-  padding: 0.75rem 0;
+  padding: 0.75rem;
   border-bottom: 1px solid rgba(102, 79, 178, 0.08);
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.daily-entry-history-list li:hover {
+  background: rgba(111, 61, 244, 0.06);
 }
 
 .daily-entry-history-list li:last-child {
@@ -3495,6 +3502,19 @@ button:focus {
   font-size: 0.9rem;
   padding: 1rem 0;
   border-bottom: 0;
+  cursor: default;
+}
+
+.daily-entry-history-list .empty-state:hover {
+  background: transparent;
+}
+
+.daily-entry-history-selected {
+  background: rgba(111, 61, 244, 0.1);
+}
+
+.daily-entry-history-selected:hover {
+  background: rgba(111, 61, 244, 0.14);
 }
 
 .daily-entry-history-date {
