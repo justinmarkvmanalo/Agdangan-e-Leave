@@ -648,10 +648,10 @@ textarea {
 }
 
 @keyframes auth-bg-shift {
-  0%, 100% {
+  0% {
     background-position: 0% 50%;
   }
-  50% {
+  100% {
     background-position: 100% 50%;
   }
 }
@@ -715,7 +715,7 @@ textarea {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
   background-size: 200% 200%;
-  animation: auth-bg-shift 12s ease-in-out infinite;
+  animation: auth-bg-shift 30s linear infinite;
 }
 
 .auth-page .site-header {
@@ -1013,7 +1013,7 @@ textarea {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
   background-size: 200% 200%;
-  animation: auth-bg-shift 12s ease-in-out infinite;
+  animation: auth-bg-shift 30s linear infinite;
 }
 
 .landing-page .site-header,
@@ -3120,7 +3120,7 @@ button:focus {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
   background-size: 200% 200%;
-  animation: auth-bg-shift 12s ease-in-out infinite;
+  animation: auth-bg-shift 30s linear infinite;
 }
 
 .admin-page .site-header,
@@ -3210,7 +3210,7 @@ button:focus {
     linear-gradient(135deg, rgba(111, 42, 168, 0.94), rgba(198, 91, 164, 0.88)),
     #7c2b91;
   background-size: 200% 200%;
-  animation: auth-bg-shift 12s ease-in-out infinite;
+  animation: auth-bg-shift 30s linear infinite;
   box-shadow: 0 30px 74px rgba(20, 8, 40, 0.28);
 }
 
