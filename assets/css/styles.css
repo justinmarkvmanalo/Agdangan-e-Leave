@@ -1012,6 +1012,8 @@ textarea {
 .landing-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
+  background-size: 200% 200%;
+  animation: auth-bg-shift 12s ease-in-out infinite;
 }
 
 .landing-page .site-header,
@@ -3115,6 +3117,8 @@ button:focus {
 .employee-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #4b145f 0%, #6f2aa8 48%, #2d174c 100%);
+  background-size: 200% 200%;
+  animation: auth-bg-shift 12s ease-in-out infinite;
 }
 
 .admin-page .site-header,
