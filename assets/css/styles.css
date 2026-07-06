@@ -1131,6 +1131,7 @@ textarea {
   background: linear-gradient(135deg, rgba(239, 206, 255, 0.72), rgba(255, 255, 255, 0.3));
   transform: rotate(42deg);
   box-shadow: 0 24px 46px rgba(31, 12, 64, 0.28);
+  animation: float-slow 8s ease-in-out infinite;
 }
 
 .landing-page .hero-copy::after {
@@ -1141,6 +1142,7 @@ textarea {
   background: linear-gradient(135deg, rgba(244, 213, 121, 0.72), rgba(140, 61, 170, 0.42));
   transform: rotate(45deg);
   box-shadow: -18px -18px 40px rgba(31, 12, 64, 0.24);
+  animation: float-slow-after 9s ease-in-out infinite;
 }
 
 .landing-page .hero-copy > * {
@@ -3207,6 +3209,8 @@ button:focus {
   background:
     linear-gradient(135deg, rgba(111, 42, 168, 0.94), rgba(198, 91, 164, 0.88)),
     #7c2b91;
+  background-size: 200% 200%;
+  animation: auth-bg-shift 12s ease-in-out infinite;
   box-shadow: 0 30px 74px rgba(20, 8, 40, 0.28);
 }
 
@@ -3231,6 +3235,7 @@ button:focus {
   border-radius: 0 0 5rem 5rem;
   background: linear-gradient(135deg, rgba(239, 206, 255, 0.68), rgba(255, 255, 255, 0.28));
   transform: rotate(42deg);
+  animation: float-slow 8s ease-in-out infinite;
 }
 
 .admin-page .dashboard-header::after,
@@ -3242,6 +3247,7 @@ button:focus {
   height: 22rem;
   background: linear-gradient(135deg, rgba(244, 213, 121, 0.7), rgba(140, 61, 170, 0.36));
   transform: rotate(45deg);
+  animation: float-slow-after 9s ease-in-out infinite;
 }
 
 .admin-page .dashboard-title,
