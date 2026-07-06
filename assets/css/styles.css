@@ -669,10 +669,10 @@ textarea {
 
 @keyframes float-slow {
   0%, 100% {
-    transform: rotate(42deg) translateY(0);
+    transform: rotate(42deg) translateX(0);
   }
   50% {
-    transform: rotate(42deg) translateY(-14px);
+    transform: rotate(42deg) translateX(60px);
   }
 }
 
