@@ -61,380 +61,389 @@
       </article>
     </section>
 
-    <section class="daily-entry-prompt hidden" id="daily-entry-prompt">
-      <div class="daily-entry-notification">
-        <span class="daily-entry-notification-icon">📝</span>
-        <div>
-          <strong>Daily Accomplishment</strong>
-          <p>You haven't written your accomplishment for today yet. Jot down what you did today!</p>
-        </div>
-        <button type="button" class="button button-primary" id="daily-entry-open-btn">Write Entry</button>
-      </div>
-    </section>
+    <nav class="section-tabs" aria-label="Employee section tabs">
+      <button type="button" class="section-tab active" data-tab="leave">Leave Application</button>
+      <button type="button" class="section-tab" data-tab="daily">Daily Accomplishment</button>
+    </nav>
 
-    <section class="dashboard-card daily-entry-card" id="daily-entry-card">
-      <div class="daily-entry-header">
-        <div>
-          <p class="card-label">Daily Accomplishment Report</p>
-          <h3>What did you do today?</h3>
-        </div>
-        <button type="button" class="button button-muted" id="daily-entry-toggle-history">View History</button>
-      </div>
-      <div class="daily-entry-body">
-        <div class="daily-entry-main">
-          <div class="daily-entry-date-label" id="daily-entry-date-label"></div>
-          <textarea class="daily-entry-textarea" id="daily-entry-textarea" placeholder="Describe your accomplishments for today..."></textarea>
-          <div class="daily-entry-actions">
-            <span class="daily-entry-saved-text hidden" id="daily-entry-saved-text">Saved</span>
-            <button type="button" class="button button-muted hidden" id="daily-entry-back-today-btn">Back to Today</button>
-            <button type="button" class="button button-primary" id="daily-entry-save-btn">Save Entry</button>
+    <section id="tab-leave" class="tab-panel">
+      <section class="daily-entry-prompt hidden" id="daily-entry-prompt">
+        <div class="daily-entry-notification">
+          <span class="daily-entry-notification-icon">📝</span>
+          <div>
+            <strong>Daily Accomplishment</strong>
+            <p>You haven't written your accomplishment for today yet. Jot down what you did today!</p>
           </div>
+          <button type="button" class="button button-primary" id="daily-entry-open-btn">Write Entry</button>
         </div>
-        <div class="daily-entry-history hidden" id="daily-entry-history">
-          <p class="card-label">Recent Entries</p>
-          <ul class="daily-entry-history-list" id="daily-entry-history-list">
-            <li class="empty-state">No entries yet.</li>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="dashboard-card dashboard-card-wide leave-paper-card">
+          <div class="leave-paper">
+            <div class="leave-paper-topline">
+              <div class="leave-paper-form-series">
+                <p class="leave-paper-note">Civil Service Form No. 6</p>
+                <p class="leave-paper-note">Revised 2020</p>
+              </div>
+              <div class="leave-paper-stamp">Stamp of Date of Receipt:</div>
+            </div>
+
+            <div class="leave-paper-heading-grid">
+              <div class="leave-paper-seal-wrap">
+                <img src="/assets/images/agdangan-seal.webp" alt="Agdangan seal" class="leave-paper-seal">
+              </div>
+              <div class="leave-paper-heading">
+                <p class="leave-paper-government">Republic of the Philippines</p>
+                <p class="leave-paper-government">MGO Agdangan</p>
+                <p class="leave-paper-government">Agdangan, Quezon</p>
+                <h3>Application for Leave</h3>
+              </div>
+              <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
+            </div>
+
+            <form class="leave-paper-form" id="leave-request-form">
+              <div class="leave-paper-row">
+                <div class="leave-paper-cell">
+                  <label class="leave-paper-label" for="office-department">1. Office / Department</label>
+                  <input id="office-department" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="officeDepartment">
+                </div>
+                <div class="leave-paper-cell">
+                  <div class="leave-paper-name-header">
+                    <span class="leave-paper-label">2. Name:</span>
+                    <div class="leave-paper-inline-captions" aria-hidden="true">
+                      <span>(Last)</span>
+                      <span>(First)</span>
+                      <span>(Middle)</span>
+                    </div>
+                  </div>
+                  <div class="leave-paper-inline-fields">
+                    <input id="applicant-last" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantLastName" placeholder="Last" readonly>
+                    <input id="applicant-first" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantFirstName" placeholder="First" readonly>
+                    <input id="applicant-middle" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantMiddleName" placeholder="Middle" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="leave-paper-row leave-paper-row-compact">
+                <div class="leave-paper-cell leave-paper-cell-inline">
+                  <label class="leave-paper-label" for="filing-date">3. Date of Filing</label>
+                  <input id="filing-date" class="leave-paper-input" type="date" name="filingDate">
+                </div>
+                <div class="leave-paper-cell leave-paper-cell-inline">
+                  <label class="leave-paper-label" for="position-title">4. Position</label>
+                  <input id="position-title" class="leave-paper-input leave-paper-input-line" type="text" name="positionTitle">
+                </div>
+                <div class="leave-paper-cell leave-paper-cell-inline">
+                  <label class="leave-paper-label" for="salary-display">5. Salary</label>
+                  <input id="salary-display" class="leave-paper-input leave-paper-input-line" type="text" name="salaryDisplay" placeholder="N/A">
+                </div>
+              </div>
+
+              <div class="leave-paper-section-title">6. Details of Application</div>
+
+              <div class="leave-paper-panel-grid">
+                <fieldset class="leave-paper-panel">
+                  <legend>6.A Type of Leave to Be Availed Of</legend>
+                  <div class="leave-type-grid">
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="vacation">
+                      <span>Vacation Leave <small>(Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="mandatory-forced">
+                      <span>Mandatory/Forced Leave <small>(Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="sick">
+                      <span>Sick Leave <small>(Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="maternity">
+                      <span>Maternity Leave <small>(R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="paternity">
+                      <span>Paternity Leave <small>(R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="special-privilege">
+                      <span>Special Privilege Leave <small>(Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="wellness">
+                      <span>Wellness Leave <small>(5 days, subject to office policy)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="solo-parent">
+                      <span>Solo Parent Leave <small>(R.A. No. 8972 / CSC MC No. 8, s. 2004)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="study">
+                      <span>Study Leave <small>(Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="vawc">
+                      <span>10-Day VAWC Leave <small>(R.A. No. 9262 / CSC MC No. 15, s. 2005)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="rehabilitation-privilege">
+                      <span>Rehabilitation Privilege <small>(Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="special-benefits-women">
+                      <span>Special Leave Benefits for Women <small>(R.A. No. 9710 / CSC MC No. 25, s. 2010)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="special-emergency-calamity">
+                      <span>Special Emergency (Calamity) Leave <small>(CSC MC No. 2, s. 2012, as amended)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="adoption">
+                      <span>Adoption Leave <small>(R.A. No. 8552)</small></span>
+                    </label>
+                    <label class="leave-option">
+                      <input type="checkbox" name="leaveType" value="others">
+                      <span>Others</span>
+                    </label>
+                  </div>
+                  <div class="leave-paper-other-line">
+                    <label for="leave-other">Others:</label>
+                    <input id="leave-other" class="leave-paper-input leave-paper-input-line" type="text">
+                  </div>
+                </fieldset>
+
+                <fieldset class="leave-paper-panel">
+                  <legend>6.B Details of Leave</legend>
+                  <div class="leave-paper-subgroup" data-detail-group="vacation">
+                    <p>In case of Vacation / Special Privilege Leave:</p>
+                    <div class="leave-paper-bullets">
+                      <label class="leave-paper-detail-option">
+                        <input type="checkbox" name="leaveLocation" value="within-ph">
+                        <span>Within the Philippines</span>
+                        <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationWithinNote" placeholder="Specify">
+                      </label>
+                      <label class="leave-paper-detail-option">
+                        <input type="checkbox" name="leaveLocation" value="abroad">
+                        <span>Abroad (Specify)</span>
+                        <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationAbroadNote" placeholder="Specify">
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="leave-paper-subgroup" data-detail-group="sick">
+                    <p>In case of Sick Leave:</p>
+                    <div class="leave-paper-bullets">
+                      <label class="leave-paper-detail-option">
+                        <input type="checkbox" name="sickDetail" value="in-hospital">
+                        <span>In Hospital (Specify Illness)</span>
+                        <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailHospitalNote" placeholder="Specify illness">
+                      </label>
+                      <label class="leave-paper-detail-option">
+                        <input type="checkbox" name="sickDetail" value="out-patient">
+                        <span>Out Patient (Specify Illness)</span>
+                        <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailOutpatientNote" placeholder="Specify illness">
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="leave-paper-subgroup" data-detail-group="women">
+                    <p>In case of Special Leave Benefits for Women:</p>
+                    <div class="leave-paper-bullets">
+                      <div class="leave-paper-detail-option leave-paper-detail-option-static">
+                        <span>(Specify Illness)</span>
+                        <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="womenIllnessNote" placeholder="Specify illness">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="leave-paper-subgroup" data-detail-group="study">
+                    <p>In case of Study Leave:</p>
+                    <div class="leave-paper-bullets">
+                      <label><input type="checkbox" name="leavePurpose" value="masters-completion"> <span>Completion of Master's Degree</span></label>
+                      <label><input type="checkbox" name="leavePurpose" value="bar-review"> <span>BAR/Board Examination Review</span></label>
+                    </div>
+                  </div>
+
+                  <div class="leave-paper-subgroup" data-detail-group="other-purpose">
+                    <p>Other purpose:</p>
+                    <div class="leave-paper-bullets">
+                      <label><input type="checkbox" name="leavePurpose" value="monetization"> <span>Monetization of Leave Credits</span></label>
+                      <label><input type="checkbox" name="leavePurpose" value="terminal"> <span>Terminal Leave</span></label>
+                    </div>
+                  </div>
+
+                </fieldset>
+              </div>
+
+              <div class="leave-paper-row leave-paper-row-detail">
+                <div class="leave-paper-cell">
+                  <label class="leave-paper-label" for="days-requested">6.C Number of Working Days Applied For</label>
+                  <div class="leave-paper-tight-field">
+                    <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="1" step="1" inputmode="numeric" required>
+                  </div>
+                  <div class="leave-paper-subline-group">
+                    <label>Inclusive Dates</label>
+                    <div class="leave-paper-bullets leave-paper-date-mode">
+                      <label><input type="radio" name="dateMode" value="range" checked> <span>Consecutive Date Range</span></label>
+                      <label><input type="radio" name="dateMode" value="selected"> <span>Selected Separate Dates</span></label>
+                    </div>
+                    <div class="leave-paper-date-range" data-date-mode-panel="range">
+                      <input id="start-date" class="leave-paper-input leave-paper-input-line" name="startDate" type="date" required>
+                      <input id="end-date" class="leave-paper-input leave-paper-input-line" name="endDate" type="date" required>
+                    </div>
+                    <div class="leave-paper-date-picker hidden" data-date-mode-panel="selected">
+                      <div class="leave-paper-date-picker-controls">
+                        <input id="selected-date-input" class="leave-paper-input leave-paper-input-line" type="date">
+                        <button type="button" class="button button-muted" id="add-selected-date">Add Date</button>
+                        <button type="button" class="button button-muted" id="clear-selected-dates">Clear</button>
+                      </div>
+                      <div class="leave-paper-date-picker-note">Use this for non-consecutive dates like May 1, May 3, and May 5.</div>
+                      <div class="leave-paper-date-chip-list" id="selected-date-list">
+                        <span class="muted">No dates selected yet.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="leave-paper-cell">
+                  <span class="leave-paper-label">6.D Commutation</span>
+                  <div class="leave-paper-bullets">
+                    <label><input type="radio" name="commutation" value="not-requested"> <span>Not Requested</span></label>
+                    <label><input type="radio" name="commutation" value="requested"> <span>Requested</span></label>
+                  </div>
+                  <div class="leave-paper-signature">
+                    <div class="leave-paper-line"></div>
+                    <span>(Signature of Applicant)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="leave-paper-section-title">7. Action on Application</div>
+
+              <div class="leave-paper-row leave-paper-row-action">
+                <div class="leave-paper-cell">
+                  <span class="leave-paper-label">7.A Certification of Leave Credits</span>
+                  <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line"></span></div>
+                  <table class="leave-paper-credit-table" aria-label="Leave credits certification">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Vacation Leave</th>
+                        <th>Sick Leave</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Total Earned</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>Less this application</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>Balance</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="leave-paper-officer">
+                    <div class="leave-paper-line">SHERIL Q. BRIONES, HRMO</div>
+                    <span>(Authorized Officer)</span>
+                  </div>
+                </div>
+                <div class="leave-paper-cell">
+                  <span class="leave-paper-label">7.B Recommendation</span>
+                  <div class="leave-paper-action-box">
+                    <div class="leave-paper-bullets">
+                      <label><input type="checkbox" disabled> <span>For approval</span></label>
+                      <label><input type="checkbox" disabled> <span>For disapproval due to</span></label>
+                    </div>
+                    <div class="leave-paper-action-writing">
+                      <div class="leave-paper-action-line"></div>
+                      <div class="leave-paper-action-line"></div>
+                      <div class="leave-paper-action-line"></div>
+                    </div>
+                  </div>
+                  <div class="leave-paper-officer">
+                    <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line leave-paper-signature-input" type="text" name="recommendationOfficerName" placeholder="Name of head / authorized officer">
+                    <span>(Authorized Officer)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="leave-paper-row leave-paper-row-bottom">
+                <div class="leave-paper-cell">
+                  <span class="leave-paper-label">7.C Approved For</span>
+                  <div class="leave-paper-approval-lines">
+                    <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days with pay</div>
+                    <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days without pay</div>
+                    <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> others (Specify)</div>
+                  </div>
+                </div>
+                <div class="leave-paper-cell">
+                  <span class="leave-paper-label">7.D Disapproved Due To</span>
+                  <div class="leave-paper-action-box">
+                    <div class="leave-paper-action-writing">
+                      <div class="leave-paper-action-line"></div>
+                      <div class="leave-paper-action-line"></div>
+                      <div class="leave-paper-action-line"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="leave-paper-authorized leave-paper-authorized-wide">
+                  <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line leave-paper-signature-input" type="text" name="approvalAuthorizedOfficialName" value="HON. RHADAM PADILLA AGUILAR, MUN. MAYOR" placeholder="Authorized official name">
+                  <span>(Authorized Official)</span>
+                </div>
+              </div>
+
+              <div class="leave-paper-footer">
+                <button type="submit" class="button button-primary">Submit Leave Application</button>
+              </div>
+            </form>
+          </div>
+        </article>
+
+        <article class="dashboard-card request-summary-card">
+          <p class="card-label">Current Requests</p>
+          <h3>Request Summary</h3>
+          <ul class="request-list" id="employee-request-list">
+            <li class="empty-state">No leave requests loaded yet.</li>
           </ul>
-        </div>
-      </div>
+        </article>
+      </section>
     </section>
 
-    <section class="dashboard-grid">
-      <article class="dashboard-card dashboard-card-wide leave-paper-card">
-        <div class="leave-paper">
-          <div class="leave-paper-topline">
-            <div class="leave-paper-form-series">
-              <p class="leave-paper-note">Civil Service Form No. 6</p>
-              <p class="leave-paper-note">Revised 2020</p>
-            </div>
-            <div class="leave-paper-stamp">Stamp of Date of Receipt:</div>
+    <section id="tab-daily" class="tab-panel hidden">
+      <section class="dashboard-card daily-entry-card" id="daily-entry-card">
+        <div class="daily-entry-header">
+          <div>
+            <p class="card-label">Daily Accomplishment Report</p>
+            <h3>What did you do today?</h3>
           </div>
-
-          <div class="leave-paper-heading-grid">
-            <div class="leave-paper-seal-wrap">
-              <img src="/assets/images/agdangan-seal.webp" alt="Agdangan seal" class="leave-paper-seal">
-            </div>
-            <div class="leave-paper-heading">
-              <p class="leave-paper-government">Republic of the Philippines</p>
-              <p class="leave-paper-government">MGO Agdangan</p>
-              <p class="leave-paper-government">Agdangan, Quezon</p>
-              <h3>Application for Leave</h3>
-            </div>
-            <div class="leave-paper-heading-spacer" aria-hidden="true"></div>
-          </div>
-
-          <form class="leave-paper-form" id="leave-request-form">
-            <div class="leave-paper-row">
-              <div class="leave-paper-cell">
-                <label class="leave-paper-label" for="office-department">1. Office / Department</label>
-                <input id="office-department" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="officeDepartment">
-              </div>
-              <div class="leave-paper-cell">
-                <div class="leave-paper-name-header">
-                  <span class="leave-paper-label">2. Name:</span>
-                  <div class="leave-paper-inline-captions" aria-hidden="true">
-                    <span>(Last)</span>
-                    <span>(First)</span>
-                    <span>(Middle)</span>
-                  </div>
-                </div>
-                <div class="leave-paper-inline-fields">
-                  <input id="applicant-last" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantLastName" placeholder="Last" readonly>
-                  <input id="applicant-first" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantFirstName" placeholder="First" readonly>
-                  <input id="applicant-middle" class="leave-paper-input leave-paper-input-line leave-paper-input-single-line" type="text" name="applicantMiddleName" placeholder="Middle" readonly>
-                </div>
-              </div>
-            </div>
-
-            <div class="leave-paper-row leave-paper-row-compact">
-              <div class="leave-paper-cell leave-paper-cell-inline">
-                <label class="leave-paper-label" for="filing-date">3. Date of Filing</label>
-                <input id="filing-date" class="leave-paper-input" type="date" name="filingDate">
-              </div>
-              <div class="leave-paper-cell leave-paper-cell-inline">
-                <label class="leave-paper-label" for="position-title">4. Position</label>
-                <input id="position-title" class="leave-paper-input leave-paper-input-line" type="text" name="positionTitle">
-              </div>
-              <div class="leave-paper-cell leave-paper-cell-inline">
-                <label class="leave-paper-label" for="salary-display">5. Salary</label>
-                <input id="salary-display" class="leave-paper-input leave-paper-input-line" type="text" name="salaryDisplay" placeholder="N/A">
-              </div>
-            </div>
-
-            <div class="leave-paper-section-title">6. Details of Application</div>
-
-            <div class="leave-paper-panel-grid">
-              <fieldset class="leave-paper-panel">
-                <legend>6.A Type of Leave to Be Availed Of</legend>
-                <div class="leave-type-grid">
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="vacation">
-                    <span>Vacation Leave <small>(Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="mandatory-forced">
-                    <span>Mandatory/Forced Leave <small>(Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="sick">
-                    <span>Sick Leave <small>(Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="maternity">
-                    <span>Maternity Leave <small>(R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="paternity">
-                    <span>Paternity Leave <small>(R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="special-privilege">
-                    <span>Special Privilege Leave <small>(Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="wellness">
-                    <span>Wellness Leave <small>(5 days, subject to office policy)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="solo-parent">
-                    <span>Solo Parent Leave <small>(R.A. No. 8972 / CSC MC No. 8, s. 2004)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="study">
-                    <span>Study Leave <small>(Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="vawc">
-                    <span>10-Day VAWC Leave <small>(R.A. No. 9262 / CSC MC No. 15, s. 2005)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="rehabilitation-privilege">
-                    <span>Rehabilitation Privilege <small>(Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="special-benefits-women">
-                    <span>Special Leave Benefits for Women <small>(R.A. No. 9710 / CSC MC No. 25, s. 2010)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="special-emergency-calamity">
-                    <span>Special Emergency (Calamity) Leave <small>(CSC MC No. 2, s. 2012, as amended)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="adoption">
-                    <span>Adoption Leave <small>(R.A. No. 8552)</small></span>
-                  </label>
-                  <label class="leave-option">
-                    <input type="checkbox" name="leaveType" value="others">
-                    <span>Others</span>
-                  </label>
-                </div>
-                <div class="leave-paper-other-line">
-                  <label for="leave-other">Others:</label>
-                  <input id="leave-other" class="leave-paper-input leave-paper-input-line" type="text">
-                </div>
-              </fieldset>
-
-              <fieldset class="leave-paper-panel">
-                <legend>6.B Details of Leave</legend>
-                <div class="leave-paper-subgroup" data-detail-group="vacation">
-                  <p>In case of Vacation / Special Privilege Leave:</p>
-                  <div class="leave-paper-bullets">
-                    <label class="leave-paper-detail-option">
-                      <input type="checkbox" name="leaveLocation" value="within-ph">
-                      <span>Within the Philippines</span>
-                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationWithinNote" placeholder="Specify">
-                    </label>
-                    <label class="leave-paper-detail-option">
-                      <input type="checkbox" name="leaveLocation" value="abroad">
-                      <span>Abroad (Specify)</span>
-                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="leaveLocationAbroadNote" placeholder="Specify">
-                    </label>
-                  </div>
-                </div>
-
-                <div class="leave-paper-subgroup" data-detail-group="sick">
-                  <p>In case of Sick Leave:</p>
-                  <div class="leave-paper-bullets">
-                    <label class="leave-paper-detail-option">
-                      <input type="checkbox" name="sickDetail" value="in-hospital">
-                      <span>In Hospital (Specify Illness)</span>
-                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailHospitalNote" placeholder="Specify illness">
-                    </label>
-                    <label class="leave-paper-detail-option">
-                      <input type="checkbox" name="sickDetail" value="out-patient">
-                      <span>Out Patient (Specify Illness)</span>
-                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="sickDetailOutpatientNote" placeholder="Specify illness">
-                    </label>
-                  </div>
-                </div>
-
-                <div class="leave-paper-subgroup" data-detail-group="women">
-                  <p>In case of Special Leave Benefits for Women:</p>
-                  <div class="leave-paper-bullets">
-                    <div class="leave-paper-detail-option leave-paper-detail-option-static">
-                      <span>(Specify Illness)</span>
-                      <input class="leave-paper-input leave-paper-input-line leave-paper-detail-line" type="text" name="womenIllnessNote" placeholder="Specify illness">
-                    </div>
-                  </div>
-                </div>
-
-                <div class="leave-paper-subgroup" data-detail-group="study">
-                  <p>In case of Study Leave:</p>
-                  <div class="leave-paper-bullets">
-                    <label><input type="checkbox" name="leavePurpose" value="masters-completion"> <span>Completion of Master's Degree</span></label>
-                    <label><input type="checkbox" name="leavePurpose" value="bar-review"> <span>BAR/Board Examination Review</span></label>
-                  </div>
-                </div>
-
-                <div class="leave-paper-subgroup" data-detail-group="other-purpose">
-                  <p>Other purpose:</p>
-                  <div class="leave-paper-bullets">
-                    <label><input type="checkbox" name="leavePurpose" value="monetization"> <span>Monetization of Leave Credits</span></label>
-                    <label><input type="checkbox" name="leavePurpose" value="terminal"> <span>Terminal Leave</span></label>
-                  </div>
-                </div>
-
-              </fieldset>
-            </div>
-
-            <div class="leave-paper-row leave-paper-row-detail">
-              <div class="leave-paper-cell">
-                <label class="leave-paper-label" for="days-requested">6.C Number of Working Days Applied For</label>
-                <div class="leave-paper-tight-field">
-                  <input id="days-requested" class="leave-paper-input" name="daysRequested" type="number" min="1" step="1" inputmode="numeric" required>
-                </div>
-                <div class="leave-paper-subline-group">
-                  <label>Inclusive Dates</label>
-                  <div class="leave-paper-bullets leave-paper-date-mode">
-                    <label><input type="radio" name="dateMode" value="range" checked> <span>Consecutive Date Range</span></label>
-                    <label><input type="radio" name="dateMode" value="selected"> <span>Selected Separate Dates</span></label>
-                  </div>
-                  <div class="leave-paper-date-range" data-date-mode-panel="range">
-                    <input id="start-date" class="leave-paper-input leave-paper-input-line" name="startDate" type="date" required>
-                    <input id="end-date" class="leave-paper-input leave-paper-input-line" name="endDate" type="date" required>
-                  </div>
-                  <div class="leave-paper-date-picker hidden" data-date-mode-panel="selected">
-                    <div class="leave-paper-date-picker-controls">
-                      <input id="selected-date-input" class="leave-paper-input leave-paper-input-line" type="date">
-                      <button type="button" class="button button-muted" id="add-selected-date">Add Date</button>
-                      <button type="button" class="button button-muted" id="clear-selected-dates">Clear</button>
-                    </div>
-                    <div class="leave-paper-date-picker-note">Use this for non-consecutive dates like May 1, May 3, and May 5.</div>
-                    <div class="leave-paper-date-chip-list" id="selected-date-list">
-                      <span class="muted">No dates selected yet.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">6.D Commutation</span>
-                <div class="leave-paper-bullets">
-                  <label><input type="radio" name="commutation" value="not-requested"> <span>Not Requested</span></label>
-                  <label><input type="radio" name="commutation" value="requested"> <span>Requested</span></label>
-                </div>
-                <div class="leave-paper-signature">
-                  <div class="leave-paper-line"></div>
-                  <span>(Signature of Applicant)</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="leave-paper-section-title">7. Action on Application</div>
-
-            <div class="leave-paper-row leave-paper-row-action">
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">7.A Certification of Leave Credits</span>
-                <div class="leave-paper-credit-note">As of <span class="leave-paper-credit-line"></span></div>
-                <table class="leave-paper-credit-table" aria-label="Leave credits certification">
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Vacation Leave</th>
-                      <th>Sick Leave</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Total Earned</td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>Less this application</td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td>Balance</td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div class="leave-paper-officer">
-                  <div class="leave-paper-line">SHERIL Q. BRIONES, HRMO</div>
-                  <span>(Authorized Officer)</span>
-                </div>
-              </div>
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">7.B Recommendation</span>
-                <div class="leave-paper-action-box">
-                  <div class="leave-paper-bullets">
-                    <label><input type="checkbox" disabled> <span>For approval</span></label>
-                    <label><input type="checkbox" disabled> <span>For disapproval due to</span></label>
-                  </div>
-                  <div class="leave-paper-action-writing">
-                    <div class="leave-paper-action-line"></div>
-                    <div class="leave-paper-action-line"></div>
-                    <div class="leave-paper-action-line"></div>
-                  </div>
-                </div>
-                <div class="leave-paper-officer">
-                  <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line leave-paper-signature-input" type="text" name="recommendationOfficerName" placeholder="Name of head / authorized officer">
-                  <span>(Authorized Officer)</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="leave-paper-row leave-paper-row-bottom">
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">7.C Approved For</span>
-                <div class="leave-paper-approval-lines">
-                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days with pay</div>
-                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> days without pay</div>
-                  <div class="leave-paper-approval-item"><span class="leave-paper-inline-blank"></span> others (Specify)</div>
-                </div>
-              </div>
-              <div class="leave-paper-cell">
-                <span class="leave-paper-label">7.D Disapproved Due To</span>
-                <div class="leave-paper-action-box">
-                  <div class="leave-paper-action-writing">
-                    <div class="leave-paper-action-line"></div>
-                    <div class="leave-paper-action-line"></div>
-                    <div class="leave-paper-action-line"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="leave-paper-authorized leave-paper-authorized-wide">
-                <input class="leave-paper-input leave-paper-input-line leave-paper-input-single-line leave-paper-signature-input" type="text" name="approvalAuthorizedOfficialName" value="HON. RHADAM PADILLA AGUILAR, MUN. MAYOR" placeholder="Authorized official name">
-                <span>(Authorized Official)</span>
-              </div>
-            </div>
-
-            <div class="leave-paper-footer">
-              <button type="submit" class="button button-primary">Submit Leave Application</button>
-            </div>
-          </form>
+          <button type="button" class="button button-muted" id="daily-entry-toggle-history">View History</button>
         </div>
-      </article>
-
-      <article class="dashboard-card request-summary-card">
-        <p class="card-label">Current Requests</p>
-        <h3>Request Summary</h3>
-        <ul class="request-list" id="employee-request-list">
-          <li class="empty-state">No leave requests loaded yet.</li>
-        </ul>
-      </article>
+        <div class="daily-entry-body">
+          <div class="daily-entry-main">
+            <div class="daily-entry-date-label" id="daily-entry-date-label"></div>
+            <textarea class="daily-entry-textarea" id="daily-entry-textarea" placeholder="Describe your accomplishments for today..."></textarea>
+            <div class="daily-entry-actions">
+              <span class="daily-entry-saved-text hidden" id="daily-entry-saved-text">Saved</span>
+              <button type="button" class="button button-muted hidden" id="daily-entry-back-today-btn">Back to Today</button>
+              <button type="button" class="button button-primary" id="daily-entry-save-btn">Save Entry</button>
+            </div>
+          </div>
+          <div class="daily-entry-history hidden" id="daily-entry-history">
+            <p class="card-label">Recent Entries</p>
+            <ul class="daily-entry-history-list" id="daily-entry-history-list">
+              <li class="empty-state">No entries yet.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </section>
   </main>
 

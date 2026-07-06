@@ -3557,6 +3557,44 @@ button:focus {
   }
 }
 
+.section-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  padding: 0.35rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(102, 79, 178, 0.1);
+  border-radius: 16px;
+  width: fit-content;
+}
+
+.section-tab {
+  padding: 0.6rem 1.25rem;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.section-tab:hover {
+  color: var(--navy);
+  background: rgba(111, 61, 244, 0.06);
+}
+
+.section-tab.active {
+  background: linear-gradient(135deg, #5b1f8d, #8c2f8d);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(75, 20, 95, 0.2);
+}
+
+.tab-panel.hidden {
+  display: none;
+}
+
 .credit-page .credit-logic-panel,
 .credit-page .credit-deduction-entry,
 .credit-page .credit-deduction-summary {

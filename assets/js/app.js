@@ -706,6 +706,37 @@
     await loadEmployeeRequests(profile.id);
     bindLeaveRequestForm(profile);
     await initDailyEntry(profile.id);
+    initSectionTabs();
+  }
+
+  function initSectionTabs() {
+    const tabs = document.querySelectorAll(".section-tab");
+    const activeTab = document.querySelector(".section-tab.active");
+    if (!tabs.length || !activeTab) return;
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        const target = tab.getAttribute("data-tab");
+        if (!target) return;
+
+        tabs.forEach(function (t) { t.classList.remove("active"); });
+        tab.classList.add("active");
+
+        const activePanel = document.querySelector(".tab-panel:not(.hidden)");
+        if (activePanel) activePanel.classList.add("hidden");
+
+        const targetPanel = document.getElementById("tab-" + target);
+        if (targetPanel) targetPanel.classList.remove("hidden");
+
+        if (target === "daily") {
+          const openBtn = document.getElementById("daily-entry-open-btn");
+          const cardEl = document.getElementById("daily-entry-card");
+          if (!document.getElementById("daily-entry-textarea").value && openBtn && cardEl) {
+            openBtn.click();
+          }
+        }
+      });
+    });
   }
 
   async function initAccountSettingsPage() {
@@ -1452,10 +1483,22 @@
 
     if (openBtn) {
       openBtn.addEventListener("click", function() {
+        var dailyTab = document.querySelector('.section-tab[data-tab="daily"]');
+        if (dailyTab) {
+          var tabs = document.querySelectorAll(".section-tab");
+          tabs.forEach(function (t) { t.classList.remove("active"); });
+          dailyTab.classList.add("active");
+          var leavePanel = document.getElementById("tab-leave");
+          var dailyPanel = document.getElementById("tab-daily");
+          if (leavePanel) leavePanel.classList.add("hidden");
+          if (dailyPanel) dailyPanel.classList.remove("hidden");
+        }
         setEditingDate(today);
         loadTodayEntry();
-        cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        textarea.focus();
+        setTimeout(function () {
+          cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          textarea.focus();
+        }, 100);
       });
     }
 
