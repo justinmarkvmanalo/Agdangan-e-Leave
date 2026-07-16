@@ -3430,7 +3430,7 @@ Sufficient Credits: ${hasSufficientCredits ? "Yes" : "No"}`;
           }
           .leave-paper-bullets input:checked::before,
           .leave-paper-detail-option input:checked::before {
-            content: "\2713";
+            content: "\u2713";
           }
           .leave-paper-subgroup p,
           .leave-paper-signature span,
