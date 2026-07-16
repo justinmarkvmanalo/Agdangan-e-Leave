@@ -3408,6 +3408,30 @@ Sufficient Credits: ${hasSufficientCredits ? "Yes" : "No"}`;
           .leave-option input:checked::before {
             content: "✓";
           }
+          .leave-paper-bullets input,
+          .leave-paper-detail-option input {
+            width: 2.8mm;
+            height: 2.8mm;
+            margin: 0.4mm 0 0;
+            appearance: none;
+            border: 1px solid #111;
+            border-radius: 0;
+            background: #fff;
+            display: inline-grid;
+            place-items: center;
+            vertical-align: top;
+          }
+          .leave-paper-bullets input::before,
+          .leave-paper-detail-option input::before {
+            content: "";
+            font-size: 8px;
+            line-height: 1;
+            color: #111;
+          }
+          .leave-paper-bullets input:checked::before,
+          .leave-paper-detail-option input:checked::before {
+            content: "\2713";
+          }
           .leave-paper-subgroup p,
           .leave-paper-signature span,
           .leave-paper-officer span,

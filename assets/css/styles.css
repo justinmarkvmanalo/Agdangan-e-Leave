@@ -296,6 +296,37 @@ textarea {
   padding: 4.25rem 4.5rem;
 }
 
+.visitor-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 auto 2.5rem;
+  padding: 0.55rem 1.1rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(54, 36, 120, 0.08);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  width: fit-content;
+}
+
+.visitor-counter-icon {
+  font-size: 1rem;
+}
+
+.visitor-counter-label {
+  font-weight: 500;
+}
+
+.visitor-counter-value {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 0.85rem;
+  min-width: 1.2em;
+  text-align: center;
+}
+
 .trust-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2015,10 +2046,32 @@ button:focus {
   line-height: 1.1;
 }
 
-.leave-paper-bullets input {
+.leave-paper-bullets input,
+.leave-paper-detail-option input {
   width: 0.78rem;
   height: 0.78rem;
   margin: 0.05rem 0 0;
+  appearance: none;
+  border: 1px solid rgba(20, 20, 20, 0.78);
+  border-radius: 0;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.leave-paper-bullets input::before,
+.leave-paper-detail-option input::before {
+  content: "";
+  font-size: 0.58rem;
+  line-height: 1;
+  color: #111;
+}
+
+.leave-paper-bullets input:checked::before,
+.leave-paper-detail-option input:checked::before {
+  content: "\2713";
 }
 
 .leave-paper-reason-field {
@@ -3828,6 +3881,12 @@ button:focus {
     padding-right: 1.25rem;
   }
 
+  .visitor-counter {
+    margin-bottom: 1.5rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.72rem;
+  }
+
   .site-header {
     flex-direction: row;
     flex-wrap: wrap;
@@ -4341,6 +4400,11 @@ button:focus {
   .leave-paper-inline-fields input {
     width: 1.3rem;
     height: 1.3rem;
+  }
+
+  .leave-paper-bullets input::before,
+  .leave-paper-detail-option input::before {
+    font-size: 0.85rem;
   }
 
   .leave-paper-detail-option {

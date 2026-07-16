@@ -98,10 +98,53 @@
         and presents the portal with a more credible municipal style.
       </p>
     </section>
+
+    <div class="visitor-counter" id="visitorCounter">
+      <span class="visitor-counter-icon">&#128100;</span>
+      <span class="visitor-counter-label">Total Visitors:</span>
+      <span class="visitor-counter-value" id="visitorCountValue">--</span>
+    </div>
   </main>
 
   <script src="/assets/vendor/supabase-js-2.js"></script>
   <script src="/assets/js/supabase-config.js"></script>
   <script src="/assets/js/app.js?v=20260602-head-name"></script>
+  <script>
+    (function() {
+      var VISITOR_KEY = 'agdangan_leave_visitor_id';
+      var config = window.SUPABASE_CONFIG;
+      if (!config || !config.url || !config.anonKey) return;
+
+      var supabase = window.supabase.createClient(config.url, config.anonKey);
+      var countEl = document.getElementById('visitorCountValue');
+
+      async function init() {
+        try {
+          var res = await supabase.rpc('get_visitor_count');
+          if (res.data != null && countEl) {
+            countEl.textContent = Number(res.data).toLocaleString();
+          }
+        } catch (e) {}
+
+        var visitorId = localStorage.getItem(VISITOR_KEY);
+        if (!visitorId) {
+          visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+          localStorage.setItem(VISITOR_KEY, visitorId);
+          try {
+            var res = await supabase.rpc('increment_visitor_counter');
+            if (res.data != null && countEl) {
+              countEl.textContent = Number(res.data).toLocaleString();
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
 </body>
 </html>
